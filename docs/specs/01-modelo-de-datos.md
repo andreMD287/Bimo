@@ -1,6 +1,6 @@
 # Spec 01 — Modelo de datos
 
-**Estado:** v1.0 · **Depende de:** `docs/arquitectura/ARQUITECTURA.md` (ADR-05, 06, 08, 14, 16) · **Lo usan:** specs 02 a 09
+**Estado:** v1.1 (agrega `merchant_changes` y `customers.updated_at`; regla de reloj según spec 04) · **Depende de:** `docs/arquitectura/ARQUITECTURA.md` (ADR-05, 06, 08, 14, 16) · **Lo usan:** specs 02 a 09
 
 Este documento es la fuente de verdad del esquema. Claude Code **no** crea tablas, columnas, enums ni estados que no estén aquí. Si algo falta, se actualiza este spec primero.
 
@@ -160,7 +160,8 @@ create table customers (
   merchant_id       text not null references merchants(id) on delete cascade,
   display_name      text not null check (length(display_name) <= 60),
   phone             text,
-  created_at        timestamptz not null
+  created_at        timestamptz not null,
+  updated_at        timestamptz not null            -- última edición; gana la más reciente (spec 04 §8)
 );
 
 create table business_days (
@@ -190,7 +191,7 @@ create table journal_entries (
   note              text check (length(note) <= 140), -- texto libre del dueño; nunca entra al hash (spec 02)
   device_id         text references devices(id),
   created_by        uuid references auth.users(id),
-  clock_suspect     boolean not null default false,   -- |recorded_at - occurred_at| sospechoso con el celular en línea
+  clock_suspect     boolean not null default false,   -- reloj del celular desfasado > 10 min al subirlo (spec 04 §7)
   unique (external_source, external_ref),
   check ((kind = 'reverso') = (reverses_entry_id is not null)),
   check (origin <> 'verificado' or external_ref is not null)
@@ -304,6 +305,14 @@ create table chain_events (               -- modelo de lectura del indexador (AD
   primary key (tx_hash, event_index)
 );
 
+create table merchant_changes (          -- feed de cambios por comercio para el pull (spec 04 §8); solo adición
+  seq               bigserial primary key,
+  merchant_id       text not null references merchants(id) on delete cascade,
+  entity            text not null check (entity in ('entry','customer','day','seal')),
+  entity_id         text not null,
+  at                timestamptz not null default now()
+);
+
 create table indexer_cursor (
   contract_id       text primary key,
   last_ledger       bigint not null
@@ -330,6 +339,7 @@ create index on journal_lines (customer_id) where customer_id is not null;
 create index on seals (status) where status in ('firmado','enviado','fallido');
 create index on outbox_messages (status, next_attempt_at) where status = 'pendiente';
 create index on chain_events (contract_id, ledger_seq);
+create index on merchant_changes (merchant_id, seq);
 ```
 
 ---
@@ -348,6 +358,7 @@ create index on chain_events (contract_id, ledger_seq);
 | DB-08 | Un reverso apunta a un asiento del mismo comercio que no haya sido reversado antes | Trigger `BEFORE INSERT` |
 | DB-09 | Si llega un asiento para un día en estado `sellado`, el día pasa a `requiere_enmienda` | Trigger `AFTER INSERT` (ver spec 07) |
 | DB-10 | `verification_links`, `inbox_events`, `seals`: solo `bimo-core` escribe | RLS + rol de servicio |
+| DB-11 | Todo `INSERT` en `journal_entries` y `customers`, todo `UPDATE` de `customers`, todo cambio de `status` en `business_days` y en `seals` agrega una fila a `merchant_changes` | Triggers `AFTER INSERT` / `AFTER UPDATE` |
 
 ### Saldos
 
@@ -389,19 +400,19 @@ Un "pago dividido" es **un solo asiento** con varias líneas de débito. Una cor
 2. El dueño puede cerrar el día D en cualquier momento, incluso antes de medianoche.
 3. Si después del cierre llega un asiento de D (otra venta esa misma noche o una sincronización atrasada), el día pasa a `requiere_enmienda`. Al siguiente cierre, la app pide una sola firma para enmendar D y sellar el día actual.
 4. Si el dueño no cierra un día, este queda `abierto`. Al abrir la app se le muestran los días sin cerrar, y los firma todos con **un solo Face ID** (sellado en lote, mismo `tx_hash`; ver spec 03).
-5. Si el celular está en línea y `|recorded_at − occurred_at| > 10 min`, se marca `clock_suspect = true`. No se rechaza: el verificador lo ve.
+5. `clock_suspect = true` cuando el reloj del celular difiere más de 10 min de la hora del servidor en la petición que subió el asiento (spec 04 §7). No se rechaza: el verificador lo ve.
 
 ---
 
 ## 8. Esquema local del iPhone
 
-La app guarda solo lo necesario para vender sin red y mostrar "Hoy":
+La app guarda solo lo necesario para vender sin red y mostrar "Hoy". La versión completa, con campos de sincronización, está en el spec 04 §2:
 
 | Tabla local | Campos | Notas |
 |---|---|---|
 | `local_entries` | id, business_date, occurred_at, kind, origin, reverses_entry_id, note, sync_status | `business_date` con la misma regla de DB-02 |
 | `local_lines` | id, entry_id, line_no, account_code, direction, amount_minor, currency, channel, customer_id | Usa `account_code`, no IDs del servidor |
-| `local_customers` | id, display_name, phone, sync_status | |
+| `local_customers` | id, display_name, phone, updated_at_ms, sync_status | |
 | `local_days` | business_date, status, counted_cash_minor | Copia del estado que manda el servidor |
 | `outbox` | entity, entity_id, attempts, last_error | Lo que falta subir |
 
@@ -414,7 +425,7 @@ El protocolo de sincronización se define en el **spec 04**.
 `forget_merchant(merchant_id)` (función `security definer`, solo rol de servicio):
 
 1. Activa `bimo.forget = on` en la transacción.
-2. Borra `entry_salts`, `seal_leaves`, `journal_lines`, `journal_entries`, `customers`, `merchant_profiles`, `verification_links` y `devices` del comercio.
+2. Borra `entry_salts`, `seal_leaves`, `journal_lines`, `journal_entries`, `customers`, `merchant_profiles`, `verification_links`, `devices` y `merchant_changes` del comercio.
 3. Marca `merchants.forgotten_at` y deja `seals` solo con raíz, versión y `tx_hash`.
 4. Escribe en `audit_log`.
 

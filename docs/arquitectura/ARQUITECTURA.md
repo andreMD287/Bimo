@@ -2,7 +2,7 @@
 
 Documento de trabajo del equipo (André, Santiago, Lizeth). Sigue el método del curso: entradas → drivers → ADD 3.0 por iteraciones → vistas → evaluación ligera tipo ATAM → trazabilidad. Cada decisión está registrada como ADR con su driver, alternativas y trade-off.
 
-**Estado:** propuesta v0.2 (cliente decidido: iOS nativo en SwiftUI). Las decisiones marcadas como *Pendiente* las debe cerrar el equipo antes de construir lo que dependa de ellas.
+**Estado:** v0.3 (cliente iOS nativo en SwiftUI; día de negocio = día calendario). Diseño detallado en `docs/specs/`. Las decisiones marcadas como *Pendiente* las debe cerrar el equipo antes de construir lo que dependa de ellas.
 
 ---
 
@@ -231,7 +231,7 @@ Pasar de testnet a mainnet → solo configuración (RPC, IDs de contrato, passph
 
 - *Por qué:* el producto es solo iPhone (C-02), así que lo multiplataforma no aporta. Tap to Pay (ProximityReader y SDK del PSP) y passkeys (`AuthenticationServices`) se usan sin intermediarios, justo en las partes más sensibles. Stellar desde Swift con `stellar-ios-mac-sdk` (Soneso), que soporta Soroban y decodificación de XDR (ADR-07). Base local con SwiftData o GRDB (ADR-08).
 - *Trade-off:* una app Android futura se escribe aparte. Se compensa con el cliente delgado (ADR-07): la lógica vive en `bimo-core` y la app es sobre todo UI, captura y firma.
-- *Riesgo asociado:* la serialización canónica de los asientos existe en Swift y en TypeScript; si difieren, los hashes no coinciden (R-09).
+- *Nota:* la app no calcula hashes; las sales y el árbol Merkle viven en `bimo-core` (spec 01), así que la serialización canónica solo existe en TypeScript y en los verificadores (R-09).
 
 ---
 
@@ -246,12 +246,14 @@ Cada movimiento es un asiento inmutable con cuentas por comercio. Las correccion
 | Cuenta del comercio | Tipo | Ejemplo |
 |---|---|---|
 | Caja | Activo | Ventas en efectivo |
+| Por cobrar clientes | Activo | Ventas fiadas, pendientes de abono |
 | Por cobrar PSP | Activo | Venta con tarjeta autorizada, aún no consignada |
 | Cuenta en socio (COP) | Activo | Bre-B recibido, consignaciones del PSP |
 | Bolsillo USD (Stellar) | Activo | USDC en la smart account |
 | Adelantos por pagar | Pasivo | Adelanto recibido del pool (inc. 3) |
 | Ventas | Ingreso | Toda venta, sin importar el canal |
 | Comisiones | Gasto | Comisión del PSP o del canal |
+| Diferencias de caja | Gasto | Faltantes o sobrantes al contar el efectivo |
 
 Ejemplo: venta con tarjeta por $100.000 → *Debe* Por cobrar PSP / *Haber* Ventas. Cuando el PSP consigna $98.000 → *Debe* Cuenta en socio 98.000 + Comisiones 2.000 / *Haber* Por cobrar PSP 100.000. Con esto, H3 (pendiente de consignar) y H6 (comisiones) salen directamente de los saldos, sin lógica extra.
 
@@ -270,7 +272,13 @@ Al cerrar el día, `bimo-core` congela los asientos del día, calcula para cada 
 | Una transacción por venta | Costo y latencia por venta; filtra volumen de ventas en cadena |
 | **Raíz Merkle con sal (elegida)** | Se prueba una venta sin revelar las demás; la sal impide adivinar montos por fuerza bruta (QA-06) |
 
+La sal (32 bytes aleatorios) la genera `bimo-core` al recibir cada asiento y la guarda en una tabla aparte (spec 01).
 - *Trade-off:* hay que guardar las sales; si se pierden, ese día ya no se puede probar (riesgo R-06, mitigado con respaldo y exportación al comercio).
+
+**ADR-14 — El día de negocio es el día calendario en `America/Bogota`.**
+Decisión del equipo. El día de cada asiento se calcula a partir de la hora del celular convertida a Bogotá. El dueño puede cerrar en cualquier momento; si después del cierre llega un asiento de ese mismo día, el día queda "requiere enmienda" y se enmienda en el siguiente cierre con una sola firma. Los días que no se cerraron se firman en lote con un solo Face ID.
+- *Alternativa descartada:* sesión de caja (de apertura a cierre). Encaja mejor con negocios que cierran después de medianoche, pero es menos intuitiva para el dueño y para el verificador.
+- *Trade-off:* una noche de trabajo que cruza la medianoche queda partida en dos días sellados.
 
 ---
 
@@ -307,8 +315,12 @@ Todas las transacciones salen por el OpenZeppelin Relayer (servicio de canales d
 | `amend(comercio, día, raíz_nueva, motivo_hash)` | Ambos | Agrega una versión nueva; la anterior queda visible |
 | `get(comercio, día)` | Público | Devuelve todas las versiones del sello |
 
-Emite un evento por sello. La doble firma da **no repudio**: el comercio no puede negar lo que declaró y Bimo no puede sellar a su nombre (QA-02); la firma de Bimo certifica qué asientos llegaron de fuentes verificadas.
+También tiene `seal_batch` para firmar varios días pendientes en una sola transacción (ADR-14). Emite un evento por sello. La doble firma da **no repudio**: el comercio no puede negar lo que declaró y Bimo no puede sellar a su nombre (QA-02); la firma de Bimo certifica qué asientos llegaron de fuentes verificadas.
 Cerrar el día = una confirmación con huella o cara. Es el único momento diario en que el dueño firma.
+
+**ADR-15 — `bimo-registry` es inmutable.**
+El contrato no tiene función de actualización de código. Si Bimo pudiera actualizarlo, también podría reescribir sellos viejos, y se caería la promesa de que nadie puede alterarlos. Las versiones nuevas se despliegan como contratos nuevos y el verificador consulta todos los IDs de contrato publicados.
+- *Trade-off:* un error en el contrato no se corrige en sitio; se despliega uno nuevo y se migra hacia adelante. Por eso el contrato es mínimo y con pruebas exhaustivas.
 
 **ADR-10 — Verificación sin confiar en Bimo.**
 El enlace de verificación entrega los datos del período y sus pruebas Merkle. La página (estática, de código abierto) **lee la raíz directamente de Stellar RPC**, no del API de Bimo, y recalcula en el navegador. Además se publica un script de verificación para que el banco pueda hacerlo con sus propias herramientas (QA-01, QA-09).
@@ -373,7 +385,11 @@ Los eventos que llegan de afuera (webhooks) entran por un *inbox*: se valida la 
 | Separar llaves | Llave atestadora ≠ llave del relayer; ambas en un gestor de secretos, nunca en el repo |
 | Verificar integridad de mensajes | Firmas de webhooks de socio y PSP |
 | Auditar | Bitácora de solo adición de acciones administrativas |
-| Revocar acceso | Rotar firmante atestador en `bimo-registry` (función de admin con multifirma del equipo) |
+| Revocar acceso | Rotar firmante atestador en `bimo-registry` (función de admin con multifirma del equipo; no permite tocar sellos) |
+
+**ADR-16 — Borrado criptográfico para Habeas Data.**
+Si un comercio pide que se borren sus datos, se eliminan fuera de la cadena sus asientos, sales y datos personales. Las raíces que quedan en Stellar ya no permiten reconstruir nada, y así se cumple la Ley 1581 sin tocar la cadena (spec 01, sección 9).
+- *Trade-off:* después del borrado, ese historial deja de ser verificable, incluso para el propio comercio.
 
 ---
 
@@ -573,7 +589,7 @@ sequenceDiagram
 | R-06 | Se pierden las sales → días imposibles de probar | Respaldos, y exportación cifrada de los datos del día para el comercio |
 | R-07 | Datos del contrato archivados por TTL | Worker de TTL y restauración bajo demanda |
 | R-08 | Llave atestadora comprometida → sellos falsos co-firmados | No basta sola (requiere passkey del comercio); rotación vía multifirma |
-| R-09 | La serialización canónica de asientos difiere entre Swift y TypeScript → hashes distintos y sellos que no verifican | Especificación única del formato canónico + vectores de prueba compartidos que ambos lados deben pasar en CI |
+| R-09 | La serialización canónica de asientos difiere entre `bimo-core` y un verificador externo → hashes distintos y sellos que no verifican | Especificación única del formato canónico + vectores de prueba compartidos que ambos lados deben pasar en CI |
 
 **Tema de riesgo:** casi todos los riesgos altos vienen de terceros (socio, PSP, Apple, regulación). La arquitectura los aísla detrás de puertos, pero no los elimina: son riesgos de negocio que hay que gestionar en paralelo.
 

@@ -1,0 +1,354 @@
+{
+  "entries": [
+    {
+      "name": "venta_efectivo",
+      "entry": {
+        "id": "01JA9Z0000000000000000000A",
+        "merchant_id": "01JA2B3C4D5E6F7G8H9J0KMNPQ",
+        "occurred_at": "2026-10-06T20:30:00.000Z",
+        "kind": "venta",
+        "origin": "declarado",
+        "lines": [
+          {
+            "line_no": 1,
+            "account_code": "caja",
+            "direction": "debe",
+            "amount_minor": 2000000,
+            "currency": "COP",
+            "channel": "efectivo"
+          },
+          {
+            "line_no": 2,
+            "account_code": "ventas",
+            "direction": "haber",
+            "amount_minor": 2000000,
+            "currency": "COP"
+          }
+        ]
+      },
+      "business_date": 20261006,
+      "occurred_at_ms": 1791318600000,
+      "salt": "d2ddc2fb48d41fbcbc606de9daceab9bdd298ec3ae845a1f62bf26ddca314b38",
+      "canonical_hex": "42494d4f2d454e54525901001a30314a413242334334443545364637473848394a304b4d4e5051001a30314a41395a30303030303030303030303030303030303030410135288e000001a112e8a940010100000000020001010100000000001e84800101000002070200000000001e8480010000",
+      "leaf_hash": "8ac45b15f46df37c11c066642359e29310ad1270b217fbf9382a68a42a1e9015"
+    },
+    {
+      "name": "venta_dividida",
+      "entry": {
+        "id": "01JA9Z0000000000000000000B",
+        "merchant_id": "01JA2B3C4D5E6F7G8H9J0KMNPQ",
+        "occurred_at": "2026-10-06T21:05:12.345Z",
+        "kind": "venta",
+        "origin": "declarado",
+        "lines": [
+          {
+            "line_no": 1,
+            "account_code": "caja",
+            "direction": "debe",
+            "amount_minor": 3000000,
+            "currency": "COP",
+            "channel": "efectivo"
+          },
+          {
+            "line_no": 2,
+            "account_code": "cuenta_socio",
+            "direction": "debe",
+            "amount_minor": 7000000,
+            "currency": "COP",
+            "channel": "breb"
+          },
+          {
+            "line_no": 3,
+            "account_code": "ventas",
+            "direction": "haber",
+            "amount_minor": 10000000,
+            "currency": "COP"
+          }
+        ]
+      },
+      "business_date": 20261006,
+      "occurred_at_ms": 1791320712345,
+      "salt": "a659c94ab695acfaad97098ce98d49199b1753a12cda8bcab5c6a3869bc59700",
+      "canonical_hex": "42494d4f2d454e54525901001a30314a413242334334443545364637473848394a304b4d4e5051001a30314a41395a30303030303030303030303030303030303030420135288e000001a11308e499010100000000030001010100000000002dc6c00101000002040100000000006acfc0010200000307020000000000989680010000",
+      "leaf_hash": "4db44fe865ca8a20a0b12e9163ab4f6ffd9605c20694c243cc5c0cd603fccad0"
+    },
+    {
+      "name": "venta_fiada",
+      "entry": {
+        "id": "01JA9Z0000000000000000000C",
+        "merchant_id": "01JA2B3C4D5E6F7G8H9J0KMNPQ",
+        "occurred_at": "2026-10-06T22:00:00.000Z",
+        "kind": "venta",
+        "origin": "declarado",
+        "lines": [
+          {
+            "line_no": 1,
+            "account_code": "por_cobrar_clientes",
+            "direction": "debe",
+            "amount_minor": 5000000,
+            "currency": "COP",
+            "channel": "fiado",
+            "customer_id": "01JA9Y000000000000000000R0"
+          },
+          {
+            "line_no": 2,
+            "account_code": "ventas",
+            "direction": "haber",
+            "amount_minor": 5000000,
+            "currency": "COP"
+          }
+        ]
+      },
+      "business_date": 20261006,
+      "occurred_at_ms": 1791324000000,
+      "salt": "48a84db2c8b0f2fbe051677870dd2f59881f01cb20d815c2c39099ccb61022d4",
+      "canonical_hex": "42494d4f2d454e54525901001a30314a413242334334443545364637473848394a304b4d4e5051001a30314a41395a30303030303030303030303030303030303030430135288e000001a1133b0f00010100000000020001020100000000004c4b40010501001a30314a41395930303030303030303030303030303030303052300002070200000000004c4b40010000",
+      "leaf_hash": "04b4374241dc34f83c8842d5a091ff820ab953f6c65fbf56f2f0038d96887203"
+    },
+    {
+      "name": "reverso",
+      "entry": {
+        "id": "01JA9Z0000000000000000000D",
+        "merchant_id": "01JA2B3C4D5E6F7G8H9J0KMNPQ",
+        "occurred_at": "2026-10-06T23:10:00.000Z",
+        "kind": "reverso",
+        "origin": "declarado",
+        "reverses_entry_id": "01JA9Z0000000000000000000A",
+        "lines": [
+          {
+            "line_no": 1,
+            "account_code": "ventas",
+            "direction": "debe",
+            "amount_minor": 2000000,
+            "currency": "COP"
+          },
+          {
+            "line_no": 2,
+            "account_code": "caja",
+            "direction": "haber",
+            "amount_minor": 2000000,
+            "currency": "COP",
+            "channel": "efectivo"
+          }
+        ]
+      },
+      "business_date": 20261006,
+      "occurred_at_ms": 1791328200000,
+      "salt": "728e3f2f60bea7a2150d38057903d49c8e5aed1989e91229f0d4f587a71827c2",
+      "canonical_hex": "42494d4f2d454e54525901001a30314a413242334334443545364637473848394a304b4d4e5051001a30314a41395a30303030303030303030303030303030303030440135288e000001a1137b2540050101001a30314a41395a3030303030303030303030303030303030303041000000020001070100000000001e84800100000002010200000000001e8480010100",
+      "leaf_hash": "6106e459ea07db26e5afda2a4a34c65d1f49e3c1c681308ddc2082db61546dae"
+    },
+    {
+      "name": "liquidacion_verificada",
+      "entry": {
+        "id": "01JA9Z0000000000000000000E",
+        "merchant_id": "01JA2B3C4D5E6F7G8H9J0KMNPQ",
+        "occurred_at": "2026-10-07T04:45:00.000Z",
+        "kind": "liquidacion_psp",
+        "origin": "verificado",
+        "external_source": "psp",
+        "external_ref": "stl_8842-ñ",
+        "lines": [
+          {
+            "line_no": 1,
+            "account_code": "cuenta_socio",
+            "direction": "debe",
+            "amount_minor": 9800000,
+            "currency": "COP",
+            "channel": "datafono_externo"
+          },
+          {
+            "line_no": 2,
+            "account_code": "comisiones",
+            "direction": "debe",
+            "amount_minor": 200000,
+            "currency": "COP"
+          },
+          {
+            "line_no": 3,
+            "account_code": "por_cobrar_psp",
+            "direction": "haber",
+            "amount_minor": 10000000,
+            "currency": "COP",
+            "channel": "datafono_externo"
+          }
+        ]
+      },
+      "business_date": 20261006,
+      "occurred_at_ms": 1791348300000,
+      "salt": "030c883725c578a8f55313df8df94ea9a307495999e1061e408ded4a387ffd09",
+      "canonical_hex": "42494d4f2d454e54525901001a30314a413242334334443545364637473848394a304b4d4e5051001a30314a41395a30303030303030303030303030303030303030450135288e000001a114add8e003020001000370737001000b73746c5f383834322dc3b10003000104010000000000958940010300000208010000000000030d40010000000303020000000000989680010300",
+      "leaf_hash": "666f43ab67710126ad678ded025ca28d140ff9df0dce8a022a1870440723b2ad"
+    },
+    {
+      "name": "venta_pasada_medianoche",
+      "entry": {
+        "id": "01JA9Z0000000000000000000G",
+        "merchant_id": "01JA2B3C4D5E6F7G8H9J0KMNPQ",
+        "occurred_at": "2026-10-07T05:15:00.000Z",
+        "kind": "venta",
+        "origin": "declarado",
+        "lines": [
+          {
+            "line_no": 1,
+            "account_code": "caja",
+            "direction": "debe",
+            "amount_minor": 800000,
+            "currency": "COP",
+            "channel": "efectivo"
+          },
+          {
+            "line_no": 2,
+            "account_code": "ventas",
+            "direction": "haber",
+            "amount_minor": 800000,
+            "currency": "COP"
+          }
+        ]
+      },
+      "business_date": 20261007,
+      "occurred_at_ms": 1791350100000,
+      "salt": "6a760a0b4a2ed02bb86b1f7d410888bd430bd57c22153d31e8f3d7c7811e9e30",
+      "canonical_hex": "42494d4f2d454e54525901001a30314a413242334334443545364637473848394a304b4d4e5051001a30314a41395a30303030303030303030303030303030303030470135288f000001a114c95020010100000000020001010100000000000c35000101000002070200000000000c3500010000",
+      "leaf_hash": "58906cc71972195197d2343faa234f0f80007f59a6f33a2c955741e81b022d19"
+    }
+  ],
+  "trees": [
+    {
+      "size": 0,
+      "leaves": [],
+      "root": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "size": 1,
+      "leaves": [
+        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+      ],
+      "root": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+    },
+    {
+      "size": 2,
+      "leaves": [
+        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"
+      ],
+      "root": "c71a16f21f917ed84ea2caa90b0904c9179a4c9c2369a9b4ec57e11a3f25a7a2"
+    },
+    {
+      "size": 3,
+      "leaves": [
+        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a",
+        "dbc1b4c900ffe48d575b5da5c638040125f65db0fe3e24494b76ea986457d986"
+      ],
+      "root": "d78663a8f1a2d99ee97fe38a605be2f54e2872c3a63a13077d617e4a940725bd"
+    },
+    {
+      "size": 4,
+      "leaves": [
+        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a",
+        "dbc1b4c900ffe48d575b5da5c638040125f65db0fe3e24494b76ea986457d986",
+        "084fed08b978af4d7d196a7446a86b58009e636b611db16211b65a9aadff29c5"
+      ],
+      "root": "3c27c71481d08c1350991b07d3399aced347c594b1e5a4e23625786605998fd0"
+    },
+    {
+      "size": 5,
+      "leaves": [
+        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a",
+        "dbc1b4c900ffe48d575b5da5c638040125f65db0fe3e24494b76ea986457d986",
+        "084fed08b978af4d7d196a7446a86b58009e636b611db16211b65a9aadff29c5",
+        "e52d9c508c502347344d8c07ad91cbd6068afc75ff6292f062a09ca381c89e71"
+      ],
+      "root": "550347fe72bcb7c23a0576eb793f410a6192c5d678b483eb1adfd880720b55ea"
+    },
+    {
+      "size": 7,
+      "leaves": [
+        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a",
+        "dbc1b4c900ffe48d575b5da5c638040125f65db0fe3e24494b76ea986457d986",
+        "084fed08b978af4d7d196a7446a86b58009e636b611db16211b65a9aadff29c5",
+        "e52d9c508c502347344d8c07ad91cbd6068afc75ff6292f062a09ca381c89e71",
+        "e77b9a9ae9e30b0dbdb6f510a264ef9de781501d7b6b92ae89eb059c5ab743db",
+        "67586e98fad27da0b9968bc039a1ef34c939b9b8e523a8bef89d478608c5ecf6"
+      ],
+      "root": "cc73b298e8e4f30a03faa5269796029c17e3fe4b1519250482ddc00a7d2e20da"
+    }
+  ],
+  "proofs": [
+    {
+      "tree_size": 5,
+      "leaf_index": 2,
+      "leaf": "dbc1b4c900ffe48d575b5da5c638040125f65db0fe3e24494b76ea986457d986",
+      "audit_path": [
+        "084fed08b978af4d7d196a7446a86b58009e636b611db16211b65a9aadff29c5",
+        "c71a16f21f917ed84ea2caa90b0904c9179a4c9c2369a9b4ec57e11a3f25a7a2",
+        "e52d9c508c502347344d8c07ad91cbd6068afc75ff6292f062a09ca381c89e71"
+      ],
+      "root": "550347fe72bcb7c23a0576eb793f410a6192c5d678b483eb1adfd880720b55ea"
+    },
+    {
+      "tree_size": 5,
+      "leaf_index": 4,
+      "leaf": "e52d9c508c502347344d8c07ad91cbd6068afc75ff6292f062a09ca381c89e71",
+      "audit_path": [
+        "3c27c71481d08c1350991b07d3399aced347c594b1e5a4e23625786605998fd0"
+      ],
+      "root": "550347fe72bcb7c23a0576eb793f410a6192c5d678b483eb1adfd880720b55ea"
+    },
+    {
+      "tree_size": 7,
+      "leaf_index": 6,
+      "leaf": "67586e98fad27da0b9968bc039a1ef34c939b9b8e523a8bef89d478608c5ecf6",
+      "audit_path": [
+        "3d0451d0ec0dae096a543638e474aba1430fb6ece9cb92de2415326fd32cc4ad",
+        "3c27c71481d08c1350991b07d3399aced347c594b1e5a4e23625786605998fd0"
+      ],
+      "root": "cc73b298e8e4f30a03faa5269796029c17e3fe4b1519250482ddc00a7d2e20da"
+    },
+    {
+      "tree_size": 3,
+      "leaf_index": 0,
+      "leaf": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "audit_path": [
+        "4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a",
+        "dbc1b4c900ffe48d575b5da5c638040125f65db0fe3e24494b76ea986457d986"
+      ],
+      "root": "d78663a8f1a2d99ee97fe38a605be2f54e2872c3a63a13077d617e4a940725bd"
+    },
+    {
+      "tree_size": 1,
+      "leaf_index": 0,
+      "leaf": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "audit_path": [],
+      "root": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+    }
+  ],
+  "day_example": {
+    "merchant_id": "01JA2B3C4D5E6F7G8H9J0KMNPQ",
+    "business_date": 20261006,
+    "entry_ids": [
+      "01JA9Z0000000000000000000A",
+      "01JA9Z0000000000000000000B",
+      "01JA9Z0000000000000000000C",
+      "01JA9Z0000000000000000000D",
+      "01JA9Z0000000000000000000E"
+    ],
+    "entry_count": 5,
+    "root": "08594093d062d8af0c1130c30ec1944acb254293eaf291b956d27ac68716c08b",
+    "proof_for_index_2": [
+      "6106e459ea07db26e5afda2a4a34c65d1f49e3c1c681308ddc2082db61546dae",
+      "0bec9f95573138e8018006006ab6a52d28d8321afeb301af568564f20c800b7a",
+      "666f43ab67710126ad678ded025ca28d140ff9df0dce8a022a1870440723b2ad"
+    ]
+  },
+  "amend_reason_example": {
+    "added_entry_ids": [
+      "01JA9Z0000000000000000000F"
+    ],
+    "hash": "77ed84e572155b089033529ac927a1e8f4b69128ee44b7f26fae19a4585f1d0c"
+  }
+}

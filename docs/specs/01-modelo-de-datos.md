@@ -1,6 +1,6 @@
 # Spec 01 — Modelo de datos
 
-**Estado:** v1.2 · v1.1: `merchant_changes`, `customers.updated_at`, regla de reloj (spec 04) · v1.2: `signing_requests`, `seals.signing_request_id`, `merchants.account_status`, DB-12 (spec 07) · **Depende de:** `docs/arquitectura/ARQUITECTURA.md` (ADR-05, 06, 08, 14, 16) · **Lo usan:** specs 02 a 09
+**Estado:** v1.3 · v1.3: salidas de plata (`salida`, `gastos`, `retiros_dueno`, tipo `patrimonio`) · v1.1: `merchant_changes`, `customers.updated_at`, regla de reloj (spec 04) · v1.2: `signing_requests`, `seals.signing_request_id`, `merchants.account_status`, DB-12 (spec 07) · **Depende de:** `docs/arquitectura/ARQUITECTURA.md` (ADR-05, 06, 08, 14, 16) · **Lo usan:** specs 02 a 09
 
 Este documento es la fuente de verdad del esquema. Claude Code **no** crea tablas, columnas, enums ni estados que no estén aquí. Si algo falta, se actualiza este spec primero.
 
@@ -55,7 +55,7 @@ erDiagram
 create type member_role   as enum ('dueno', 'empleado');
 create type key_kind      as enum ('secure_enclave_p256', 'software_p256', 'passkey_webauthn');
 create type currency_code as enum ('COP', 'USDC');
-create type account_type  as enum ('activo', 'pasivo', 'ingreso', 'gasto');
+create type account_type  as enum ('activo', 'pasivo', 'ingreso', 'gasto', 'patrimonio');
 create type account_code  as enum (
   'caja',                 -- efectivo en el local
   'por_cobrar_clientes',  -- fiado
@@ -65,12 +65,15 @@ create type account_code  as enum (
   'adelantos_por_pagar',  -- inc. 3
   'ventas',
   'comisiones',
-  'diferencias_caja'      -- faltantes (+) y sobrantes (-) al contar efectivo
+  'diferencias_caja',     -- faltantes (+) y sobrantes (-) al contar efectivo
+  'gastos',               -- pagos a proveedores y otros gastos del negocio
+  'retiros_dueno'         -- plata que el dueño saca del negocio
 );
 create type channel_code  as enum ('efectivo', 'breb', 'datafono_externo', 'tap_to_pay', 'fiado', 'transferencia_otro');
 create type entry_kind    as enum (
   'venta', 'abono_cliente', 'liquidacion_psp', 'ajuste_caja', 'reverso',
-  'conversion'            -- COP↔USDC (inc. 1 opcional / inc. 3)
+  'conversion',           -- COP↔USDC (inc. 1 opcional / inc. 3)
+  'salida'                -- pago de un gasto o retiro del dueño
   -- 'adelanto', 'repago_adelanto' se agregan en inc. 3 (cambio aditivo)
 );
 create type entry_origin  as enum ('declarado', 'verificado', 'on_chain');
@@ -155,6 +158,8 @@ Al crear un comercio, `bimo-core` crea en la misma transacción estas cuentas:
 | ventas | ingreso | COP |
 | comisiones | gasto | COP |
 | diferencias_caja | gasto | COP |
+| gastos | gasto | COP |
+| retiros_dueno | patrimonio | COP |
 
 `adelantos_por_pagar` se crea en el inc. 3.
 
@@ -389,7 +394,7 @@ left join journal_lines l on l.account_id = a.id
 group by a.merchant_id, a.code, a.currency;
 ```
 
-Saldo con signo natural: activos y gastos positivos con `debe`; pasivos e ingresos se muestran negados en la app. El "Hoy" (CU-03) es la misma consulta filtrada por `business_date`.
+Saldo con signo natural: activos, gastos y retiros positivos con `debe`; pasivos e ingresos se muestran negados en la app. El "Hoy" (CU-03) se calcula como dice el spec 04 §9.
 
 ---
 
@@ -407,6 +412,8 @@ Todos los montos en COP centavos; en los ejemplos se omiten los dos ceros.
 | Consignación del datáfono $98.000 (comisión $2.000) | D cuenta_socio 98.000 · D comisiones 2.000 / H por_cobrar_psp 100.000 | liquidacion_psp · declarado (inc. 1) / verificado (inc. 2) |
 | Al cerrar faltan $5.000 en caja | D diferencias_caja 5.000 / H caja 5.000 (efectivo) | ajuste_caja · declarado |
 | Corregir una venta mal registrada | Asiento espejo de la original | reverso · declarado |
+| Pago de $30.000 en efectivo a un proveedor | D gastos 30.000 / H caja 30.000 (efectivo) | salida · declarado |
+| El dueño saca $50.000 por Bre-B | D retiros_dueno 50.000 / H cuenta_socio 50.000 (breb) | salida · declarado |
 
 Un "pago dividido" es **un solo asiento** con varias líneas de débito. Una corrección es siempre **reverso + asiento nuevo**, nunca una edición.
 
@@ -465,7 +472,7 @@ Tablas del inc. 2 y 3 (adelantos, conversiones reales con el rail, empleados con
 - [ ] Un asiento con `occurred_at = 2026-10-07T04:30:00Z` queda con `business_date = 2026-10-06` (DB-02).
 - [ ] Reenviar el mismo asiento (mismo ID) no crea duplicados.
 - [ ] Insertar un asiento en un día `sellado` lo pasa a `requiere_enmienda` (DB-09).
-- [ ] Los 8 ejemplos de la sección 6 se insertan y `account_balances` da los saldos esperados.
+- [ ] Los 10 ejemplos de la sección 6 se insertan y `account_balances` da los saldos esperados.
 - [ ] `forget_merchant` deja al comercio sin asientos, sales ni PII, y `seals` solo con raíz, versión y `tx_hash`.
 - [ ] Un usuario autenticado no puede leer datos de un comercio del que no es miembro (RLS).
 - [ ] No se pueden crear dos `signing_requests` abiertas para el mismo comercio.

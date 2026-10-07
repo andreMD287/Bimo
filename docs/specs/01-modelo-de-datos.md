@@ -1,6 +1,6 @@
 # Spec 01 — Modelo de datos
 
-**Estado:** v1.1 (agrega `merchant_changes` y `customers.updated_at`; regla de reloj según spec 04) · **Depende de:** `docs/arquitectura/ARQUITECTURA.md` (ADR-05, 06, 08, 14, 16) · **Lo usan:** specs 02 a 09
+**Estado:** v1.2 · v1.1: `merchant_changes`, `customers.updated_at`, regla de reloj (spec 04) · v1.2: `signing_requests`, `seals.signing_request_id`, `merchants.account_status`, DB-12 (spec 07) · **Depende de:** `docs/arquitectura/ARQUITECTURA.md` (ADR-05, 06, 08, 14, 16) · **Lo usan:** specs 02 a 09
 
 Este documento es la fuente de verdad del esquema. Claude Code **no** crea tablas, columnas, enums ni estados que no estén aquí. Si algo falta, se actualiza este spec primero.
 
@@ -40,6 +40,8 @@ erDiagram
   ledger_accounts ||--o{ journal_lines : mueve
   customers ||--o{ journal_lines : debe
   business_days ||--o{ seals : versiones
+  merchants ||--o{ signing_requests : firma
+  signing_requests ||--o{ seals : agrupa
   seals ||--|{ seal_leaves : hojas
   journal_entries ||--o{ seal_leaves : incluido
   merchants ||--o{ verification_links : comparte
@@ -76,9 +78,11 @@ create type line_direction as enum ('debe', 'haber');
 create type day_status    as enum ('abierto', 'cerrado', 'firmado', 'sellado', 'requiere_enmienda');
 create type seal_status   as enum ('preparado', 'firmado', 'enviado', 'confirmado', 'fallido');
 create type outbox_status as enum ('pendiente', 'enviado', 'fallido');
+create type signing_status as enum ('abierta', 'firmada', 'vencida', 'reemplazada');
+create type account_status as enum ('pending', 'deploying', 'ready', 'failed');
 ```
 
-Las transiciones de `day_status` y `seal_status` se definen en el **spec 07**. Este spec solo fija los valores.
+Las transiciones de `day_status`, `seal_status`, `signing_status` y `account_status` se definen en el **spec 07**. Este spec solo fija los valores.
 
 ---
 
@@ -91,6 +95,7 @@ create table merchants (
   id                text primary key,                 -- ULID
   stellar_address   text unique,                      -- dirección C... de la smart account; null hasta desplegarla
   network           text not null check (network in ('testnet','mainnet')),
+  account_status    account_status not null default 'pending',
   created_at        timestamptz not null default now(),
   forgotten_at      timestamptz                       -- ver ADR-16
 );
@@ -221,15 +226,27 @@ create table entry_salts (
 ### 4.3 Sellos
 
 ```sql
+create table signing_requests (            -- un Face ID para uno o más días (spec 03 §5.5, spec 07 §2)
+  id                text primary key,
+  merchant_id       text not null references merchants(id) on delete cascade,
+  status            signing_status not null default 'abierta',
+  preimage_xdr      bytea not null,                   -- HashIdPreimage que valida y firma la app
+  expiration_ledger bigint not null,
+  expires_at        timestamptz not null,
+  created_at        timestamptz not null default now(),
+  closed_at         timestamptz
+);
+create unique index on signing_requests (merchant_id) where status = 'abierta';
+
 create table seals (
   id                text primary key,
   day_id            text not null references business_days(id),
+  signing_request_id text references signing_requests(id),
   version           int not null check (version >= 1),  -- 1 = seal, >1 = amend
   merkle_root       bytea not null check (length(merkle_root) = 32),
   entry_count       int not null,
   origin_flags      int not null,                     -- bits definidos en spec 02
   amend_reason_hash bytea,                            -- solo version > 1
-  auth_payload      bytea,                            -- preimagen de autorización Soroban que firma el dueño
   merchant_signature bytea,
   attester_signature bytea,
   status            seal_status not null default 'preparado',
@@ -359,6 +376,7 @@ create index on merchant_changes (merchant_id, seq);
 | DB-09 | Si llega un asiento para un día en estado `sellado`, el día pasa a `requiere_enmienda` | Trigger `AFTER INSERT` (ver spec 07) |
 | DB-10 | `verification_links`, `inbox_events`, `seals`: solo `bimo-core` escribe | RLS + rol de servicio |
 | DB-11 | Todo `INSERT` en `journal_entries` y `customers`, todo `UPDATE` de `customers`, todo cambio de `status` en `business_days` y en `seals` agrega una fila a `merchant_changes` | Triggers `AFTER INSERT` / `AFTER UPDATE` |
+| DB-12 | Un sello en estado `confirmado` no se edita ni se borra (salvo `forget_merchant`). Los sellos en otros estados sí pueden borrarse según spec 07 (L-6, S-3, S-4) | Trigger `BEFORE UPDATE OR DELETE` sobre `seals` |
 
 ### Saldos
 
@@ -425,7 +443,7 @@ El protocolo de sincronización se define en el **spec 04**.
 `forget_merchant(merchant_id)` (función `security definer`, solo rol de servicio):
 
 1. Activa `bimo.forget = on` en la transacción.
-2. Borra `entry_salts`, `seal_leaves`, `journal_lines`, `journal_entries`, `customers`, `merchant_profiles`, `verification_links`, `devices` y `merchant_changes` del comercio.
+2. Borra `entry_salts`, `seal_leaves`, `journal_lines`, `journal_entries`, `customers`, `merchant_profiles`, `verification_links`, `devices`, `merchant_changes` y `signing_requests` del comercio.
 3. Marca `merchants.forgotten_at` y deja `seals` solo con raíz, versión y `tx_hash`.
 4. Escribe en `audit_log`.
 
@@ -450,3 +468,5 @@ Tablas del inc. 2 y 3 (adelantos, conversiones reales con el rail, empleados con
 - [ ] Los 8 ejemplos de la sección 6 se insertan y `account_balances` da los saldos esperados.
 - [ ] `forget_merchant` deja al comercio sin asientos, sales ni PII, y `seals` solo con raíz, versión y `tx_hash`.
 - [ ] Un usuario autenticado no puede leer datos de un comercio del que no es miembro (RLS).
+- [ ] No se pueden crear dos `signing_requests` abiertas para el mismo comercio.
+- [ ] Un `UPDATE` o `DELETE` sobre un sello `confirmado` falla (DB-12).

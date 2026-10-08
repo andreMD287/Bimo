@@ -3,10 +3,10 @@
 import { createHash } from 'node:crypto';
 
 export const CODES = {
-  kind: { venta: 1, abono_cliente: 2, liquidacion_psp: 3, ajuste_caja: 4, reverso: 5, conversion: 6 },
+  kind: { venta: 1, abono_cliente: 2, liquidacion_psp: 3, ajuste_caja: 4, reverso: 5, conversion: 6, salida: 9 },
   origin: { declarado: 1, verificado: 2, on_chain: 3 },
   account: { caja: 1, por_cobrar_clientes: 2, por_cobrar_psp: 3, cuenta_socio: 4, bolsillo_usd: 5,
-             adelantos_por_pagar: 6, ventas: 7, comisiones: 8, diferencias_caja: 9 },
+             adelantos_por_pagar: 6, ventas: 7, comisiones: 8, diferencias_caja: 9, gastos: 10, retiros_dueno: 11 },
   direction: { debe: 1, haber: 2 },
   currency: { COP: 1, USDC: 2 },
   channel: { efectivo: 1, breb: 2, datafono_externo: 3, tap_to_pay: 4, fiado: 5, transferencia_otro: 6 },

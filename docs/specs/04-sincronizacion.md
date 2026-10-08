@@ -1,6 +1,6 @@
 # Spec 04 — Sincronización offline
 
-**Estado:** v1.0 · **Depende de:** ARQUITECTURA (ADR-08, 14), spec 01 (v1.1), spec 02 · **Lo usan:** módulo `sync` de la app, módulos `ledger` y `comercios` de `bimo-core`, spec 06 (API)
+**Estado:** v1.2 (app en React Native: `expo-sqlite` y reglas en el paquete `shared`) · v1.1: `salida`, cálculos de "Hoy", pull antes de firmar · **Depende de:** ARQUITECTURA (ADR-08, 14), spec 01 (v1.3), spec 02 (v1.1) · **Lo usan:** módulo `sync` de la app, módulos `ledger` y `comercios` de `bimo-core`, spec 06 (API)
 
 Define cómo la app vende sin internet y cómo se pone de acuerdo con el servidor sin perder ni duplicar nada (QA-03). Los endpoints exactos (rutas, autenticación, errores HTTP) están en el spec 06; aquí se define **qué** se intercambia y con qué reglas.
 
@@ -12,13 +12,13 @@ Define cómo la app vende sin internet y cómo se pone de acuerdo con el servido
 2. **Solo se agrega, nunca se edita.** Como los asientos son inmutables (ADR-05), no hay conflictos de edición: dos dispositivos solo pueden agregar asientos distintos.
 3. **El ID lo pone el celular.** Reenviar el mismo asiento cualquier cantidad de veces da el mismo resultado (idempotencia).
 4. **El servidor es la verdad del estado** (días, sellos, asientos verificados). **El celular es la verdad de lo que vendió** hasta que lo sube.
-5. **La app valida con las mismas reglas que el servidor** (sección 4). Un rechazo del servidor es un error de programación, no un caso normal.
+5. **La app valida con las mismas reglas que el servidor** (sección 4): las dos usan el mismo código del paquete `shared/`. Un rechazo del servidor es un error de programación, no un caso normal.
 
 ---
 
 ## 2. Base local del iPhone
 
-**Decisión:** GRDB (SQLite) en lugar de SwiftData. Da transacciones explícitas, SQL que se parece al del servidor y migraciones controladas, que es lo que necesita un ledger.
+**Decisión:** `expo-sqlite` (SQLite, incluido en Expo Go). Da transacciones explícitas, SQL que se parece al del servidor y migraciones controladas, que es lo que necesita un ledger.
 
 Tablas (amplían spec 01 §8):
 
@@ -62,9 +62,9 @@ sequenceDiagram
 |---|---|
 | Se guarda una venta | Push después de 2 s sin nuevas ventas (agrupa ráfagas) |
 | La app pasa a primer plano | Push y pull |
-| Vuelve la conexión (`NWPathMonitor`) | Push y pull |
+| Vuelve la conexión (`@react-native-community/netinfo`) | Push y pull |
 | Cada 60 s con la app abierta | Pull |
-| En segundo plano (`BGAppRefreshTask`) | Push y pull, si iOS lo permite |
+| En segundo plano (`expo-background-task`) | Push y pull, si iOS lo permite |
 | Antes de cerrar el día | Push obligatorio (sección 6) |
 
 ### 3.2 Reintentos
@@ -75,7 +75,7 @@ Backoff exponencial por ítem: 1 s, 2 s, 4 s… hasta 5 min, sin límite de inte
 
 ## 4. Reglas de validación compartidas
 
-La app y `bimo-core` aplican exactamente estas reglas. Los códigos de rechazo son los de la sección 5.2.
+Están implementadas **una sola vez**, en el paquete `shared/` (TypeScript), y las usan la app y `bimo-core`. Los códigos de rechazo son los de la sección 5.2.
 
 | ID | Regla | Código |
 |---|---|---|
@@ -84,7 +84,7 @@ La app y `bimo-core` aplican exactamente estas reglas. Los códigos de rechazo s
 | V-03 | `amount_minor` entero entre 1 y 10¹² | `invalid_amount` |
 | V-04 | Por cada moneda, suma de `debe` = suma de `haber` | `unbalanced` |
 | V-05 | Las cuentas y la dirección permitidas para cada `kind` (tabla 4.1) | `invalid_accounts` |
-| V-06 | El canal permitido para cada cuenta (tabla 4.2); sin canal en ventas, comisiones y diferencias de caja | `invalid_channel` |
+| V-06 | El canal permitido para cada cuenta (tabla 4.2); sin canal en las cuentas que no son de activo | `invalid_channel` |
 | V-07 | `customer_id` obligatorio en líneas de `por_cobrar_clientes` y prohibido en las demás; el cliente existe (o viene antes en el mismo lote) | `invalid_customer` |
 | V-08 | Desde la app solo se acepta `origin = declarado` y sin `external_source` ni `external_ref`. `verificado` y `on_chain` solo los crea `bimo-core` | `forbidden_origin` |
 | V-09 | Un `reverso` es el espejo exacto del asiento que reversa (mismas cuentas, montos, canales y clientes, con la dirección invertida), y ese asiento no fue reversado antes | `invalid_reversal` |
@@ -101,6 +101,7 @@ La hora **nunca** es motivo de rechazo: una venta registrada con un reloj equivo
 | `abono_cliente` | caja o cuenta_socio | por_cobrar_clientes |
 | `liquidacion_psp` | cuenta_socio y, opcional, comisiones | por_cobrar_psp |
 | `ajuste_caja` | diferencias_caja (faltante) o caja (sobrante) | caja (faltante) o diferencias_caja (sobrante) |
+| `salida` | gastos (pago a proveedor u otro gasto del negocio) o retiros_dueno (plata que se lleva el dueño) | caja o cuenta_socio |
 | `reverso` | según V-09 | según V-09 |
 
 `conversion` (bolsillo en dólares) queda fuera hasta que se especifique; la app no la genera en el incremento 1.
@@ -110,10 +111,10 @@ La hora **nunca** es motivo de rechazo: una venta registrada con un reloj equivo
 | Cuenta | Canales permitidos |
 |---|---|
 | caja | efectivo |
-| cuenta_socio | breb, transferencia_otro, datafono_externo, tap_to_pay (los dos últimos solo en `liquidacion_psp`) |
+| cuenta_socio | breb, transferencia_otro, datafono_externo, tap_to_pay (los dos últimos solo en `liquidacion_psp`; en `salida` solo breb o transferencia_otro) |
 | por_cobrar_psp | datafono_externo, tap_to_pay |
 | por_cobrar_clientes | fiado |
-| ventas, comisiones, diferencias_caja | sin canal |
+| ventas, comisiones, diferencias_caja, gastos, retiros_dueno | sin canal |
 
 ---
 
@@ -187,6 +188,7 @@ sequenceDiagram
 - `close` lleva `business_date`, `counted_cash_minor` y la lista de IDs de asientos de ese día que conoce este dispositivo. El servidor responde `missing_entries` si alguno de esos IDs no le ha llegado.
 - Los asientos de **otros** dispositivos que lleguen después del cierre generan una enmienda (ADR-14, DB-09). No bloquean el cierre.
 - La firma del sello (spec 03 §5) se pide cuando el servidor tiene la preimagen lista. La app se entera por el pull (sección 8).
+- **Antes de pedir la solicitud de firma, la app hace un pull completo** (hasta `has_more = false`). Así su base local tiene los asientos creados por el servidor o por otros dispositivos, y la validación de `entry_count` del spec 03 §5.2 compara contra los mismos datos.
 
 ---
 
@@ -222,7 +224,20 @@ La app aplica cada página en **una sola transacción local** junto con el nuevo
 
 ## 9. "Hoy" en la app
 
-"Hoy" se calcula **siempre** con la base local: las líneas de los asientos de la fecha actual en Bogotá, sincronizados o no, más los que llegaron por pull. Así el dueño ve sus ventas al instante, aunque no haya red. Un indicador discreto muestra cuántas faltan por subir.
+"Hoy" se calcula **siempre** con la base local: los asientos sincronizados o no, más los que llegaron por pull. Así el dueño ve sus ventas al instante, aunque no haya red. Un indicador discreto muestra cuántas faltan por subir.
+
+| Dato en pantalla | Cálculo (asientos de la fecha actual en Bogotá, salvo donde dice "saldo") | Historia |
+|---|---|---|
+| Vendido hoy | Σ `haber` − Σ `debe` de la cuenta `ventas` | H1 |
+| Vendido por canal | En asientos `venta` y sus reversos: Σ de las líneas `debe` en cuentas de activo, agrupadas por `channel` (los reversos restan) | H1, H7 |
+| Efectivo que debería haber en caja | **Saldo** de `caja` (todos los días) | H4 |
+| En la cuenta (Bre-B y consignaciones) | **Saldo** de `cuenta_socio` | H1 |
+| Pendiente de consignar | **Saldo** de `por_cobrar_psp` | H3 |
+| Te deben (fiado) | **Saldo** de `por_cobrar_clientes`, con detalle por cliente | H8 |
+| Comisiones de hoy | Σ `debe` − Σ `haber` de `comisiones` | H6 |
+| Salidas de hoy | Σ `debe` de `gastos` y de `retiros_dueno` | — |
+
+Al cerrar, el efectivo contado se compara con el **saldo** de `caja`. Si el dueño empieza a usar Bimo con plata ya en la caja, el primer cierre registra ese monto como `ajuste_caja` de sobrante; desde ahí la caja cuadra.
 
 ---
 
@@ -242,5 +257,7 @@ El protocolo ya los soporta: cada dispositivo tiene su `device_id` y su outbox; 
 - [ ] Un reverso de una venta que aún no se ha subido funciona si ambos van en orden en el mismo lote.
 - [ ] Cerrar un día sin conexión y recuperar la red produce el cierre en el servidor, con los asientos de ese día completos.
 - [ ] Con el reloj del celular adelantado 30 min, los asientos de ese push quedan con `clock_suspect` y la app muestra el aviso. Una venta antigua hecha sin red, con el reloj bien, no se marca.
-- [ ] Las reglas V-01 a V-11 tienen las mismas pruebas en Swift y en TypeScript, con los mismos casos de entrada y el mismo resultado.
+- [ ] Las reglas V-01 a V-11 viven en `shared/` y pasan todos los casos de `shared/validation-cases.json`; la app y `bimo-core` importan ese mismo código.
 - [ ] Una venta creada en el dispositivo A aparece en el dispositivo B después de un pull.
+- [ ] Una `salida` de $30.000 en efectivo a `gastos` baja el saldo de `caja` en $30.000, y el cierre siguiente no muestra faltante por ese monto.
+- [ ] Cada dato de la tabla de la sección 9 tiene una prueba con los ejemplos del spec 01 §6.

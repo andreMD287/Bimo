@@ -1,6 +1,6 @@
 # Spec 04 — Sincronización offline
 
-**Estado:** v1.1 (agrega `salida`, cálculos de "Hoy" y pull antes de firmar) · **Depende de:** ARQUITECTURA (ADR-08, 14), spec 01 (v1.3), spec 02 (v1.1) · **Lo usan:** módulo `sync` de la app, módulos `ledger` y `comercios` de `bimo-core`, spec 06 (API)
+**Estado:** v1.2 (app en React Native: `expo-sqlite` y reglas en el paquete `shared`) · v1.1: `salida`, cálculos de "Hoy", pull antes de firmar · **Depende de:** ARQUITECTURA (ADR-08, 14), spec 01 (v1.3), spec 02 (v1.1) · **Lo usan:** módulo `sync` de la app, módulos `ledger` y `comercios` de `bimo-core`, spec 06 (API)
 
 Define cómo la app vende sin internet y cómo se pone de acuerdo con el servidor sin perder ni duplicar nada (QA-03). Los endpoints exactos (rutas, autenticación, errores HTTP) están en el spec 06; aquí se define **qué** se intercambia y con qué reglas.
 
@@ -12,13 +12,13 @@ Define cómo la app vende sin internet y cómo se pone de acuerdo con el servido
 2. **Solo se agrega, nunca se edita.** Como los asientos son inmutables (ADR-05), no hay conflictos de edición: dos dispositivos solo pueden agregar asientos distintos.
 3. **El ID lo pone el celular.** Reenviar el mismo asiento cualquier cantidad de veces da el mismo resultado (idempotencia).
 4. **El servidor es la verdad del estado** (días, sellos, asientos verificados). **El celular es la verdad de lo que vendió** hasta que lo sube.
-5. **La app valida con las mismas reglas que el servidor** (sección 4). Un rechazo del servidor es un error de programación, no un caso normal.
+5. **La app valida con las mismas reglas que el servidor** (sección 4): las dos usan el mismo código del paquete `shared/`. Un rechazo del servidor es un error de programación, no un caso normal.
 
 ---
 
 ## 2. Base local del iPhone
 
-**Decisión:** GRDB (SQLite) en lugar de SwiftData. Da transacciones explícitas, SQL que se parece al del servidor y migraciones controladas, que es lo que necesita un ledger.
+**Decisión:** `expo-sqlite` (SQLite, incluido en Expo Go). Da transacciones explícitas, SQL que se parece al del servidor y migraciones controladas, que es lo que necesita un ledger.
 
 Tablas (amplían spec 01 §8):
 
@@ -62,9 +62,9 @@ sequenceDiagram
 |---|---|
 | Se guarda una venta | Push después de 2 s sin nuevas ventas (agrupa ráfagas) |
 | La app pasa a primer plano | Push y pull |
-| Vuelve la conexión (`NWPathMonitor`) | Push y pull |
+| Vuelve la conexión (`@react-native-community/netinfo`) | Push y pull |
 | Cada 60 s con la app abierta | Pull |
-| En segundo plano (`BGAppRefreshTask`) | Push y pull, si iOS lo permite |
+| En segundo plano (`expo-background-task`) | Push y pull, si iOS lo permite |
 | Antes de cerrar el día | Push obligatorio (sección 6) |
 
 ### 3.2 Reintentos
@@ -75,7 +75,7 @@ Backoff exponencial por ítem: 1 s, 2 s, 4 s… hasta 5 min, sin límite de inte
 
 ## 4. Reglas de validación compartidas
 
-La app y `bimo-core` aplican exactamente estas reglas. Los códigos de rechazo son los de la sección 5.2.
+Están implementadas **una sola vez**, en el paquete `shared/` (TypeScript), y las usan la app y `bimo-core`. Los códigos de rechazo son los de la sección 5.2.
 
 | ID | Regla | Código |
 |---|---|---|
@@ -257,7 +257,7 @@ El protocolo ya los soporta: cada dispositivo tiene su `device_id` y su outbox; 
 - [ ] Un reverso de una venta que aún no se ha subido funciona si ambos van en orden en el mismo lote.
 - [ ] Cerrar un día sin conexión y recuperar la red produce el cierre en el servidor, con los asientos de ese día completos.
 - [ ] Con el reloj del celular adelantado 30 min, los asientos de ese push quedan con `clock_suspect` y la app muestra el aviso. Una venta antigua hecha sin red, con el reloj bien, no se marca.
-- [ ] Las reglas V-01 a V-11 tienen las mismas pruebas en Swift y en TypeScript, con los mismos casos de entrada y el mismo resultado.
+- [ ] Las reglas V-01 a V-11 viven en `shared/` y pasan todos los casos de `shared/validation-cases.json`; la app y `bimo-core` importan ese mismo código.
 - [ ] Una venta creada en el dispositivo A aparece en el dispositivo B después de un pull.
 - [ ] Una `salida` de $30.000 en efectivo a `gastos` baja el saldo de `caja` en $30.000, y el cierre siguiente no muestra faltante por ese monto.
 - [ ] Cada dato de la tabla de la sección 9 tiene una prueba con los ejemplos del spec 01 §6.

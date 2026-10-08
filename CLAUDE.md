@@ -16,7 +16,7 @@ Bimo es una app para pequeños comercios en Colombia: registra ventas sin intern
 
 ## 3. Reglas del dominio que nunca se rompen
 
-- Dinero: enteros en unidades mínimas (COP en centavos, USDC en 10⁻⁷). Nunca `float` ni `Double` para montos.
+- Dinero: enteros en unidades mínimas (COP en centavos, USDC en 10⁻⁷). Nunca `float` ni `number` con decimales para montos.
 - Tiempo: instantes en UTC con milisegundos. El día de negocio es la fecha en `America/Bogota` (UTC-5).
 - Los asientos son de **solo adición**: nada se edita ni se borra; las correcciones son reversos.
 - Desde la app solo se crean asientos `declarado`.
@@ -33,11 +33,12 @@ Bimo es una app para pequeños comercios en Colombia: registra ventas sin intern
 
 - Cada criterio de aceptación que toque la tarea tiene su prueba, con el ID en el nombre (por ejemplo `V-07 exige cliente en fiado`).
 - No marques una tarea como terminada con pruebas en rojo ni con pruebas desactivadas.
-- Los casos de validación V-01..V-11 viven en `shared/validation-cases.json` y los usan Swift y TypeScript por igual.
+- El formato canónico, el Merkle, los ULID y las reglas V-01..V-11 viven **solo** en el paquete `shared/`; la app, `core` y `verifier` lo importan y nunca los reimplementan.
 
 ## 6. Estilo
 
-- TypeScript `strict`, sin `any`. Swift 6 con concurrencia estricta.
+- TypeScript `strict`, sin `any`, en todo el monorepo. Rust solo en `contracts/`. Swift solo en módulos nativos del incremento 2.
+- La app es React Native con Expo y debe seguir corriendo en Expo Go para el desarrollo diario (spec 08 §3.0). No agregues dependencias nativas que Expo Go no traiga sin acordarlo antes, porque obligan a recompilar el development build en el Mac.
 - Solo las dependencias permitidas en `docs/specs/08-…` §2. Para agregar una, justifícala y actualiza esa tabla en el mismo PR.
 - Respeta los límites de módulos (spec 08 §1): un módulo solo usa la interfaz pública de otro.
 - Textos de la app en español de Colombia, sin jerga técnica: nunca "wallet", "token", "XLM", "blockchain", "hash" ni "firma digital" (QA-04, spec 07 §6).

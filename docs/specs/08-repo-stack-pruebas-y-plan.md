@@ -1,6 +1,6 @@
 # Spec 08 — Repositorio, stack, entornos, pruebas y plan de construcción
 
-**Estado:** v1.1 (app en React Native con Expo; paquete `shared`) · **Depende de:** specs 01 a 07 · **Lo usan:** todo el equipo y Claude Code
+**Estado:** v1.2 (indexador, conciliador, worker de TTL y `EnviadorRelayer` diferidos para después de la demo; §6.1) · v1.1: app en React Native con Expo; paquete `shared` · **Depende de:** specs 01 a 07 · **Lo usan:** todo el equipo y Claude Code
 
 Cierra el diseño detallado: dónde va cada cosa, con qué se construye, cómo se prueba y en qué orden se implementa el incremento 1.
 
@@ -156,7 +156,7 @@ Cada tarea es una sesión (o pocas) de Claude Code. **Instrucción base para cad
 | T06 | `core`: autenticación, `POST /merchants`, reto y `POST /devices`, worker de despliegue de `bimo-account` | 03, 06, 07 (§4) | T02, T05 | Cuenta en testnet creada con una llave de software |
 | T07 | `core`: push y pull | 04, 06 | T02, T03 | Criterios del spec 04 del lado servidor |
 | T08 | `core`: cierre, solicitudes de firma, envío, confirmación, enmiendas | 03, 06, 07 | T06, T07 | Transiciones del spec 07 en verde; día de ejemplo sellado en testnet |
-| T09 | `core`: indexador, worker de TTL, conciliador, simuladores `/dev/*` | 03, 06, 07 | T08 | Eventos indexados; simuladores crean asientos verificados |
+| T09 | `core`: simuladores `/dev/*` (indexador, worker de TTL y conciliador: diferidos, §6.1) | 03, 06, 07 | T08 | Simuladores crean asientos verificados |
 | T10 | `core`: enlaces y API pública de verificación | 05, 06 | T08 | Paquete del spec 05 correcto |
 | T11 | Web de verificación + `cli/verify.mjs` | 05 | T10 | Criterios del spec 05 |
 | T12 | App: esqueleto Expo, navegación y base local `expo-sqlite` con el esquema del spec 04 §2 | 01, 04 | T03 | La app abre en Expo Go y guarda una venta localmente usando `shared` |
@@ -166,6 +166,18 @@ Cada tarea es una sesión (o pocas) de Claude Code. **Instrucción base para cad
 | T16 | Ensayo de la demo (sección 7) y ajustes | todos | T09, T11, T15 | Demo completa sin intervención manual |
 
 **Reparto sugerido (ARQUITECTURA §4.3):** André T04, T05, T06, T08, T13, T15; Santiago T02, T03, T07, T09, T10; Lizeth T11 y la UI de T12 a T15 (flujos, textos sin jerga). T01 lo hace André primero.
+
+### 6.1 Diferido para después de la demo del bootcamp
+
+Decisión del equipo (v1.2): por el plazo de dos semanas, estas piezas no son necesarias para el guion de la sección 7 y se construyen después, sin cambiar ningún otro spec:
+
+| Pieza | Spec | Mientras tanto |
+|---|---|---|
+| Indexador de eventos y conciliador (ADR-11) | 03 §4.4, 07 §3 | La confirmación de sellos se hace con `getTransaction` (07 L-4). `chain_events` e `indexer_cursor` se crean en la migración, pero nadie las llena |
+| Worker de TTL | 03 §4.5 | El contrato extiende el TTL al escribir; en testnet basta para la demo |
+| Adaptador `EnviadorRelayer` | 03 §7 | Todo se envía con `EnviadorDirecto` (fee-bump con la cuenta `fallback-submitter`). El puerto `Enviador` se mantiene, así que el relayer se suma sin tocar el dominio |
+
+Los criterios de aceptación de esas piezas siguen vigentes; solo cambian de momento.
 
 **Rutas en paralelo:** después de T01, las líneas *contratos* (T04→T05), *base de datos y núcleo* (T02, T03→T07) y *app* (T12) avanzan al mismo tiempo.
 

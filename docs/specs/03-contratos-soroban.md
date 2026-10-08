@@ -1,6 +1,6 @@
 # Spec 03 — Contratos Soroban y flujo de firma
 
-**Estado:** v1.2 (firmante en React Native: llave P-256 de software con `@noble/curves`) · v1.1: Face ID en simulador, pull antes de validar · **Depende de:** ARQUITECTURA (ADR-04, 06, 07, 09, 14, 15), spec 01, spec 02 · **Lo usan:** `contracts/`, módulo `stellar` de `bimo-core`, módulo `cuenta y passkey` de la app, web de verificación
+**Estado:** v1.3 (`EnviadorRelayer` diferido después de la demo, spec 08 §6.1) · v1.2 (firmante en React Native: llave P-256 de software con `@noble/curves`) · v1.1: Face ID en simulador, pull antes de validar · **Depende de:** ARQUITECTURA (ADR-04, 06, 07, 09, 14, 15), spec 01, spec 02 · **Lo usan:** `contracts/`, módulo `stellar` de `bimo-core`, módulo `cuenta y passkey` de la app, web de verificación
 
 Define los tres contratos del incremento 1 y cómo se arma, firma y envía cada transacción. Claude Code no agrega funciones, parámetros, llaves de almacenamiento ni eventos que no estén aquí.
 
@@ -277,7 +277,7 @@ Puerto `Enviador` en `bimo-core`, con dos adaptadores intercambiables:
 | Adaptador | Uso |
 |---|---|
 | `EnviadorRelayer` | Principal: OpenZeppelin Relayer / Stellar Channels; paga las fees |
-| `EnviadorDirecto` | Plan B: una cuenta G de Bimo con XLM envía con fee-bump |
+| `EnviadorDirecto` | Plan B: una cuenta G de Bimo con XLM envía con fee-bump. **Es el único adaptador para la demo del bootcamp**; `EnviadorRelayer` queda diferido (spec 08 §6.1) |
 
 Si falla el envío, el sello queda `fallido` con el error y el outbox reintenta con backoff (spec 01). Mientras la firma no expire se reenvía la misma; si expiró, se vuelve a pedir al dueño.
 

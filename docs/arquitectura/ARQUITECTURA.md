@@ -2,7 +2,7 @@
 
 Documento de trabajo del equipo (André, Santiago, Lizeth). Sigue el método del curso: entradas → drivers → ADD 3.0 por iteraciones → vistas → evaluación ligera tipo ATAM → trazabilidad. Cada decisión está registrada como ADR con su driver, alternativas y trade-off.
 
-**Estado:** v0.3 (cliente iOS nativo en SwiftUI; día de negocio = día calendario). Diseño detallado en `docs/specs/`. Las decisiones marcadas como *Pendiente* las debe cerrar el equipo antes de construir lo que dependa de ellas.
+**Estado:** v0.4 (cliente React Native con Expo; día de negocio = día calendario). Diseño detallado en `docs/specs/`; si un detalle no coincide, manda el spec. Las decisiones marcadas como *Pendiente* las debe cerrar el equipo antes de construir lo que dependa de ellas.
 
 ---
 
@@ -54,7 +54,7 @@ Stellar no es un accesorio que se pega al final: es donde vive la cuenta del com
 | EXT-03 | Rail COP↔USDC (Abroad; alterno Bridge) | On/off-ramp entre pesos (Bre-B) y USDC en Stellar | Simulado / testnet |
 | EXT-04 | Red Stellar (Soroban RPC, contratos, USDC de Circle) | Cuentas, registro, tokens, liquidación | Testnet real |
 | EXT-05 | Relayer de fees (OpenZeppelin Relayer / Stellar Channels) | Envío de transacciones con fee patrocinado (fee-bump) | Testnet real |
-| EXT-06 | Proveedor de passkeys del sistema operativo (iCloud Keychain / Google Password Manager) | Llaves secp256r1 en el enclave seguro, sincronizadas entre dispositivos | Real |
+| EXT-06 | Proveedor de passkeys del sistema operativo (iCloud Keychain / Google Password Manager) | Llaves secp256r1 en el enclave seguro, sincronizadas entre dispositivos | Incremento 2 |
 
 ### 1.4 Restricciones
 
@@ -64,16 +64,16 @@ Stellar no es un accesorio que se pega al final: es donde vive la cuenta del com
 | C-02 | Tap to Pay exige **app nativa**, SDK del PSP y entitlement de Apple. Plataforma: **solo iPhone compatible con Tap to Pay y versiones recientes de iOS** | Apple / PSP; decisión de producto |
 | C-03 | Durante el bootcamp no hay convenios firmados: socio, PSP y rail van **simulados detrás de la misma interfaz** que tendrán en producción | Tiempo y alcance del bootcamp |
 | C-04 | MVP en **testnet**; mainnet desde el incremento 2 | Riesgo y costo |
-| C-05 | Equipo de 3 personas; stack: Swift/SwiftUI (app), TypeScript (`bimo-core`), Postgres/Supabase, Rust (Soroban) | Equipo |
+| C-05 | Equipo de 3 personas; stack: React Native con Expo (app), TypeScript (`bimo-core`), Postgres/Supabase, Rust (Soroban). El desarrollador principal trabaja en Windows, sin Mac; solo un miembro del equipo tiene Mac | Equipo |
 | C-06 | Ley 1581 (Habeas Data): **ningún dato de ventas ni personal se publica en cadena** | Ley |
 | C-07 | Usuario no cripto-nativo: sin seed phrases, sin XLM, sin jerga | Problem Brief |
-| C-08 | Incremento 1 **sin Apple Developer Program pago**: sin Associated Domains (no hay passkeys nativas), sin TestFlight ni entitlement de Tap to Pay; la app corre en simulador o en el iPhone del equipo con cuenta gratuita | Presupuesto |
+| C-08 | Incremento 1 **sin Apple Developer Program pago**: sin Associated Domains (no hay passkeys nativas), sin TestFlight ni entitlement de Tap to Pay; la app corre en Expo Go o en un development build instalado con un Apple ID gratuito | Presupuesto |
 
 ### 1.5 Casos de uso primarios
 
 | ID | Caso de uso | Historias | Incremento |
 |---|---|---|---|
-| CU-01 | Abrir cuenta de comercio y crear su cuenta Stellar con passkey | — | 1 |
+| CU-01 | Abrir cuenta de comercio y crear su cuenta Stellar | — | 1 |
 | CU-02 | Registrar una venta manual (efectivo, Bre-B, datáfono externo), incluido pago dividido y abono | H2, H7, H8 | 1 |
 | CU-03 | Ver "Hoy": total por canal, disponible, pendiente de consignar y comisiones | H1, H3, H6 | 1 |
 | CU-04 | Cerrar el día y sellarlo en Stellar | H4 | 1 |
@@ -106,7 +106,7 @@ Prioridad = (importancia para el negocio, dificultad arquitectónica). Las cifra
 | Estímulo | Intenta mover el USDC del comercio o sellar un día en su nombre |
 | Artefacto | Smart account del comercio, contrato registry |
 | Entorno | Operación normal |
-| Respuesta | La operación es rechazada por la red sin la passkey del dueño (biometría) |
+| Respuesta | La operación es rechazada por la red sin la llave del dueño, protegida con su biometría |
 | Medida | 0 fondos movibles y 0 sellos posibles solo con llaves de Bimo |
 
 ### QA-03 Operación sin conexión — (H, H)
@@ -195,7 +195,7 @@ Pasar de testnet a mainnet → solo configuración (RPC, IDs de contrato, passph
 | QA-07 Costo | | | ● | | | | Parcial (medir) |
 | QA-08 Escalabilidad | | | ● | | ● | | Parcial (medir) |
 | QA-09, QA-10 | | | ● | | | | Atendido |
-| C-01 a C-07 | ● | | ● | ● | | ● | Atendido |
+| C-01 a C-08 | ● | | ● | ● | | ● | Atendido |
 
 ---
 
@@ -208,11 +208,11 @@ Pasar de testnet a mainnet → solo configuración (RPC, IDs de contrato, passph
 
 | Alternativa | A favor | En contra |
 |---|---|---|
-| A. Monolito modular (puertos y adaptadores) + app nativa + contratos Soroban | Un solo despliegue, poco ops, límites de módulo claros, fácil de partir después | Escala como un bloque |
+| A. Monolito modular (puertos y adaptadores) + app móvil + contratos Soroban | Un solo despliegue, poco ops, límites de módulo claros, fácil de partir después | Escala como un bloque |
 | B. Service-based (3-4 servicios de grano grueso) | Despliegue independiente de sellado e integraciones | Más ops y red para un equipo de 3 |
 | C. Microservicios | Escalado y despliegue fino | Desproporcionado: datos distribuidos, contratos entre servicios, observabilidad |
 
-**ADR-01 — Monolito modular hexagonal (`bimo-core`) + app móvil nativa offline-first + capa on-chain en Soroban.**
+**ADR-01 — Monolito modular hexagonal (`bimo-core`) + app móvil offline-first + capa on-chain en Soroban.**
 - *Por qué:* el equipo y el tiempo (C-05) no justifican lo distribuido; la arquitectura hexagonal deja cada sistema externo detrás de un puerto (QA-05) y permite simuladores en el MVP (C-03).
 - *Trade-off:* se pierde escalado independiente. Se compensa separando desde ya dos procesos del mismo código: **API** (sin estado) y **workers** (sellado, indexación, conciliación), que se pueden escalar por separado (QA-08).
 
@@ -221,17 +221,20 @@ Pasar de testnet a mainnet → solo configuración (RPC, IDs de contrato, passph
 **ADR-02 — Bimo no custodia pesos.** La cuenta COP y la llave Bre-B están en el socio (EXT-01). En Stellar, el comercio tiene su propia cuenta no custodial (ADR-04). Bimo nunca tiene control sobre la plata del comercio en ningún lado.
 - *Trade-off:* dependemos del socio para Bre-B y KYC (riesgo R-04), pero evitamos una licencia que el proyecto no puede obtener.
 
-**ADR-03 — App nativa iOS en Swift/SwiftUI.**
+**ADR-03 — App en React Native con Expo (reemplaza la decisión anterior de SwiftUI).**
 
 | Alternativa | Problema |
 |---|---|
-| Flutter | Tap to Pay y passkeys llegan por plugins o puentes propios; un lenguaje más (Dart) sin código compartido con el backend |
-| React Native (Expo) | Comparte TypeScript con `bimo-core`, pero igual exige envolver el SDK de Tap to Pay y depender de un plugin para passkeys |
-| **SwiftUI nativo (elegida)** | — |
+| SwiftUI nativo (decisión anterior) | Compilar y probar exige Xcode, que solo corre en macOS. El desarrollador principal trabaja en Windows: cada cambio dependería del Mac de otro miembro, y eso no sirve para un desarrollo iterativo |
+| Mac en la nube | Costo por hora que crece con el ritmo de desarrollo |
+| PWA | Lo más rápido y con passkeys reales hoy, pero desechable: Tap to Pay exige una app nativa (C-02) |
+| Flutter | Mismo problema que React Native para lo nativo, sin compartir código con el backend |
+| **React Native con Expo (elegida)** | — |
 
-- *Por qué:* el producto es solo iPhone (C-02), así que lo multiplataforma no aporta. Tap to Pay (ProximityReader y SDK del PSP) y passkeys (`AuthenticationServices`) se usan sin intermediarios, justo en las partes más sensibles. Stellar desde Swift con `stellar-ios-mac-sdk` (Soneso), que soporta Soroban y decodificación de XDR (ADR-07). Base local con SwiftData o GRDB (ADR-08).
-- *Trade-off:* una app Android futura se escribe aparte. Se compensa con el cliente delgado (ADR-07): la lógica vive en `bimo-core` y la app es sobre todo UI, captura y firma.
-- *Nota:* la app no calcula hashes; las sales y el árbol Merkle viven en `bimo-core` (spec 01), así que la serialización canónica solo existe en TypeScript y en los verificadores (R-09).
+- *Por qué:* se programa en Windows y se prueba en un iPhone real con Expo Go, sin Mac y sin cuenta paga. Para lo que Expo Go no trae (Face ID sobre la llave), se instala un *development build* compilado una vez en el Mac del equipo con un Apple ID gratuito, y el desarrollo sigue desde Windows con recarga en vivo. Toda la plataforma queda en TypeScript: las reglas de validación y el formato canónico viven en un paquete compartido que usan la app, `bimo-core` y la web de verificación.
+- *Trade-off:* en el incremento 1 la llave del dueño no vive en el Secure Enclave sino en el Keychain, protegida con Face ID (ADR-04). Tap to Pay, el Secure Enclave y las passkeys llegan en el incremento 2 como módulos nativos en Swift, compilados en la nube con EAS Build.
+- *Migración futura a Swift:* posible y acotada. Backend, API, contratos y formatos no cambian; los módulos nativos ya están en Swift; con el mismo bundle ID, la app nueva lee la misma base SQLite y el mismo Keychain. Se reescriben pantallas, sincronización y el paquete compartido, validados con los mismos vectores y casos de prueba.
+- *Nota:* la app no calcula sellos; las sales y el árbol Merkle viven en `bimo-core` (spec 01).
 
 ---
 
@@ -254,6 +257,8 @@ Cada movimiento es un asiento inmutable con cuentas por comercio. Las correccion
 | Ventas | Ingreso | Toda venta, sin importar el canal |
 | Comisiones | Gasto | Comisión del PSP o del canal |
 | Diferencias de caja | Gasto | Faltantes o sobrantes al contar el efectivo |
+| Gastos | Gasto | Pagos a proveedores y otros gastos del negocio |
+| Retiros del dueño | Patrimonio | Plata que el dueño saca del negocio |
 
 Ejemplo: venta con tarjeta por $100.000 → *Debe* Por cobrar PSP / *Haber* Ventas. Cuando el PSP consigna $98.000 → *Debe* Cuenta en socio 98.000 + Comisiones 2.000 / *Haber* Por cobrar PSP 100.000. Con esto, H3 (pendiente de consignar) y H6 (comisiones) salen directamente de los saldos, sin lógica extra.
 
@@ -297,11 +302,11 @@ Decisión del equipo. El día de cada asiento se calcula a partir de la hora del
 
 Base: el contrato de cuenta auditado de OpenZeppelin `stellar-contracts` (passkeys secp256r1 habilitadas desde el Protocolo 21). Firmantes: la passkey del dueño. Política posterior: un firmante de recuperación con *timelock* (ver R-03). Las cuentas contrato reciben USDC sin trustlines.
 
-*Variante del incremento 1 (por C-08):* el firmante es una **llave P-256 generada en el Secure Enclave del iPhone y protegida con Face ID** (CryptoKit + LocalAuthentication). Es la misma curva que una passkey y la misma experiencia para el dueño, pero no se sincroniza con iCloud ni usa el formato WebAuthn, así que la smart account necesita un verificador de firmas P-256 crudas (función `secp256r1_verify` de Soroban). En el simulador, que no tiene Secure Enclave, se usa una llave de software. En el incremento 2, con cuenta paga, se agrega la passkey real como firmante y la llave del enclave queda como respaldo.
+*Variante del incremento 1 (por C-08 y ADR-03):* el firmante es una **llave P-256 de software guardada en el Keychain del iPhone y protegida con Face ID** (`expo-secure-store`), que firma con `@noble/curves`. Es la misma curva que una passkey y la misma experiencia para el dueño, pero no vive en el Secure Enclave, no se sincroniza con iCloud ni usa el formato WebAuthn, así que la smart account necesita un verificador de firmas P-256 crudas (función `secp256r1_verify` de Soroban). En el incremento 2, con cuenta paga, se agrega como firmante la passkey real o una llave del Secure Enclave (módulo nativo), y la llave de software se retira.
 - *Trade-off:* la recuperación de la cuenta es más compleja que un "olvidé mi contraseña".
 
 **ADR-07 — Patrón de firma "cliente delgado".**
-`bimo-core` arma la transacción y el payload de autorización; la app lo **decodifica y muestra en lenguaje humano** ("Sellar el lunes 6 de octubre: 34 ventas, $1.240.000") y solo entonces lo firma con la passkey; `bimo-core` ensambla y envía. Así el cliente no necesita reimplementar la lógica de Soroban, y aun así el dueño nunca firma a ciegas.
+`bimo-core` arma la transacción y el payload de autorización; la app lo **decodifica y muestra en lenguaje humano** ("Sellar el lunes 6 de octubre: 34 ventas, $1.240.000") y solo entonces lo firma con la llave del dueño; `bimo-core` ensambla y envía. Así el cliente no necesita reimplementar la lógica de Soroban, y aun así el dueño nunca firma a ciegas.
 
 **ADR-09 — Fees patrocinadas con relayer.**
 Todas las transacciones salen por el OpenZeppelin Relayer (servicio de canales de Stellar), que las envuelve en fee-bump y paga el XLM. El comercio nunca tiene XLM (C-07). Los canales paralelos permiten el pico de cierres (QA-08).
@@ -328,7 +333,7 @@ El enlace de verificación entrega los datos del período y sus pruebas Merkle. 
 **ADR-11 — Indexador propio.**
 Un worker lee los eventos de los contratos con `getEvents` de Stellar RPC y los guarda en Postgres como modelo de lectura (la RPC solo retiene una ventana corta de eventos). La app y el dashboard nunca consultan la red en caliente.
 
-**Bolsillo en dólares (CU-08).** USDC (de Circle) en la smart account. El paso de COP a USDC y viceversa va por el puerto `RailCambio` (ADR-12). La app solo muestra "Pasar a dólares" y "Pasar a pesos"; cada salida de USDC exige passkey.
+**Bolsillo en dólares (CU-08).** USDC (de Circle) en la smart account. El paso de COP a USDC y viceversa va por el puerto `RailCambio` (ADR-12). La app solo muestra "Pasar a dólares" y "Pasar a pesos"; cada salida de USDC exige la firma del dueño con Face ID.
 
 **Contrato `bimo-advances` (incremento 3, diseño preliminar).** Pool de USDC al que proveedores de liquidez aportan; el comercio pide un adelanto sobre ventas con tarjeta en estado *Por cobrar PSP* que Bimo atesta; recibe USDC (y lo pasa a pesos por el rail); cuando el PSP consigna, el repago se descuenta. Alternativas: contrato propio simple vs. tokenizar las cuentas por cobrar y usar un pool de Blend como colateral. *Diferido al inc. 3* (ver R-05: es crédito y tiene implicaciones regulatorias).
 
@@ -352,7 +357,7 @@ Un worker lee los eventos de los contratos con `getEvents` de Stellar RPC y los 
 Los eventos que llegan de afuera (webhooks) entran por un *inbox*: se valida la firma, se deduplican por ID externo y se traducen a asientos del ledger. Nada externo toca el dominio directamente (capa anticorrupción).
 - *Trade-off:* hay más código de traducción, pero cambiar de socio o de rail no toca el núcleo.
 
-**Tap to Pay (CU-06).** El SDK del PSP vive en un módulo nativo de la app. La app lanza el cobro; el resultado de la autorización se registra como asiento *verificado* en *Por cobrar PSP*; el webhook de liquidación lo mueve a *Cuenta en socio* con su comisión.
+**Tap to Pay (CU-06).** El SDK del PSP vive en un módulo nativo de la app (Swift, expuesto a React Native). La app lanza el cobro; el resultado de la autorización se registra como asiento *verificado* en *Por cobrar PSP*; el webhook de liquidación lo mueve a *Cuenta en socio* con su comisión.
 
 ---
 
@@ -379,7 +384,7 @@ Los eventos que llegan de afuera (webhooks) entran por un *inbox*: se valida la 
 
 | Táctica | Decisión |
 |---|---|
-| Autenticar actores | Sesión con OTP al celular; **step-up con passkey** para todo lo que mueve valor o sella |
+| Autenticar actores | Sesión con código de un solo uso (por correo en el inc. 1, por SMS en el inc. 2); **step-up con la llave del dueño y Face ID** para todo lo que mueve valor o sella |
 | Autorizar / separar entidades | Row Level Security en Postgres por comercio; roles dueño / empleado |
 | Limitar exposición | En cadena solo raíces, IDs seudónimos y flags; nada personal (C-06) |
 | Separar llaves | Llave atestadora ≠ llave del relayer; ambas en un gestor de secretos, nunca en el repo |
@@ -415,10 +420,10 @@ flowchart LR
 ```mermaid
 flowchart TB
   subgraph CEL["iPhone del comercio"]
-    APP["App Bimo SwiftUI"]
+    APP["App Bimo React Native"]
     LDB[("Base local + outbox")]
-    PK["Passkey en enclave seguro"]
-    TTP["Modulo nativo Tap to Pay"]
+    PK["Llave en Keychain con Face ID"]
+    TTP["Modulo nativo Tap to Pay inc 2"]
     APP --- LDB
     APP --- PK
     APP --- TTP
@@ -454,14 +459,17 @@ flowchart TB
 
 ```mermaid
 flowchart LR
-  subgraph APPM["app iOS SwiftUI"]
+  subgraph APPM["app React Native Expo"]
     A1["ventas"]
     A2["hoy"]
     A3["cierre"]
     A4["bolsillo"]
-    A5["cuenta y passkey"]
+    A5["cuenta y firmante"]
     A6["sync"]
-    A7["tap-to-pay ProximityReader y SDK PSP"]
+    A7["tap-to-pay modulo nativo inc 2"]
+  end
+  subgraph SHARED["shared TypeScript"]
+    S1["formato canonico, Merkle, ULID, reglas V"]
   end
   subgraph COREM["bimo-core"]
     M1["comercios e identidad"]
@@ -476,6 +484,8 @@ flowchart LR
     K1["bimo-registry"]
     K2["bimo-advances inc 3"]
   end
+  A1 --> S1
+  M2 --> S1
   M3 --> M2
   M3 --> M5
   M4 --> M2
@@ -485,15 +495,15 @@ flowchart LR
   M7 --> K2
 ```
 
-Reglas: el `ledger` no depende de nadie; `stellar` e `integraciones` son los únicos módulos que hablan con el exterior; ningún módulo lee las tablas de otro (solo su interfaz).
+Reglas: el `ledger` solo depende de `shared`; `stellar` e `integraciones` son los únicos módulos que hablan con el exterior; ningún módulo lee las tablas de otro (solo su interfaz).
 
-Reparto sugerido: **André** → `stellar`, contratos, `cierre y sellado`, `verificacion`. **Santiago** → `ledger`, `comercios`, `integraciones`, `sync`. **Lizeth** → flujos y UI de la app, el lenguaje sin jerga (QA-04) y la página de verificación.
+Reparto sugerido: **André** → `stellar`, contratos, `cierre y sellado`, `verificacion`. **Santiago** → `ledger`, `comercios`, `integraciones`, `sync`, `shared`. **Lizeth** → flujos y UI de la app, el lenguaje sin jerga (QA-04) y la página de verificación.
 
 ### 4.4 Despliegue
 
 | Nodo | Qué corre | Notas |
 |---|---|---|
-| iPhone (iOS reciente) | App SwiftUI, base local (SwiftData/GRDB), passkey, SDK Tap to Pay | Requiere entitlement de Tap to Pay y Associated Domains para passkeys |
+| iPhone (iOS reciente) | App React Native (Expo), base local `expo-sqlite`, llave en el Keychain; en el inc. 2, SDK de Tap to Pay y passkey | Inc. 1: Expo Go o development build. Inc. 2: entitlement de Tap to Pay y Associated Domains para passkeys |
 | Contenedor `api` (p. ej. Railway) | `bimo-core` en modo API | Sin estado, escalable horizontalmente |
 | Contenedor `workers` | `bimo-core` en modo worker | Mismo código, otro proceso |
 | Postgres gestionado (p. ej. Supabase) | Ledger, sales, inbox/outbox, modelo de lectura | Respaldos diarios (R-06) |
@@ -515,7 +525,7 @@ sequenceDiagram
   C-->>A: Resumen y payload de autorizacion
   A->>A: Decodifica y muestra en lenguaje humano
   D->>A: Confirma con huella o cara
-  A->>C: Firma de la passkey
+  A->>C: Firma del dueno
   C->>C: Agrega firma del atestador Bimo
   C->>R: Transaccion seal
   R->>S: Fee-bump y envio
@@ -546,8 +556,8 @@ sequenceDiagram
 
 | Incremento | Alcance | Red |
 |---|---|---|
-| **1 — MVP bootcamp** | CU-01 a CU-05: cuenta con llave del Secure Enclave y Face ID, registro manual multicanal, "Hoy", cierre con sello co-firmado, verificación pública. Socio, PSP y rail simulados. *Opcional si sobra tiempo:* bolsillo USD con rail simulado | Testnet |
-| **2 — Integraciones reales** | Apple Developer Program, passkeys reales, socio custodio (Bre-B automático, asientos verificados), Tap to Pay con Symbiotic, recuperación de cuenta, empleados | Mainnet |
+| **1 — MVP bootcamp** | CU-01 a CU-05: cuenta con llave P-256 protegida con Face ID, registro manual multicanal, "Hoy", cierre con sello co-firmado, verificación pública. Socio, PSP y rail simulados. *Opcional si sobra tiempo:* bolsillo USD con rail simulado | Testnet |
+| **2 — Integraciones reales** | Apple Developer Program, passkeys o Secure Enclave, socio custodio (Bre-B automático, asientos verificados), Tap to Pay con Symbiotic, recuperación de cuenta, empleados | Mainnet |
 | **3 — Servicios financieros** | Bolsillo USD con Abroad, adelantos con `bimo-advances`, pagos a proveedores en USDC, historial crediticio verificable | Mainnet |
 
 ---
@@ -576,6 +586,7 @@ sequenceDiagram
 | Smart account no custodial (ADR-04) | Seguridad, confianza | Complejidad de recuperación |
 | Relayer (ADR-09) | Usabilidad, costo para el comercio | Disponibilidad: dependencia externa |
 | Monolito modular (ADR-01) | Simplicidad, velocidad del equipo | Escalado independiente |
+| React Native con Expo (ADR-03) | Velocidad de desarrollo desde Windows, código compartido | Seguridad de la llave en el inc. 1 (Keychain en vez de Secure Enclave) |
 
 ### Riesgos
 
@@ -583,13 +594,14 @@ sequenceDiagram
 |---|---|---|
 | R-01 | Supuesto 2 del Brief falla: al dueño no le importa la inalterabilidad → el sello no genera valor percibido | Medir sellos y verificaciones de terceros; el valor de Stellar no depende solo del sello (bolsillo, adelantos) |
 | R-02 | El entitlement de Tap to Pay o el convenio con Symbiotic tarda meses | Puerto `CobroTarjeta` con simulador; inc. 1 no depende de él |
-| R-03 | El dueño pierde el celular y la passkey no está sincronizada → pierde acceso a su smart account | Firmante de recuperación con timelock y validación vía KYC del socio (diseñar en inc. 2) |
+| R-03 | El dueño pierde el celular y la llave no está sincronizada → pierde acceso a su smart account | Firmante de recuperación con timelock y validación vía KYC del socio (diseñar en inc. 2) |
 | R-04 | Dependencia del socio custodio (cambios de API, condiciones comerciales) | Puerto `Custodia`; evaluar Movii y Cobre en paralelo |
 | R-05 | Adelantos = crédito; un pool abierto al público podría verse como captación | Diferido a inc. 3; validación legal antes de construir |
 | R-06 | Se pierden las sales → días imposibles de probar | Respaldos, y exportación cifrada de los datos del día para el comercio |
 | R-07 | Datos del contrato archivados por TTL | Worker de TTL y restauración bajo demanda |
-| R-08 | Llave atestadora comprometida → sellos falsos co-firmados | No basta sola (requiere passkey del comercio); rotación vía multifirma |
+| R-08 | Llave atestadora comprometida → sellos falsos co-firmados | No basta sola (requiere la llave del comercio); rotación vía multifirma |
 | R-09 | La serialización canónica de asientos difiere entre `bimo-core` y un verificador externo → hashes distintos y sellos que no verifican | Especificación única del formato canónico + vectores de prueba compartidos que ambos lados deben pasar en CI |
+| R-10 | El development build depende del Mac de un miembro del equipo y vence cada 7 días | Recompilar solo al cambiar dependencias nativas; en el inc. 2, EAS Build en la nube |
 
 **Tema de riesgo:** casi todos los riesgos altos vienen de terceros (socio, PSP, Apple, regulación). La arquitectura los aísla detrás de puertos, pero no los elimina: son riesgos de negocio que hay que gestionar en paralelo.
 
@@ -609,9 +621,10 @@ sequenceDiagram
 | Driver | Escenario | Decisiones | Elementos | Vistas | Evidencia |
 |---|---|---|---|---|---|
 | Historial confiable (H5) | QA-01 | ADR-05, 06, 10 | ledger, cierre y sellado, bimo-registry, web de verificación | 4.2, 4.5, 4.6 | Prueba: alterar un asiento y verificar → "no coincide" |
-| No custodiar | QA-02, C-01 | ADR-02, 04, 07 | smart account, passkey | 4.2 | Prueba: transferir con solo llaves de Bimo → rechazada |
+| No custodiar | QA-02, C-01 | ADR-02, 04, 07 | smart account, llave del dueño | 4.2 | Prueba: transferir con solo llaves de Bimo → rechazada |
 | Vender sin red | QA-03 | ADR-08, it. 5 | SQLite, outbox, sync | 4.2 | Prueba: 72 h en modo avión |
 | Sin jerga | QA-04, C-07 | ADR-04, 07, 09 | app, relayer | 4.3 | Prueba con 5 comercios |
 | Cambiar socio o rail | QA-05 | ADR-12 | integraciones | 4.3 | Cambiar simulador por adaptador real sin tocar el dominio |
 | Privacidad | QA-06, C-06 | ADR-06 | bimo-registry | 4.2 | Revisión del estado del contrato |
 | Costo y escala | QA-07, 08 | ADR-09, 11 | relayer, workers | 4.4 | Medición en testnet con carga simulada |
+| Desarrollo desde Windows | C-05, C-08 | ADR-03 | app, shared | 4.3, 4.4 | La app corre en Expo Go en un iPhone sin pasar por un Mac |

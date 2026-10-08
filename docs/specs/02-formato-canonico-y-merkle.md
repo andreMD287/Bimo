@@ -1,6 +1,6 @@
 # Spec 02 — Formato canónico del asiento y árbol Merkle
 
-**Estado:** v1.0 · **Depende de:** spec 01 · **Lo usan:** spec 03 (contrato), spec 05 (verificación), `bimo-core`, web de verificación
+**Estado:** v1.1 (solo agrega códigos nuevos en la sección 5; el formato no cambia) · **Depende de:** spec 01 · **Lo usan:** spec 03 (contrato), spec 05 (verificación), `bimo-core`, web de verificación
 **Archivos:** `02-vectores.json` (vectores de prueba), `02-referencia.mjs` (implementación de referencia en JavaScript, sin dependencias), `02-check.mjs` (corre los vectores)
 
 > Lo que se sella con este formato queda en Stellar para siempre. **Ningún byte de este spec cambia**. Si hace falta otro formato, se crea `BIMO-ENTRY` versión 2 con su propio spec, y la versión 1 se sigue verificando igual.
@@ -108,9 +108,9 @@ raíz(D[n]) = nodo( raíz(D[0:k]), raíz(D[k:n]) ) -- k = mayor potencia de 2 me
 Son de **solo adición**: un código nunca se reutiliza ni cambia de significado.
 
 ### 5.1 `kind`
-| venta | abono_cliente | liquidacion_psp | ajuste_caja | reverso | conversion | adelanto | repago_adelanto |
-|---|---|---|---|---|---|---|---|
-| 1 | 2 | 3 | 4 | 5 | 6 | 7 (reservado inc. 3) | 8 (reservado inc. 3) |
+| venta | abono_cliente | liquidacion_psp | ajuste_caja | reverso | conversion | adelanto | repago_adelanto | salida |
+|---|---|---|---|---|---|---|---|---|
+| 1 | 2 | 3 | 4 | 5 | 6 | 7 (reservado inc. 3) | 8 (reservado inc. 3) | 9 |
 
 ### 5.2 `origin`
 | declarado | verificado | on_chain |
@@ -118,9 +118,9 @@ Son de **solo adición**: un código nunca se reutiliza ni cambia de significado
 | 1 | 2 | 3 |
 
 ### 5.3 `account_code`
-| caja | por_cobrar_clientes | por_cobrar_psp | cuenta_socio | bolsillo_usd | adelantos_por_pagar | ventas | comisiones | diferencias_caja |
-|---|---|---|---|---|---|---|---|---|
-| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+| caja | por_cobrar_clientes | por_cobrar_psp | cuenta_socio | bolsillo_usd | adelantos_por_pagar | ventas | comisiones | diferencias_caja | gastos | retiros_dueno |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
 
 ### 5.4 `direction`
 | debe | haber |

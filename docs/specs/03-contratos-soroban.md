@@ -1,6 +1,6 @@
 # Spec 03 — Contratos Soroban y flujo de firma
 
-**Estado:** v1.0 · **Depende de:** ARQUITECTURA (ADR-04, 06, 07, 09, 14, 15), spec 01, spec 02 · **Lo usan:** `contracts/`, módulo `stellar` de `bimo-core`, módulo `cuenta y passkey` de la app, web de verificación
+**Estado:** v1.1 (llave de software con Face ID en el simulador; pull antes de validar) · **Depende de:** ARQUITECTURA (ADR-04, 06, 07, 09, 14, 15), spec 01, spec 02 · **Lo usan:** `contracts/`, módulo `stellar` de `bimo-core`, módulo `cuenta y passkey` de la app, web de verificación
 
 Define los tres contratos del incremento 1 y cómo se arma, firma y envía cada transacción. Claude Code no agrega funciones, parámetros, llaves de almacenamiento ni eventos que no estén aquí.
 
@@ -216,7 +216,7 @@ sequenceDiagram
 
 ### 5.2 Lo que valida la app antes de pedir Face ID
 
-La app decodifica la preimagen con `stellar-ios-mac-sdk` y **rechaza** si algo no cuadra:
+Antes, la app hace un pull completo (spec 04 §6) para que su base local tenga todos los asientos del día. Luego decodifica la preimagen con `stellar-ios-mac-sdk` y **rechaza** si algo no cuadra:
 
 | Chequeo | Contra qué |
 |---|---|
@@ -260,7 +260,7 @@ Todos los días `cerrado` o `requiere_enmienda` del comercio van en **un solo** 
 
 | Paso | Quién | Detalle |
 |---|---|---|
-| 1 | App | Crea la llave en el Secure Enclave con control de acceso `.privateKeyUsage` + `.biometryCurrentSet`. En el simulador usa una llave de software en el Keychain, detrás de la misma interfaz `Firmante` |
+| 1 | App | Crea la llave en el Secure Enclave con control de acceso `.privateKeyUsage` + `.biometryCurrentSet`. En el simulador usa una llave P-256 de software guardada en el Keychain, detrás de la misma interfaz `Firmante`; antes de cada firma pide Face ID con `LAContext.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics)`, para que la experiencia sea la misma (en el simulador: *Features → Face ID*) |
 | 2 | App → core | Envía la clave pública (65 bytes) y la firma de un reto de un solo uso que mandó `bimo-core` (prueba de posesión) |
 | 3 | Core | Verifica la firma del reto, guarda el dispositivo (`devices`, spec 01) y despliega `bimo-account` con el constructor de la sección 3, por el relayer |
 | 4 | App | Lee **directamente de Stellar RPC**, sin pasar por `bimo-core`, la regla 0 de su cuenta, y comprueba que el único firmante es su clave. Si no, muestra error y no continúa |

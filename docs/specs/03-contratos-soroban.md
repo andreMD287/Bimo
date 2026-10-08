@@ -1,6 +1,6 @@
 # Spec 03 — Contratos Soroban y flujo de firma
 
-**Estado:** v1.1 (llave de software con Face ID en el simulador; pull antes de validar) · **Depende de:** ARQUITECTURA (ADR-04, 06, 07, 09, 14, 15), spec 01, spec 02 · **Lo usan:** `contracts/`, módulo `stellar` de `bimo-core`, módulo `cuenta y passkey` de la app, web de verificación
+**Estado:** v1.2 (firmante en React Native: llave P-256 de software con `@noble/curves`) · v1.1: Face ID en simulador, pull antes de validar · **Depende de:** ARQUITECTURA (ADR-04, 06, 07, 09, 14, 15), spec 01, spec 02 · **Lo usan:** `contracts/`, módulo `stellar` de `bimo-core`, módulo `cuenta y passkey` de la app, web de verificación
 
 Define los tres contratos del incremento 1 y cómo se arma, firma y envía cada transacción. Claude Code no agrega funciones, parámetros, llaves de almacenamiento ni eventos que no estén aquí.
 
@@ -35,7 +35,7 @@ Herramientas: `soroban-sdk` y `stellar-contracts` en la última versión estable
 
 ## 2. `bimo-p256-verifier`
 
-Verifica firmas P-256 crudas del Secure Enclave (variante del incremento 1, ADR-04).
+Verifica firmas P-256 crudas: las de la llave de software del incremento 1 y, más adelante, las de una llave del Secure Enclave (ADR-04).
 
 ```rust
 type KeyData = BytesN<65>;   // clave pública SEC1 sin comprimir: 0x04 ‖ X ‖ Y
@@ -43,7 +43,7 @@ type SigData = BytesN<64>;   // r ‖ s big-endian, con s en la mitad baja (low-
 
 fn verify(e: &Env, hash: Bytes, key_data: BytesN<65>, sig_data: BytesN<64>) -> bool {
     // hash = auth_digest de 32 bytes que calcula la smart account (sección 5.3)
-    let digest = e.crypto().sha256(&hash);          // el Secure Enclave firma SHA-256(auth_digest)
+    let digest = e.crypto().sha256(&hash);          // el firmante firma SHA-256(auth_digest)
     e.crypto().secp256r1_verify(&key_data, &digest, &sig_data); // falla (panic) si no es válida
     true
 }
@@ -53,9 +53,9 @@ fn canonicalize_key(e: &Env, key_data: BytesN<65>) -> Bytes {
 }
 ```
 
-**Por qué el doble SHA-256:** `SecureEnclave.P256.Signing.PrivateKey.signature(for: Data)` de CryptoKit siempre aplica SHA-256 al dato antes de firmar. Pasarle el `auth_digest` como dato hace que la firma quede sobre `SHA-256(auth_digest)`, y el verificador reproduce exactamente eso. Así no hay que usar APIs de bajo nivel en Swift.
+**Por qué el doble SHA-256:** es el comportamiento de CryptoKit (`signature(for: Data)` siempre aplica SHA-256 antes de firmar), que usará la llave del Secure Enclave en el incremento 2. Para que el mismo verificador sirva hoy y entonces, la llave de software del incremento 1 firma exactamente lo mismo: un ECDSA P-256 cuyo digest es `SHA-256(auth_digest)`, en low-S, con `@noble/curves`. Cuidado: según la versión de `@noble/curves`, `sign` aplica SHA-256 al mensaje por defecto o espera el digest ya calculado. La implementación debe pasar la prueba con los vectores de abajo (la firma debe verificar contra el digest `79991d75…`), que es lo que decide si está bien.
 
-**Low-S:** el host de Soroban exige `s ≤ n/2` en `secp256r1_verify`. El Secure Enclave no normaliza, así que **`bimo-core` normaliza toda firma** antes de armar la autorización: si `s > n/2`, reemplaza `s` por `n − s`. La app no hace aritmética de curvas.
+**Low-S:** el host de Soroban exige `s ≤ n/2` en `secp256r1_verify`. `@noble/curves` ya firma en low-S, pero el Secure Enclave del incremento 2 no normaliza, así que **`bimo-core` normaliza toda firma** antes de armar la autorización: si `s > n/2`, reemplaza `s` por `n − s`.
 
 ### Vectores del verificador
 
@@ -189,7 +189,7 @@ sequenceDiagram
   participant C as bimo-core
   participant RPC as Stellar RPC
   participant A as App iPhone
-  participant SE as Secure Enclave
+  participant K as Llave en Keychain
   participant R as Relayer
   C->>RPC: simulate seal_batch(merchant, items)
   RPC-->>C: auth entries (comercio y atestador), nonce
@@ -197,8 +197,8 @@ sequenceDiagram
   C->>A: preimagen HashIdPreimage (XDR) y resumen
   A->>A: decodifica, valida y muestra en lenguaje humano
   A->>A: calcula signature_payload y auth_digest
-  A->>SE: firmar auth_digest (Face ID)
-  SE-->>A: r y s (64 bytes)
+  A->>K: leer llave (Face ID) y firmar auth_digest
+  K-->>A: r y s (64 bytes)
   A->>C: firma
   C->>C: normaliza low-S y arma AuthPayload
   C->>C: firma la auth entry del atestador
@@ -216,7 +216,7 @@ sequenceDiagram
 
 ### 5.2 Lo que valida la app antes de pedir Face ID
 
-Antes, la app hace un pull completo (spec 04 §6) para que su base local tenga todos los asientos del día. Luego decodifica la preimagen con `stellar-ios-mac-sdk` y **rechaza** si algo no cuadra:
+Antes, la app hace un pull completo (spec 04 §6) para que su base local tenga todos los asientos del día. Luego decodifica la preimagen con `@stellar/stellar-sdk` (XDR) y **rechaza** si algo no cuadra:
 
 | Chequeo | Contra qué |
 |---|---|
@@ -234,7 +234,7 @@ Después muestra "Sellar lunes 6 de octubre: 34 ventas, $1.240.000" (totales de 
 ```
 signature_payload = SHA-256( XDR(HashIdPreimage) )                       -- 32 bytes
 auth_digest       = SHA-256( signature_payload ‖ XDR(Vec<u32>[0]) )      -- regla de contexto 0 (OpenZeppelin)
-firma             = ECDSA-P256 del Secure Enclave sobre SHA-256(auth_digest)  -- signature(for: auth_digest)
+firma             = ECDSA-P256 sobre SHA-256(auth_digest), low-S        -- @noble/curves; CryptoKit en el inc. 2
 ```
 
 La app calcula `signature_payload` y `auth_digest` por su cuenta a partir de la preimagen que ya validó. **Nunca firma un hash que le manden hecho.**
@@ -260,7 +260,7 @@ Todos los días `cerrado` o `requiere_enmienda` del comercio van en **un solo** 
 
 | Paso | Quién | Detalle |
 |---|---|---|
-| 1 | App | Crea la llave en el Secure Enclave con control de acceso `.privateKeyUsage` + `.biometryCurrentSet`. En el simulador usa una llave P-256 de software guardada en el Keychain, detrás de la misma interfaz `Firmante`; antes de cada firma pide Face ID con `LAContext.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics)`, para que la experiencia sea la misma (en el simulador: *Features → Face ID*) |
+| 1 | App | Genera una llave P-256 con `@noble/curves` (aleatoriedad de `expo-crypto`) y guarda la llave privada en `expo-secure-store` con `requireAuthentication: true`, de modo que leerla para firmar exige Face ID. En **Expo Go** esa opción no está disponible; ahí la llave se guarda sin biometría y solo sirve para desarrollo. Todo detrás de una interfaz `Firmante`, para cambiar por el Secure Enclave o la passkey en el incremento 2 sin tocar el resto (`key_kind = software_p256`, spec 01) |
 | 2 | App → core | Envía la clave pública (65 bytes) y la firma de un reto de un solo uso que mandó `bimo-core` (prueba de posesión) |
 | 3 | Core | Verifica la firma del reto, guarda el dispositivo (`devices`, spec 01) y despliega `bimo-account` con el constructor de la sección 3, por el relayer |
 | 4 | App | Lee **directamente de Stellar RPC**, sin pasar por `bimo-core`, la regla 0 de su cuenta, y comprueba que el único firmante es su clave. Si no, muestra error y no continúa |

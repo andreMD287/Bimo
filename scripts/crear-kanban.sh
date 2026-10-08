@@ -5,13 +5,13 @@
 #   - gh CLI con sesión iniciada:      gh auth login
 #   - Permiso para proyectos:           gh auth refresh -s project
 #
-# Uso:
+# Uso (Git Bash en Windows, GitHub Codespaces o cualquier bash):
 #   bash scripts/crear-kanban.sh <dueño-del-proyecto> <número-del-proyecto>
 #   Ejemplo: bash scripts/crear-kanban.sh andreMD287 3
 #   (el número es el que aparece en la URL: github.com/users/andreMD287/projects/3)
 #
 # Se puede correr varias veces: si un issue con ese título ya existe, no lo duplica.
-# Compatible con el bash 3.2 que trae macOS.
+# Compatible con bash 3.2 o superior.
 
 set -euo pipefail
 
@@ -34,7 +34,8 @@ crear_etiqueta "inc-1"      "0e8a16" "Incremento 1 (MVP bootcamp)"
 crear_etiqueta "contratos"  "5319e7" "Contratos Soroban"
 crear_etiqueta "core"       "1d76db" "bimo-core (TypeScript)"
 crear_etiqueta "db"         "006b75" "Supabase / Postgres"
-crear_etiqueta "ios"        "d93f0b" "App iOS"
+crear_etiqueta "app"        "d93f0b" "App móvil (React Native con Expo)"
+crear_etiqueta "shared"     "c5def5" "Paquete compartido TypeScript"
 crear_etiqueta "web"        "fbca04" "Web de verificación"
 crear_etiqueta "infra"      "bfd4f2" "Repo, CI, despliegues"
 crear_etiqueta "riesgo-alto" "b60205" "Toca piezas externas no probadas: hacer temprano"
@@ -51,9 +52,9 @@ TITULO[2]="Migraciones de Supabase"
 DESC[2]="Tablas, enums, índices, triggers DB-01..DB-12, vista account_balances y RLS."
 SPECS[2]="01"; DEPS[2]="1"; LISTO[2]="Todos los criterios de aceptación del spec 01 en verde."; RESP[2]="Santiago"; ETQ[2]="inc-1,db"
 
-TITULO[3]="Librería canónica y Merkle + validaciones V-01..V-11 en TypeScript"
-DESC[3]="Portar docs/specs/02-referencia.mjs a core, crear shared/validation-cases.json e implementar V-01..V-11."
-SPECS[3]="02 04"; DEPS[3]="1"; LISTO[3]="Vectores del spec 02 y casos compartidos en verde."; RESP[3]="Santiago"; ETQ[3]="inc-1,core"
+TITULO[3]="Paquete shared: formato canónico, Merkle, ULID y validaciones V-01..V-11"
+DESC[3]="Crear el paquete shared/ que usan app, core y verifier: portar docs/specs/02-referencia.mjs, ULID, tipos, validation-cases.json y reglas V-01..V-11."
+SPECS[3]="02 04"; DEPS[3]="1"; LISTO[3]="Vectores del spec 02 y casos compartidos en verde."; RESP[3]="Santiago"; ETQ[3]="inc-1,shared"
 
 TITULO[4]="Contratos p256-verifier y registry con pruebas"
 DESC[4]="Implementar los contratos del spec 03 §2 y §4 con soroban-sdk testutils y los vectores P-256."
@@ -87,21 +88,21 @@ TITULO[11]="Web de verificación y cli/verify.mjs"
 DESC[11]="Página estática que lee Stellar directo y recalcula en el navegador, más el script para verificar sin la web."
 SPECS[11]="05"; DEPS[11]="10"; LISTO[11]="Criterios de aceptación del spec 05 en verde."; RESP[11]="Lizeth"; ETQ[11]="inc-1,web"
 
-TITULO[12]="iOS: BimoDomain (modelos, ULID, V-01..V-11) y BimoStore (GRDB)"
-DESC[12]="Paquetes Swift con el modelo, las reglas compartidas y la base local del spec 04 §2."
-SPECS[12]="01 04"; DEPS[12]="3"; LISTO[12]="shared/validation-cases.json en verde en Swift."; RESP[12]="André (lógica) · Lizeth (UI)"; ETQ[12]="inc-1,ios"
+TITULO[12]="App: esqueleto Expo, navegación y base local expo-sqlite"
+DESC[12]="Proyecto Expo con expo-router, base local del spec 04 §2 e integración con el paquete shared."
+SPECS[12]="01 04"; DEPS[12]="3"; LISTO[12]="La app abre en Expo Go y guarda una venta localmente usando shared."; RESP[12]="André (lógica) · Lizeth (UI)"; ETQ[12]="inc-1,app"
 
-TITULO[13]="iOS: BimoSigner, onboarding y verificación del firmante"
-DESC[13]="Firmante del Secure Enclave y de software con Face ID; crear cuenta y comprobar el firmante leyendo RPC."
-SPECS[13]="03"; DEPS[13]="6 12"; LISTO[13]="Cuenta creada desde el simulador y firmante verificado por RPC."; RESP[13]="André"; ETQ[13]="inc-1,ios,riesgo-alto"
+TITULO[13]="App: Firmante P-256, onboarding y verificación del firmante"
+DESC[13]="Llave P-256 de software en expo-secure-store protegida con Face ID; crear cuenta y comprobar el firmante leyendo RPC."
+SPECS[13]="03"; DEPS[13]="6 12"; LISTO[13]="Cuenta creada desde el iPhone y firmante verificado por RPC; Face ID funcionando en el development build."; RESP[13]="André"; ETQ[13]="inc-1,app,riesgo-alto"
 
-TITULO[14]="iOS: registrar venta, Hoy, fiado, sincronización y cierre"
+TITULO[14]="App: registrar venta, Hoy, fiado, sincronización y cierre"
 DESC[14]="Pantallas principales y el módulo sync del spec 04, con los cálculos de Hoy del §9."
-SPECS[14]="04 07"; DEPS[14]="7 12"; LISTO[14]="Criterios del spec 04 del lado de la app en verde."; RESP[14]="Lizeth (UI) · André"; ETQ[14]="inc-1,ios"
+SPECS[14]="04 07"; DEPS[14]="7 12"; LISTO[14]="Criterios del spec 04 del lado de la app en verde."; RESP[14]="Lizeth (UI) · André"; ETQ[14]="inc-1,app"
 
-TITULO[15]="iOS: pantalla de firma, enlaces y Ventas por revisar"
+TITULO[15]="App: pantalla de firma, enlaces y Ventas por revisar"
 DESC[15]="Validar la preimagen, mostrar el resumen y pedir Face ID; compartir enlaces; listar asientos rechazados."
-SPECS[15]="03 05 07"; DEPS[15]="8 13 14"; LISTO[15]="Flujo completo desde el iPhone: vender, cerrar, firmar y compartir."; RESP[15]="André · Lizeth (UI)"; ETQ[15]="inc-1,ios"
+SPECS[15]="03 05 07"; DEPS[15]="8 13 14"; LISTO[15]="Flujo completo desde el iPhone: vender, cerrar, firmar y compartir."; RESP[15]="André · Lizeth (UI)"; ETQ[15]="inc-1,app"
 
 TITULO[16]="Ensayo de la demo del bootcamp"
 DESC[16]="Correr el guion del spec 08 §7 de punta a punta y ajustar lo que falle."

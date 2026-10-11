@@ -1,16 +1,23 @@
-// Tokens básicos. Lizeth los rediseña; las pantallas deberían usar estos nombres.
-export const color = {
-  fondo: '#F7F7F5',
-  superficie: '#FFFFFF',
-  texto: '#1B1B1B',
-  textoSuave: '#6B6B6B',
-  borde: '#E2E2DE',
-  primario: '#1F6F5C',
-  sobrePrimario: '#FFFFFF',
-  exito: '#1F7A3A',
-  alerta: '#B26A00',
-  error: '#B3261E',
-};
+// Nombres en español que ya usan las pantallas y el layout. No hay colores aquí:
+// todo sale de `tokens.ts`, que es la única fuente.
+import { colors, radii, spacing } from './tokens';
 
-export const espacio = { xs: 4, s: 8, m: 12, l: 16, xl: 24 };
-export const radio = { s: 8, m: 12 };
+export const color = {
+  fondo: colors.bg,
+  superficie: colors.surface,
+  superficieAlt: colors.surfaceAlt,
+  texto: colors.text,
+  textoSuave: colors.textMuted,
+  borde: colors.border,
+  bordeFuerte: colors.borderStrong,
+  primario: colors.primary,
+  sobrePrimario: colors.onPrimary,
+  acento: colors.accent,
+  exito: colors.successText, // texto sobre blanco
+  alerta: colors.dangerText, // texto sobre blanco (el amarillo no sirve como texto)
+  error: colors.dangerText, // texto sobre blanco
+  navy: colors.navy,
+} as const;
+
+export const espacio = spacing;
+export const radio = radii;

@@ -60,7 +60,15 @@ Estas cinco pantallas son el corazón del flujo: el dueño las usa todos los dí
 
 ### Pantallas de configuración e historial
 
-<!-- Escribe aquí: Santiago (pantallas 1, 2, 8 y 9: Bienvenida y registro, Configurar canales, Historial de días, Compartir historial) -->
+Estas cuatro pantallas cubren el arranque del negocio y lo que pasa después del día a día: ver el historial y compartirlo. Usan solo los hooks de `src/hooks/` y los componentes de `src/ui/`.
+
+**Bienvenida y registro** (paso 1 del Blueprint). El dueño escribe el nombre del negocio y su correo. La app simula el envío de un código de 6 dígitos; en la demo sirve cualquiera. Al verificarlo, queda registrado y pasa a configurar canales. Si ya tenía cuenta, puede ir directo a "Hoy".
+
+**Configurar canales** (paso 1 del Blueprint). Lista efectivo, Bre-B, datáfonos y billeteras. Por cada canal se puede encender o apagar, indicar la comisión en porcentaje y en cuántos días consignan. Eso alimenta después los cálculos de "pendiente de consignar" en "Hoy". Al terminar, entra al día a día.
+
+**Historial de días** (paso 6 del Blueprint). Muestra cada día con su total vendido y su estado, con los textos del spec 07 §6: "Abierto", "Cerrado · falta tu confirmación", "Sellado ✓" y "Llegaron ventas después del cierre · confirma de nuevo". Desde aquí se puede ir a compartir el historial.
+
+**Compartir historial** (paso 7 del Blueprint; spec 05 §2). El dueño elige el período y la vigencia del enlace (7, 30 o 90 días), lo genera (simulado) y lo comparte con la hoja del sistema; en web se copia al portapapeles. Ve la lista de enlaces creados, cuántas veces se abrieron y puede revocarlos. Hay un atajo a `/verificar/demo` para ver lo que vería el banco o el prestamista.
 
 ## 2. Decisión técnica
 
@@ -86,7 +94,7 @@ Estas cinco pantallas son el corazón del flujo: el dueño las usa todos los dí
 
 - `andreMD287` (André): esqueleto del front (proyecto Expo, navegación, hooks, datos de ejemplo y cálculos de "Hoy"), publicación en Vercel, integración de los PRs del equipo y las secciones de front, decisión técnica y bloqueos de este documento.
 - `ricoththth` (Lizeth): sistema de diseño de la app (paleta Velto, tokens y componentes accesibles en `src/ui`, marco de teléfono para web), pantallas del día a día (Hoy, Registrar venta, Movimientos, Cerrar el día, Confirmar y sellar) y página del verificador, con su revisión de accesibilidad y contraste.
-- <!-- Escribe aquí: Santiago -->
+- `dpardogo` (Santiago): pantallas de bienvenida y registro, configurar canales, historial de días y compartir historial; `README.md` de la raíz.
 
 ## 4. Bloqueos y siguiente paso
 

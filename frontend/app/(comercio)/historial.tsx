@@ -1,15 +1,20 @@
 // Pantalla 8 — Historial de días (dueño: Santiago). Paso 6 del Blueprint.
-// Esqueleto: reemplázalo. Usa solo `src/hooks` y `src/ui`.
 
 import { router } from 'expo-router';
 import { formatoCOP, useHistorial } from '../../src/hooks';
-import { Boton, EnConstruccion, FilaLista, Pantalla } from '../../src/ui';
+import { Boton, FilaLista, Pantalla, Tarjeta, Texto } from '../../src/ui';
 
 export default function Historial() {
-  const { dias } = useHistorial();
+  const { dias, resumen } = useHistorial();
+
   return (
     <Pantalla titulo="Historial">
-      <EnConstruccion />
+      <Tarjeta>
+        <Texto variante="nota">
+          {resumen.sellados} sellados · {resumen.porConfirmar} por confirmar · {resumen.abiertos} abiertos
+        </Texto>
+      </Tarjeta>
+
       {dias.map((d) => (
         <FilaLista
           key={d.fecha}
@@ -18,7 +23,9 @@ export default function Historial() {
           derecha={formatoCOP(d.vendido_minor)}
         />
       ))}
+
       <Boton titulo="Compartir historial" onPress={() => router.push('/compartir')} />
+      <Boton titulo="Volver a Hoy" variante="secundario" onPress={() => router.replace('/hoy')} />
     </Pantalla>
   );
 }

@@ -1,6 +1,6 @@
 # Superprompt 2 — Arranque del desarrollo (tareas de André)
 
-> Úsalo **después** de crear el kanban con `docs/prompts/01-kanban.md`. En Claude Code, en la raíz del repo: `Lee docs/prompts/02-arranque-andre.md y empieza.`
+> Úsalo **después** del entregable de la semana 3 (`docs/prompts/03-entregable-semana3.md`) y de crear el kanban con `docs/prompts/01-kanban.md`. En Claude Code, en la raíz del repo: `Lee docs/prompts/02-arranque-andre.md y empieza.`
 
 ---
 
@@ -24,7 +24,7 @@ Trabajo en **Windows**. Antes de empezar, verifica qué hay instalado y dime qu�
 | Herramienta | Para qué |
 |---|---|
 | Git y `gh` CLI con sesión iniciada | Ramas, PRs, issues |
-| Node 22 LTS y pnpm | Monorepo, `shared`, `core`, `verifier`, `app` |
+| Node 22 LTS y pnpm | Monorepo, `shared`, `core`, `verifier`, `frontend` |
 | Rust estable y `stellar-cli` | Contratos (usa `stellar contract build`; si pide un target de WASM, dime cuál) |
 | Docker Desktop **o** un proyecto de Supabase en la nube para desarrollo | Base de datos. Si no hay Docker, propónme usar un proyecto en la nube y espera mi decisión |
 | Expo Go en mi iPhone | La app (desde el issue A-15) |
@@ -48,7 +48,8 @@ El orden busca dos cosas: desbloquear rápido a Santiago y a Lizeth, y enfrentar
 
 | Orden | Issue | Por qué va aquí |
 |---|---|---|
-| 1 | **A-01** Esqueleto del monorepo y CI `specs` | Desbloquea a todo el equipo. Hazlo mínimo y rápido: workspaces de pnpm con `shared`, `core`, `verifier` y `app` vacíos pero compilando, `contracts/` como workspace de Cargo, `.gitignore`, `.env.example` y el workflow con el job `specs` |
+| 0 | **A-00** Specs: canales y anticipos | Los specs 01 y 04 todavía no modelan la configuración de canales (comisión y días de consignación) ni los anticipos del Blueprint, y el entregable 3 ya los muestra en pantalla. Propónme los cambios a los specs y espera mi aprobación antes de A-02 |
+| 1 | **A-01** Esqueleto del monorepo y CI `specs` | Desbloquea a todo el equipo. Hazlo mínimo y rápido: workspaces de pnpm con `shared`, `core` y `verifier` vacíos pero compilando, e integrando el `frontend/` que ya existe del entregable 3, `contracts/` como workspace de Cargo, `.gitignore`, `.env.example` y el workflow con el job `specs` |
 | 2 | **A-02** Migraciones de Supabase | Desbloquea S-05 y todo `core` |
 | 3 | **A-03** `bimo-p256-verifier` | Riesgo alto. Tiene vectores exactos en spec 03 §2 |
 | 4 | **A-04** `bimo-registry` | Riesgo alto. Todas las pruebas del spec 03 §10 |
@@ -60,7 +61,7 @@ El orden busca dos cosas: desbloquear rápido a Santiago y a Lizeth, y enfrentar
 | 10 | A-13, A-14 | Indexador y verificación |
 | 11 | A-19 | Demo de punta a punta |
 
-**Meta de esta primera sesión: A-01 a A-05.**
+**Meta de esta primera sesión: A-00 a A-05.**
 
 ## Puntos conocidos donde es fácil equivocarse
 
@@ -72,7 +73,7 @@ El orden busca dos cosas: desbloquear rápido a Santiago y a Lizeth, y enfrentar
 | A-05 | El admin es multifirma 2 de 3 (spec 03 §8). Necesitas las llaves públicas de Santiago y Lizeth: **pídemelas**. Ellos las generan con `stellar keys generate`; nunca generes ni guardes llaves privadas de otras personas |
 | A-02 | Los triggers DB-02 y DB-04 son los más delicados. Prueba el caso del spec 01 §11 (`2026-10-07T04:30:00Z` → `2026-10-06`) |
 | A-02, A-06 | Las tablas referencian `auth.users` de Supabase. Asegúrate de que la migración corra igual en local y en la nube |
-| A-15 en adelante | La app debe seguir corriendo en **Expo Go** (spec 08 §3.0). No agregues dependencias nativas que Expo Go no traiga sin preguntarme, porque obligan a recompilar el development build en el Mac de Santiago |
+| A-15 en adelante | La app debe seguir corriendo en **Expo Go** y en **web** (spec 08 §3.0): las pantallas del entregable 3 se publican en Vercel. Lo que solo existe en nativo (Keychain, SQLite) va detrás de la misma interfaz, con la versión en memoria como respaldo en web. No agregues dependencias nativas que Expo Go no traiga sin preguntarme |
 | Todo | Montos en enteros, tiempo en UTC con milisegundos, día de negocio en Bogotá. Nada de montos ni datos personales en logs ni en la cadena |
 
 ## Al terminar la sesión

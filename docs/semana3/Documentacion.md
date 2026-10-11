@@ -85,7 +85,7 @@ Estas cinco pantallas son el corazón del flujo: el dueño las usa todos los dí
 <!-- Cada persona escribe solo su línea: usuario de GitHub y aporte -->
 
 - `andreMD287` (André): esqueleto del front (proyecto Expo, navegación, hooks, datos de ejemplo y cálculos de "Hoy"), publicación en Vercel, integración de los PRs del equipo y las secciones de front, decisión técnica y bloqueos de este documento.
-- `ricoththth` (Lizeth): sistema de diseño de la app (paleta Velto, tokens y componentes accesibles en `src/ui`, marco de teléfono para web), pantallas del día a día (Hoy, Registrar venta, Movimientos, Cerrar el día, Confirmar y sellar) y página del verificador.
+- `ricoththth` (Lizeth): sistema de diseño de la app (paleta Velto, tokens y componentes accesibles en `src/ui`, marco de teléfono para web), pantallas del día a día (Hoy, Registrar venta, Movimientos, Cerrar el día, Confirmar y sellar) y página del verificador, con su revisión de accesibilidad y contraste.
 - <!-- Escribe aquí: Santiago -->
 
 ## 4. Bloqueos y siguiente paso

@@ -39,7 +39,7 @@ export default function Bienvenida() {
   };
 
   return (
-    <Pantalla titulo="Bienvenida a Bimo" simulacion>
+    <Pantalla titulo="Bienvenida a Bimo" simulacion centrado>
       <Texto>Tus ventas de todos los canales, en un solo lugar.</Texto>
 
       {paso === 'datos' ? (

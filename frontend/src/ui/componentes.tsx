@@ -17,6 +17,7 @@ import {
   type TextInputProps,
   type ViewStyle,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { borders, colors, radii, shadow, spacing, touch, typography } from './tokens';
 
 // ─── Pantalla ──────────────────────────────────────────────────────────────────
@@ -31,16 +32,27 @@ export function Pantalla({
   children,
   simulacion,
   pie,
+  centrado,
 }: {
   titulo?: string;
   subtitulo?: string;
   children?: ReactNode;
   simulacion?: boolean;
   pie?: ReactNode;
+  /** Para pantallas sin barra de navegación: respeta la hora y la batería y centra el contenido en vertical. */
+  centrado?: boolean;
 }) {
+  const insets = useSafeAreaInsets();
   return (
     <View style={s.pantalla}>
-      <ScrollView style={s.pantalla} contentContainerStyle={s.contenido} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        style={s.pantalla}
+        contentContainerStyle={[
+          s.contenido,
+          centrado ? { flexGrow: 1, justifyContent: 'center', paddingTop: insets.top + spacing.xl, paddingBottom: insets.bottom + spacing.xl } : null,
+        ]}
+        keyboardShouldPersistTaps="handled"
+      >
         {titulo || simulacion ? (
           <View style={s.encabezado}>
             {titulo ? (

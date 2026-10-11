@@ -4,6 +4,7 @@
 // Totales y porcentaje SOLO con los días que coinciden (spec 05 §4.2). "Stellar" y "blockchain"
 // solo aparecen en "¿Cómo funciona?". La verificación es SIMULADA en esta demo.
 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
@@ -48,6 +49,8 @@ export default function Verificar() {
   const { token } = useLocalSearchParams<{ token: string }>();
   const v = useVerificacion(token ?? '');
   const { width } = useWindowDimensions();
+  const { top } = useSafeAreaInsets();
+  const hero = [s.hero, { paddingTop: spacing.xxl + top }];
   const ancho = width >= 820;
 
   const sellados = v.dias.filter((d) => d.resultado !== 'sin_sellar');
@@ -57,7 +60,7 @@ export default function Verificar() {
   if (v.estado !== 'listo' || !v.resumen || !v.periodo || !v.comercio) {
     return (
       <ScrollView style={s.pagina} contentContainerStyle={s.paginaContenido}>
-        <Contenedor estilo={s.hero}>
+        <Contenedor estilo={hero}>
           <Text style={s.marca}>bimo</Text>
           <Text style={s.heroTitulo}>
             {v.estado === 'inactivo' ? 'Este enlace ya no está activo' : 'No encontramos este enlace'}
@@ -81,7 +84,7 @@ export default function Verificar() {
   return (
     <ScrollView style={s.pagina} contentContainerStyle={s.paginaContenido}>
       {/* ─── Hero ─── */}
-      <Contenedor estilo={s.hero}>
+      <Contenedor estilo={hero}>
         <View style={s.heroArriba}>
           <Text style={s.marca}>bimo</Text>
           <EtiquetaSimulacion />

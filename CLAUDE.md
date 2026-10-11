@@ -51,12 +51,12 @@ Bimo es una app para pequeños comercios en Colombia: registra ventas sin intern
 
 ## 8. Kanban: mover las tarjetas según el trabajo
 
-El backlog vive en GitHub Projects, proyecto `<NUMERO_PROYECTO>` del usuario `andreMD287`. **Mientras trabajes en un issue, mantén su tarjeta en la columna que corresponde**, con `gh` desde la terminal.
+El backlog vive en GitHub Projects, proyecto `2` del usuario `andreMD287`. **Mientras trabajes en un issue, mantén su tarjeta en la columna que corresponde**, con `gh` desde la terminal.
 
 ### Primera vez en una sesión
 
 1. Comprueba que `gh auth status` incluya el permiso `project`. Si no, pide correr `gh auth refresh -s project` y espera.
-2. Si arriba dice `<NUMERO_PROYECTO>`, búscalo con `gh project list --owner andreMD287`, confírmalo con la persona y reemplázalo en este archivo en un commit `docs: …`.
+2. Si arriba dice `2`, búscalo con `gh project list --owner andreMD287`, confírmalo con la persona y reemplázalo en este archivo en un commit `docs: …`.
 3. Lee las columnas reales del campo **Status**, porque los nombres pueden variar:
    ```
    gh project field-list <N> --owner andreMD287 --format json

@@ -1,6 +1,6 @@
 # Spec 08 — Repositorio, stack, entornos, pruebas y plan de construcción
 
-**Estado:** v1.2 (la app vive en `frontend/` y también corre como web) · v1.1: app en React Native con Expo, paquete `shared` · **Depende de:** specs 01 a 07 · **Lo usan:** todo el equipo y Claude Code
+**Estado:** v1.3 (dependencias de `expo-router` y de la versión web de la app) · v1.2 (la app vive en `frontend/` y también corre como web) · v1.1: app en React Native con Expo, paquete `shared` · **Depende de:** specs 01 a 07 · **Lo usan:** todo el equipo y Claude Code
 
 Cierra el diseño detallado: dónde va cada cosa, con qué se construye, cómo se prueba y en qué orden se implementa el incremento 1.
 
@@ -52,7 +52,7 @@ Agregar una dependencia que no esté en esta lista requiere justificarla en el P
 | Cola de trabajos | `outbox_messages` en Postgres con `FOR UPDATE SKIP LOCKED` | Ninguna (sin Redis) |
 | Base de datos | Supabase (Postgres 15+, Auth) | `supabase` CLI para migraciones |
 | Contratos | Rust, `soroban-sdk`, `stellar-contracts` (OpenZeppelin) | `stellar-cli` |
-| App | React Native con Expo (SDK estable más reciente), TypeScript `strict`, `expo-router`. Solo iPhone (C-02) | `expo-sqlite`, `expo-secure-store`, `expo-crypto`, `expo-background-task`, `@react-native-community/netinfo`, `@stellar/stellar-sdk`, `@noble/curves`, `@noble/hashes`, `shared`; pruebas con `jest-expo` |
+| App | React Native con Expo (SDK estable más reciente), TypeScript `strict`, `expo-router`. Solo iPhone (C-02) | `expo-sqlite`, `expo-secure-store`, `expo-crypto`, `expo-background-task`, `@react-native-community/netinfo`, `@stellar/stellar-sdk`, `@noble/curves`, `@noble/hashes`, `shared`; pruebas con `jest-expo`. Las que exige `expo-router`: `expo-linking`, `expo-constants`, `react-native-safe-area-context`, `react-native-screens`, `expo-status-bar`. Para exportar a web (§3.0): `react-dom`, `react-native-web`, `@expo/metro-runtime`. Todas vienen en Expo Go |
 | `shared` | TypeScript `strict`, sin dependencias de Node ni de React Native | `@noble/hashes`, `ulid`; pruebas con `vitest` |
 | Web de verificación | Vite + React + TypeScript, estática | `@stellar/stellar-sdk` (solo RPC), `shared`; hashes con WebCrypto |
 | Hosting | Railway: dos servicios con la misma imagen (`api` y `worker`). Vercel para la web | — |

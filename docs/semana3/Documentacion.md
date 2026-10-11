@@ -49,14 +49,34 @@ Expo resuelve además una restricción del equipo: el desarrollo principal se ha
 Estas cinco pantallas son el corazón del flujo: el dueño las usa todos los días, con prisa y a veces bajo el sol del local. Por eso usan letra grande, botones de al menos 48 px y montos protagonistas. Ningún estado depende solo del color: siempre llevan ícono y texto. Todas usan el sistema de diseño de `src/ui` (paleta Velto: morado para la estructura y el botón principal, naranja y amarillo para los estados) y leen los datos solo desde los hooks.
 
 - **Hoy (paso 4 del Blueprint; H1, H3, H6, H8).** Abre con el estado del día y una tarjeta oscura con lo vendido hoy. Debajo están las ventas por canal, lo disponible (caja + cuenta), lo pendiente de consignar con la fecha en que llega cada monto, lo que le deben y las comisiones cobradas y estimadas. Si un día anterior falta por confirmar, un aviso lleva directo a sellarlo. El botón "Registrar venta" queda fijo abajo, siempre a mano.
+
+  <img src="capturas/04-hoy.png" alt="Hoy" width="240">
+
 - **Registrar venta (pasos 2 y 3; H2, H7, H8).** Efectivo viene elegido, así que una venta en efectivo es escribir el monto y tocar "Guardar venta" (QA-04). Cada canal muestra su comisión y en cuántos días consigna, y una tarjeta dice antes de guardar cuánto se cobrará de comisión y cuándo llega la plata. En "Más opciones" se divide el pago entre dos medios (queda como una sola venta), se marca un anticipo con el valor total del pedido y se agrega una nota.
+
+  <img src="capturas/05-registrar-venta.png" alt="Registrar venta" width="240"> <img src="capturas/06-registrar-venta-opciones.png" alt="Más opciones de la venta" width="240"> <img src="capturas/07-venta-guardada.png" alt="Venta guardada" width="240">
+
 - **Movimientos del día (pasos 2 y 6).** La lista de todo lo que pasó hoy, con hora, canales y nota. Al tocar una venta se puede corregir: se agrega una "Corrección" visible que la anula, y la venta original se queda en la lista, tachada. Nada se borra ni se edita. Después se ofrece registrar la venta con el monto correcto.
+
+  <img src="capturas/08-movimientos-corregir.png" alt="Corregir una venta" width="240"> <img src="capturas/09-movimientos-corregida.png" alt="Corrección visible" width="240">
+
 - **Cerrar el día (paso 5; H4).** Muestra cuánto debería haber en la caja y en la cuenta. El dueño escribe lo que contó (o toca "Está exacto") y, si quiere, lo que ve en su cuenta. Las diferencias aparecen con calma y con una posible explicación ("Puede ser un vuelto…"): un faltante o sobrante de caja queda como ajuste visible.
+
+  <img src="capturas/10-cerrar-el-dia.png" alt="Cerrar el día con un faltante" width="240">
+
 - **Confirmar y sellar (paso 6).** Resume el cierre en lenguaje humano ("Sellar sábado 10 de octubre: 6 ventas, $ 190.200"). Si hay varios días pendientes, se confirman todos con un solo "Confirmar con Face ID". Luego pasa por "Guardando tu cierre…" hasta "Sellado ✓", con los textos exactos del spec 07 §6. Face ID y el sello se simulan, y la pantalla lo dice con la etiqueta "Simulación".
+
+  <img src="capturas/11-confirmar-y-sellar.png" alt="Confirmar y sellar" width="240"> <img src="capturas/12-sellado.png" alt="Sellado" width="240">
 
 ### Página del verificador
 
 **`/verificar/demo` (paso 7 del Blueprint; H5; spec 05).** Es la página que abre el analista de un banco en su computador, sin crear cuenta, así que usa todo el ancho (en un celular se acomoda en una columna). Arriba, un encabezado oscuro con el nombre del negocio, el período y tres cifras: las ventas de los días que coinciden, el "% verificado por terceros" y el conteo de días ✅ coincide, ⚪ sin sellar y ❌ no coincide (spec 05 §4.1). Debajo, el resultado de cada día con su comprobante de sello, y las ventas por canal con barras, sumando **solo** los días que coinciden (spec 05 §4.2). Un recuadro "Prueba: ¿qué pasa si alguien cambia los datos?" deja elegir un día sellado y simular una alteración: el día pasa a ❌, sale de los totales y aparece un aviso. La sección "¿Cómo funciona?" explica en cuatro pasos simples cómo se sella y se comprueba; es el único lugar donde aparece la palabra Stellar. La comprobación es simulada en esta demo.
+
+<img src="capturas/15-verificador.png" alt="Verificador en el computador" width="720">
+
+<img src="capturas/16-verificador-alteracion.png" alt="Verificador con una alteración simulada" width="720">
+
+<img src="capturas/17-verificador-celular.png" alt="Verificador en el celular" width="240">
 
 ### Pantallas de configuración e historial
 
@@ -64,11 +84,19 @@ Estas cuatro pantallas cubren el arranque del negocio y lo que pasa después del
 
 **Bienvenida y registro** (paso 1 del Blueprint). El dueño escribe el nombre del negocio y su correo. La app simula el envío de un código de 6 dígitos; en la demo sirve cualquiera. Al verificarlo, queda registrado y pasa a configurar canales. Si ya tenía cuenta, puede ir directo a "Hoy".
 
+<img src="capturas/01-bienvenida.png" alt="Bienvenida" width="240"> <img src="capturas/02-codigo.png" alt="Código de verificación" width="240">
+
 **Configurar canales** (paso 1 del Blueprint). Lista efectivo, Bre-B, datáfonos y billeteras. Por cada canal se puede encender o apagar, indicar la comisión en porcentaje y en cuántos días consignan. Eso alimenta después los cálculos de "pendiente de consignar" en "Hoy". Al terminar, entra al día a día.
+
+<img src="capturas/03-canales.png" alt="Configurar canales" width="240">
 
 **Historial de días** (paso 6 del Blueprint). Muestra cada día con su total vendido y su estado, con los textos del spec 07 §6: "Abierto", "Cerrado · falta tu confirmación", "Sellado ✓" y "Llegaron ventas después del cierre · confirma de nuevo". Desde aquí se puede ir a compartir el historial.
 
+<img src="capturas/13-historial.png" alt="Historial de días" width="240">
+
 **Compartir historial** (paso 7 del Blueprint; spec 05 §2). El dueño elige el período y la vigencia del enlace (7, 30 o 90 días), lo genera (simulado) y lo comparte con la hoja del sistema; en web se copia al portapapeles. Ve la lista de enlaces creados, cuántas veces se abrieron y puede revocarlos. Hay un atajo a `/verificar/demo` para ver lo que vería el banco o el prestamista.
+
+<img src="capturas/14-compartir.png" alt="Compartir historial" width="240">
 
 ## 2. Decisión técnica
 

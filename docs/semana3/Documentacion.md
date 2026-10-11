@@ -46,11 +46,17 @@ Expo resuelve además una restricción del equipo: el desarrollo principal se ha
 
 ### Pantallas del dueño: día a día
 
-<!-- Escribe aquí: Lizeth (pantallas 3 a 7: Hoy, Registrar venta, Movimientos del día, Cerrar el día, Confirmar y sellar) -->
+Estas cinco pantallas son el corazón del flujo: el dueño las usa todos los días, con prisa y a veces bajo el sol del local. Por eso usan letra grande, botones de al menos 48 px y montos protagonistas. Ningún estado depende solo del color: siempre llevan ícono y texto. Todas usan el sistema de diseño de `src/ui` (paleta Velto: morado para la estructura y el botón principal, naranja y amarillo para los estados) y leen los datos solo desde los hooks.
+
+- **Hoy (paso 4 del Blueprint; H1, H3, H6, H8).** Abre con el estado del día y una tarjeta oscura con lo vendido hoy. Debajo están las ventas por canal, lo disponible (caja + cuenta), lo pendiente de consignar con la fecha en que llega cada monto, lo que le deben y las comisiones cobradas y estimadas. Si un día anterior falta por confirmar, un aviso lleva directo a sellarlo. El botón "Registrar venta" queda fijo abajo, siempre a mano.
+- **Registrar venta (pasos 2 y 3; H2, H7, H8).** Efectivo viene elegido, así que una venta en efectivo es escribir el monto y tocar "Guardar venta" (QA-04). Cada canal muestra su comisión y en cuántos días consigna, y una tarjeta dice antes de guardar cuánto se cobrará de comisión y cuándo llega la plata. En "Más opciones" se divide el pago entre dos medios (queda como una sola venta), se marca un anticipo con el valor total del pedido y se agrega una nota.
+- **Movimientos del día (pasos 2 y 6).** La lista de todo lo que pasó hoy, con hora, canales y nota. Al tocar una venta se puede corregir: se agrega una "Corrección" visible que la anula, y la venta original se queda en la lista, tachada. Nada se borra ni se edita. Después se ofrece registrar la venta con el monto correcto.
+- **Cerrar el día (paso 5; H4).** Muestra cuánto debería haber en la caja y en la cuenta. El dueño escribe lo que contó (o toca "Está exacto") y, si quiere, lo que ve en su cuenta. Las diferencias aparecen con calma y con una posible explicación ("Puede ser un vuelto…"): un faltante o sobrante de caja queda como ajuste visible.
+- **Confirmar y sellar (paso 6).** Resume el cierre en lenguaje humano ("Sellar sábado 10 de octubre: 6 ventas, $ 190.200"). Si hay varios días pendientes, se confirman todos con un solo "Confirmar con Face ID". Luego pasa por "Guardando tu cierre…" hasta "Sellado ✓", con los textos exactos del spec 07 §6. Face ID y el sello se simulan, y la pantalla lo dice con la etiqueta "Simulación".
 
 ### Página del verificador
 
-<!-- Escribe aquí: Lizeth (pantalla 10: /verificar/demo) -->
+**`/verificar/demo` (paso 7 del Blueprint; H5; spec 05).** Es la página que abre el analista de un banco en su computador, sin crear cuenta, así que usa todo el ancho (en un celular se acomoda en una columna). Arriba, un encabezado oscuro con el nombre del negocio, el período y tres cifras: las ventas de los días que coinciden, el "% verificado por terceros" y el conteo de días ✅ coincide, ⚪ sin sellar y ❌ no coincide (spec 05 §4.1). Debajo, el resultado de cada día con su comprobante de sello, y las ventas por canal con barras, sumando **solo** los días que coinciden (spec 05 §4.2). Un recuadro "Prueba: ¿qué pasa si alguien cambia los datos?" deja elegir un día sellado y simular una alteración: el día pasa a ❌, sale de los totales y aparece un aviso. La sección "¿Cómo funciona?" explica en cuatro pasos simples cómo se sella y se comprueba; es el único lugar donde aparece la palabra Stellar. La comprobación es simulada en esta demo.
 
 ### Pantallas de configuración e historial
 
@@ -79,7 +85,7 @@ Expo resuelve además una restricción del equipo: el desarrollo principal se ha
 <!-- Cada persona escribe solo su línea: usuario de GitHub y aporte -->
 
 - `andreMD287` (André): esqueleto del front (proyecto Expo, navegación, hooks, datos de ejemplo y cálculos de "Hoy"), publicación en Vercel, integración de los PRs del equipo y las secciones de front, decisión técnica y bloqueos de este documento.
-- <!-- Escribe aquí: Lizeth -->
+- `ricoththth` (Lizeth): sistema de diseño de la app (paleta Velto, tokens y componentes accesibles en `src/ui`, marco de teléfono para web), pantallas del día a día (Hoy, Registrar venta, Movimientos, Cerrar el día, Confirmar y sellar) y página del verificador.
 - <!-- Escribe aquí: Santiago -->
 
 ## 4. Bloqueos y siguiente paso

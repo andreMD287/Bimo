@@ -651,3 +651,19 @@ const s = StyleSheet.create({
   simulacionPunto: { width: 8, height: 8, borderRadius: radii.pill, borderWidth: borders.medio, borderColor: colors.navy },
   simulacionTexto: { ...typography.etiqueta, color: colors.navy },
 });
+
+// ─── Íconos de canal ───────────────────────────────────────────────────────────
+
+const ICONO_CANAL: Record<string, string> = {
+  efectivo: '💵',
+  breb: '⚡',
+  datafono_externo: '💳',
+  tap_to_pay: '📱',
+  fiado: '📒',
+  transferencia_otro: '📲',
+};
+
+/** Ícono decorativo de un canal (`channel` del spec 01). Siempre va junto al nombre. */
+export function iconoCanal(channel: string): string {
+  return ICONO_CANAL[channel] ?? '•';
+}

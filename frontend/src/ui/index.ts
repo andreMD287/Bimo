@@ -15,6 +15,7 @@ export {
   Aviso,
   EtiquetaSimulacion,
   EnConstruccion,
+  iconoCanal,
   type TonoInsignia,
   type EstadoDia,
   type ResultadoVerificacion,

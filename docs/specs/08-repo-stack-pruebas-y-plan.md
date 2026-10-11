@@ -1,6 +1,6 @@
 # Spec 08 — Repositorio, stack, entornos, pruebas y plan de construcción
 
-**Estado:** v1.2 (indexador, conciliador, worker de TTL y `EnviadorRelayer` diferidos para después de la demo; §6.1) · v1.1: app en React Native con Expo; paquete `shared` · **Depende de:** specs 01 a 07 · **Lo usan:** todo el equipo y Claude Code
+**Estado:** v1.2 (la app vive en `frontend/` y también corre como web) · v1.1: app en React Native con Expo, paquete `shared` · **Depende de:** specs 01 a 07 · **Lo usan:** todo el equipo y Claude Code
 
 Cierra el diseño detallado: dónde va cada cosa, con qué se construye, cómo se prueba y en qué orden se implementa el incremento 1.
 
@@ -30,7 +30,7 @@ Cierra el diseño detallado: dónde va cada cosa, con qué se construye, cómo s
 │  ├─ account/                   smart account de OpenZeppelin, solo configuración
 │  └─ deployments/               testnet.json, mainnet.json
 ├─ verifier/                     web estática de verificación + cli/verify.mjs (spec 05)
-└─ app/                          app React Native con Expo (expo-router)
+└─ frontend/                     app React Native con Expo (expo-router); también se exporta como web
    ├─ src/store/                 base local expo-sqlite (spec 04 §2)
    ├─ src/sync/                  push, pull y outbox (spec 04)
    ├─ src/signer/                interfaz Firmante y llave P-256 de software (spec 03 §6)
@@ -76,6 +76,7 @@ Agregar una dependencia que no esté en esta lista requiere justificarla en el P
 | Desarrollo diario | `npx expo start` en Windows y **Expo Go** en el iPhone. Cubre pantallas, base local, sincronización y firma con la llave de software sin biometría |
 | Face ID sobre la llave (`requireAuthentication`) y la demo | Un **development build**: Santiago lo compila en su Mac con `npx expo run:ios --device` y su Apple ID gratuito, y lo instala en el iPhone de André. Después, André sigue desde Windows con `npx expo start --dev-client` y recarga en vivo |
 | Recompilar el development build | Solo cuando cambia una dependencia nativa, o cada 7 días porque vence la firma gratuita |
+| Demos y entregas del bootcamp | `npx expo export --platform web` y publicar en Vercel: la misma app se ve en cualquier navegador. Lo que es solo nativo (Keychain, Face ID, SQLite) se reemplaza en web por implementaciones de prueba detrás de la misma interfaz |
 | Incremento 2 | EAS Build en la nube (sin Mac), con la cuenta paga de Apple, para los módulos nativos de Tap to Pay y passkeys |
 
 ### 3.1 Variables de `core`
@@ -136,7 +137,7 @@ Ningún secreto va en el repositorio, en logs ni en la app. La app solo conoce l
 | `contracts` | Cambios en `contracts/` | `cargo test`, compilar WASM, comprobar que la interfaz de `registry` y `p256-verifier` no tiene funciones fuera del spec 03 |
 | `verifier` | Cambios en `verifier/` o `docs/specs/` | build y pruebas con vectores |
 | `shared` | Cambios en `shared/` o `docs/specs/` | typecheck, `vitest` con vectores y casos |
-| `app` | Cambios en `app/` o `shared/` | typecheck, lint, `jest-expo`. Corre en Ubuntu, sin macOS |
+| `frontend` | Cambios en `frontend/` o `shared/` | typecheck, lint, `jest-expo`. Corre en Ubuntu, sin macOS |
 
 Una rama no se fusiona a `main` con jobs en rojo.
 
@@ -156,7 +157,7 @@ Cada tarea es una sesión (o pocas) de Claude Code. **Instrucción base para cad
 | T06 | `core`: autenticación, `POST /merchants`, reto y `POST /devices`, worker de despliegue de `bimo-account` | 03, 06, 07 (§4) | T02, T05 | Cuenta en testnet creada con una llave de software |
 | T07 | `core`: push y pull | 04, 06 | T02, T03 | Criterios del spec 04 del lado servidor |
 | T08 | `core`: cierre, solicitudes de firma, envío, confirmación, enmiendas | 03, 06, 07 | T06, T07 | Transiciones del spec 07 en verde; día de ejemplo sellado en testnet |
-| T09 | `core`: simuladores `/dev/*` (indexador, worker de TTL y conciliador: diferidos, §6.1) | 03, 06, 07 | T08 | Simuladores crean asientos verificados |
+| T09 | `core`: indexador, worker de TTL, conciliador, simuladores `/dev/*` | 03, 06, 07 | T08 | Eventos indexados; simuladores crean asientos verificados |
 | T10 | `core`: enlaces y API pública de verificación | 05, 06 | T08 | Paquete del spec 05 correcto |
 | T11 | Web de verificación + `cli/verify.mjs` | 05 | T10 | Criterios del spec 05 |
 | T12 | App: esqueleto Expo, navegación y base local `expo-sqlite` con el esquema del spec 04 §2 | 01, 04 | T03 | La app abre en Expo Go y guarda una venta localmente usando `shared` |
@@ -165,19 +166,7 @@ Cada tarea es una sesión (o pocas) de Claude Code. **Instrucción base para cad
 | T15 | App: pantalla de firma (validación de la preimagen, Face ID), enlaces y "Ventas por revisar" | 03 §5, 05, 07 §6 | T08, T13, T14 | Flujo completo desde el iPhone |
 | T16 | Ensayo de la demo (sección 7) y ajustes | todos | T09, T11, T15 | Demo completa sin intervención manual |
 
-**Reparto sugerido (ARQUITECTURA §4.3):** André T04, T05, T06, T08, T13, T15; Santiago T02, T03, T07, T09, T10; Lizeth T11 y la UI de T12 a T15 (flujos, textos sin jerga). T01 lo hace André primero.
-
-### 6.1 Diferido para después de la demo del bootcamp
-
-Decisión del equipo (v1.2): por el plazo de dos semanas, estas piezas no son necesarias para el guion de la sección 7 y se construyen después, sin cambiar ningún otro spec:
-
-| Pieza | Spec | Mientras tanto |
-|---|---|---|
-| Indexador de eventos y conciliador (ADR-11) | 03 §4.4, 07 §3 | La confirmación de sellos se hace con `getTransaction` (07 L-4). `chain_events` e `indexer_cursor` se crean en la migración, pero nadie las llena |
-| Worker de TTL | 03 §4.5 | El contrato extiende el TTL al escribir; en testnet basta para la demo |
-| Adaptador `EnviadorRelayer` | 03 §7 | Todo se envía con `EnviadorDirecto` (fee-bump con la cuenta `fallback-submitter`). El puerto `Enviador` se mantiene, así que el relayer se suma sin tocar el dominio |
-
-Los criterios de aceptación de esas piezas siguen vigentes; solo cambian de momento.
+**Reparto sugerido (ARQUITECTURA §4.3):** André T04, T05, T06, T08, T13, T15; Santiago T02, T03, T07, T09, T10; Lizeth T11 y la UI de T12 a T15 (flujos, textos sin jerga). T01 lo hace André primero. El reparto operativo, con tareas más finas, está en el kanban (`docs/prompts/01-kanban.md`).
 
 **Rutas en paralelo:** después de T01, las líneas *contratos* (T04→T05), *base de datos y núcleo* (T02, T03→T07) y *app* (T12) avanzan al mismo tiempo.
 

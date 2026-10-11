@@ -10,7 +10,7 @@ Eres el desarrollador principal de Bimo, junto a André. Vas a implementar sus i
 
 ## Reglas que no se negocian
 
-1. **`CLAUDE.md` manda.** Léelo completo antes de cualquier cosa, y vuelve a él cada vez que dudes.
+1. **`CLAUDE.md` manda.** Léelo completo antes de cualquier cosa, y vuelve a él cada vez que dudes. Su sección 8 dice cómo mover las tarjetas del kanban; aplícala en cada issue.
 2. **Los specs son la fuente de verdad.** Antes de cada issue, lee completos los specs que cita y las secciones relacionadas del índice `docs/specs/README.md`. No inventes tablas, campos, endpoints, estados, errores, funciones de contrato ni formatos.
 3. **Si el spec no alcanza, te detienes.** Si falta algo, es ambiguo, se contradice o la realidad de una librería no coincide con lo que dice el spec, **para y pregúntame**. Proponme el cambio exacto al spec (archivo, sección y texto nuevo) y no sigas con esa parte hasta que lo apruebe. Primero se actualiza el spec, en su propio commit `docs(specs): …`, y después el código.
 4. **Pruebas primero en lo crítico.** En todo lo que tenga vectores (spec 02, spec 03 §2) o reglas con ID, escribe primero la prueba con el ID en el nombre y luego el código.
@@ -23,7 +23,7 @@ Trabajo en **Windows**. Antes de empezar, verifica qué hay instalado y dime qu�
 
 | Herramienta | Para qué |
 |---|---|
-| Git y `gh` CLI con sesión iniciada | Ramas, PRs, issues |
+| Git y `gh` CLI con sesión iniciada y permiso `project` | Ramas, PRs, issues y tarjetas del kanban |
 | Node 22 LTS y pnpm | Monorepo, `shared`, `core`, `verifier`, `frontend` |
 | Rust estable y `stellar-cli` | Contratos (usa `stellar contract build`; si pide un target de WASM, dime cuál) |
 | Docker Desktop **o** un proyecto de Supabase en la nube para desarrollo | Base de datos. Si no hay Docker, propónme usar un proyecto en la nube y espera mi decisión |
@@ -36,11 +36,12 @@ Si un comando de un spec o de una herramienta asume macOS o Linux, adáptalo a W
 1. **Elige el siguiente issue** con `gh issue list --label persona:andre --state open`, siguiendo el orden de la sección siguiente. Solo empieza uno cuyas dependencias estén cerradas. Si una dependencia es de Santiago y no está lista, dime cuál y propón con qué seguir mientras tanto.
 2. **Lee el issue completo** y todos los specs que cita.
 3. **Muéstrame un plan corto** (archivos a crear o tocar, pruebas que vas a escribir, riesgos) y **espera mi "ok"**.
-4. Crea una rama `feat/<ID>-<slug>` (por ejemplo `feat/A-04-registry`).
-5. Implementa, con pruebas que lleven en el nombre el ID de la regla que cubren.
+4. **Mueve la tarjeta a In Progress** (CLAUDE.md §8) y crea una rama `feat/<ID>-<slug>` (por ejemplo `feat/A-04-registry`).
+5. Implementa, con pruebas que lleven en el nombre el ID de la regla que cubren. Si te bloqueas, **mueve la tarjeta a Blocked** y comenta en el issue qué falta.
 6. Corre **todas** las verificaciones locales: typecheck, lint, pruebas, `node docs/specs/02-check.mjs` y `cargo test` si aplica. No sigas con nada en rojo.
-7. Haz push y abre el PR con `gh pr create`. En la descripción: ID del issue, specs implementados, criterios de aceptación cubiertos (marcados) y `Closes #<número>`.
-8. **Resume** qué hiciste, qué quedó pendiente y si encontraste algo que merezca cambiar un spec. Espera mi "sigue" antes del próximo issue.
+7. Haz push y abre el PR con `gh pr create`. En la descripción: ID del issue, specs implementados y criterios de aceptación cubiertos (marcados), con `Closes #<número>` si cumple todos o `Refs #<número>` si cumple una parte. **Mueve la tarjeta a In Review.**
+8. **Resume** qué hiciste, qué quedó pendiente y si encontraste algo que merezca cambiar un spec. Yo reviso y fusiono el PR.
+9. Cuando te diga "sigue", comprueba con `gh pr view <número> --json state` que el PR quedó fusionado. Si es así, **mueve la tarjeta a Done** y verifica que el issue quedó cerrado. Luego pasa al siguiente issue.
 
 ## Orden de trabajo
 
@@ -48,7 +49,7 @@ El orden busca dos cosas: desbloquear rápido a Santiago y a Lizeth, y enfrentar
 
 | Orden | Issue | Por qué va aquí |
 |---|---|---|
-| 0 | **A-00** Specs: canales y anticipos | Los specs 01 y 04 todavía no modelan la configuración de canales (comisión y días de consignación) ni los anticipos del Blueprint, y el entregable 3 ya los muestra en pantalla. Propónme los cambios a los specs y espera mi aprobación antes de A-02 |
+| 0 | **A-00** Specs: canales y anticipos | Los specs 01 y 04 todavía no modelan la configuración de canales (comisión y días de consignación) ni los anticipos del Blueprint, y el entregable 3 ya los muestra en pantalla. Si el issue no existe en el kanban, créalo primero. Propónme los cambios a los specs y espera mi aprobación antes de A-02 |
 | 1 | **A-01** Esqueleto del monorepo y CI `specs` | Desbloquea a todo el equipo. Hazlo mínimo y rápido: workspaces de pnpm con `shared`, `core` y `verifier` vacíos pero compilando, e integrando el `frontend/` que ya existe del entregable 3, `contracts/` como workspace de Cargo, `.gitignore`, `.env.example` y el workflow con el job `specs` |
 | 2 | **A-02** Migraciones de Supabase | Desbloquea S-05 y todo `core` |
 | 3 | **A-03** `bimo-p256-verifier` | Riesgo alto. Tiene vectores exactos en spec 03 §2 |
@@ -74,12 +75,13 @@ El orden busca dos cosas: desbloquear rápido a Santiago y a Lizeth, y enfrentar
 | A-02 | Los triggers DB-02 y DB-04 son los más delicados. Prueba el caso del spec 01 §11 (`2026-10-07T04:30:00Z` → `2026-10-06`) |
 | A-02, A-06 | Las tablas referencian `auth.users` de Supabase. Asegúrate de que la migración corra igual en local y en la nube |
 | A-15 en adelante | La app debe seguir corriendo en **Expo Go** y en **web** (spec 08 §3.0): las pantallas del entregable 3 se publican en Vercel. Lo que solo existe en nativo (Keychain, SQLite) va detrás de la misma interfaz, con la versión en memoria como respaldo en web. No agregues dependencias nativas que Expo Go no traiga sin preguntarme |
+| Kanban | Los issues se crearon antes de algunos cambios: pueden decir `app/` en vez de `frontend/` y no traer A-00. Si un issue contradice los specs actuales, mandan los specs; avísame para corregir el issue |
 | Todo | Montos en enteros, tiempo en UTC con milisegundos, día de negocio en Bogotá. Nada de montos ni datos personales en logs ni en la cadena |
 
 ## Al terminar la sesión
 
 Deja un resumen con:
-- issues cerrados y PRs abiertos;
+- issues cerrados y PRs abiertos, con la columna en que quedó cada tarjeta;
 - cambios propuestos o hechos a los specs;
 - lo que desbloqueaste para Santiago y Lizeth (para avisarles);
 - el siguiente issue recomendado y qué necesitas de mí para hacerlo.

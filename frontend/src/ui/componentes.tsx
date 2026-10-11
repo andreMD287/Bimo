@@ -6,6 +6,7 @@
 
 import { useState, type ReactNode } from 'react';
 import {
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -343,10 +344,11 @@ export function MontoGrande({
   return (
     <View style={{ gap: spacing.xxs }} accessible accessibilityLabel={[etiqueta, monto, detalle].filter(Boolean).join(', ')}>
       <Text style={[s.etiqueta, { color: claro ? colors.lilac : colors.textMuted }]}>{etiqueta.toUpperCase()}</Text>
+      {/* En web no existe adjustsFontSizeToFit: limitado a una línea, el monto se cortaría con "…". */}
       <Text
         style={[tamano === 'grande' ? s.montoGrande : s.monto, { color: claro ? colors.white : colors.text }]}
         adjustsFontSizeToFit
-        numberOfLines={1}
+        numberOfLines={Platform.OS === 'web' ? undefined : 1}
       >
         {monto}
       </Text>

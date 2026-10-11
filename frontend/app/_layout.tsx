@@ -4,22 +4,12 @@
 import { Stack, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import type { ReactNode } from 'react';
-import { Platform, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { DatosProvider } from '../src/hooks';
-import { color } from '../src/ui';
-
-const ANCHO_MARCO = 420;
+import { MarcoTelefono, color } from '../src/ui';
 
 function Marco({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const { width } = useWindowDimensions();
-  const conMarco = Platform.OS === 'web' && width > ANCHO_MARCO + 80 && !pathname.startsWith('/verificar');
-  if (!conMarco) return <View style={{ flex: 1 }}>{children}</View>;
-  return (
-    <View style={s.escritorio}>
-      <View style={s.telefono}>{children}</View>
-    </View>
-  );
+  return <MarcoTelefono sinMarco={pathname.startsWith('/verificar')}>{children}</MarcoTelefono>;
 }
 
 export default function Layout() {
@@ -50,16 +40,3 @@ export default function Layout() {
   );
 }
 
-const s = StyleSheet.create({
-  escritorio: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#DCDCD6', padding: 24 },
-  telefono: {
-    width: ANCHO_MARCO,
-    height: '100%',
-    maxHeight: 880,
-    borderRadius: 32,
-    overflow: 'hidden',
-    borderWidth: 8,
-    borderColor: '#1B1B1B',
-    backgroundColor: color.fondo,
-  },
-});

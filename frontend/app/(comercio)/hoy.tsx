@@ -160,7 +160,7 @@ export default function Hoy() {
 }
 
 const s = StyleSheet.create({
-  par: { flexDirection: 'row', gap: spacing.m },
-  mitad: { flex: 1 },
+  par: { gap: spacing.m },
+  mitad: {},
   avisoAccion: { marginTop: spacing.s, alignItems: 'flex-start' },
 });

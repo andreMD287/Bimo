@@ -149,7 +149,7 @@ export default function Verificar() {
                       {d.tx_hash ? <Text style={s.nota}>Comprobante del sello: {abreviar(d.tx_hash)} (simulado)</Text> : null}
                     </View>
                     <View style={{ alignItems: 'flex-end', gap: spacing.xxs }}>
-                      <Text style={[s.diaMonto, no || d.resultado === 'sin_sellar' ? s.tachado : null]}>
+                      <Text style={[s.diaMonto, no ? s.tachado : d.resultado === 'sin_sellar' ? s.apagado : null]}>
                         {formatoCOP(d.ventas_minor)}
                       </Text>
                       {no ? <Text style={s.notaMal}>No se suma</Text> : null}
@@ -312,6 +312,7 @@ const s = StyleSheet.create({
   nota: { ...typography.nota, color: colors.textMuted },
   notaMal: { ...typography.nota, fontWeight: '700', color: colors.dangerText },
   tachado: { textDecorationLine: 'line-through', color: colors.textMuted },
+  apagado: { color: colors.textMuted },
 
   dia: { flexDirection: 'row', alignItems: 'center', gap: spacing.m, paddingVertical: spacing.m },
   diaBorde: { borderBottomWidth: 1, borderBottomColor: colors.border },

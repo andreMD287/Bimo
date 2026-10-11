@@ -10,14 +10,17 @@ function agruparMiles(entero: string): string {
   return out;
 }
 
-/** 2000000 → "$ 20.000"; 2000050 → "$ 20.000,50"; -500000 → "-$ 5.000". */
+/**
+ * Texto de un monto en pesos, redondeado al peso más cercano (las mitades suben).
+ * El redondeo es solo para mostrar: el monto guardado sigue en centavos exactos.
+ * 2000000 → "$ 20.000"; 2000050 → "$ 20.001"; -500000 → "-$ 5.000".
+ */
 export function formatoCOP(centavos: number): string {
   if (!Number.isSafeInteger(centavos)) throw new Error('monto no entero');
   const abs = Math.abs(centavos);
-  const pesos = (abs - (abs % 100)) / 100;
-  const resto = abs % 100;
-  const texto = `$ ${agruparMiles(String(pesos))}${resto === 0 ? '' : ',' + String(resto).padStart(2, '0')}`;
-  return centavos < 0 ? `-${texto}` : texto;
+  const pesos = (abs - (abs % 100)) / 100 + (abs % 100 >= 50 ? 1 : 0);
+  const texto = `$ ${agruparMiles(String(pesos))}`;
+  return centavos < 0 && pesos > 0 ? `-${texto}` : texto;
 }
 
 /** Pesos enteros tecleados en el teclado de monto → centavos. "20000" → 2000000. */

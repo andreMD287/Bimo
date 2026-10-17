@@ -56,7 +56,7 @@ André revisa el avance **el domingo a las 8:00 p. m.** y decide qué nivel se e
 
 - **Nivel 1, mínimo no negociable:** `bimo-registry` escrito, con pruebas, desplegado en testnet, con `contracts/deployments/testnet.json` y al menos una transacción de `seal` visible en el explorador. "Confirmar y sellar" del front envía un sello real y muestra el enlace. Video público, `MVPFunctional.md` completo y los tres con commit.
 - **Nivel 2, objetivo:** backend con datos persistidos, el verificador recalcula la raíz de verdad (✅ / ❌ reales) y el CLI `verify.mjs` funciona.
-- **Nivel 3, solo si sobra:** `bimo-p256-verifier` desplegado, qué más.
+- **Nivel 3, solo si sobra:** `bimo-p256-verifier` desplegado con los vectores del spec 03 §2 como segundo contrato propio. La smart account y el relayer quedan para después.
 
 Todo lo que no entre queda en "Riesgos y pendientes", dicho con honestidad. Lo que declaramos en el Entregable 3 (smart account y relayer de OpenZeppelin) cambia con este recorte, y eso también se documenta en "Aprendizajes y ajustes".
 

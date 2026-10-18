@@ -1,7 +1,8 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { AppError } from '../../errors';
-import { closeDay, ensureSigningRequest, getPendingSigning, listDays, parseDate } from '../../modules/cierre';
+import { closeDay, ensureSigningRequest, getPendingSigning, listDays, parseDate, submitSignature } from '../../modules/cierre';
+import { getDevicePublicKey } from '../../modules/comercios';
 import { routeOf } from '../contract';
 import type { ServerDeps } from '../server';
 
@@ -44,5 +45,19 @@ export function registerDiasRoutes(app: FastifyInstance, deps: ServerDeps): void
     if (!deps.seals) return { request: null };
     const request = await getPendingSigning(deps.db, { merchantId: req.ctx.merchantId as string, preparer: deps.seals, now: now() });
     return { request };
+  });
+
+  const sigRoute = routeOf('post', '/signing/{id}/signature');
+  app.post<{ Params: { id: string } }>('/signing/:id/signature', { config: { access: 'device', roles: ['dueno'] } }, async (req, reply) => {
+    const body = (sigRoute.body as z.ZodType<{ signature: string }>).parse(req.body);
+    if (!/^[A-Za-z0-9+/]*={0,2}$/.test(body.signature)) throw new AppError('invalid_request', 'Base64 invalido');
+    const signature = Buffer.from(body.signature, 'base64');
+    if (signature.length !== 64) throw new AppError('invalid_request', 'La firma debe medir 64 bytes');
+    if (!deps.signer) throw new AppError('chain_unavailable', 'La firma de sellos no esta configurada');
+    const merchantId = req.ctx.merchantId as string;
+    const publicKey = await getDevicePublicKey(deps.db, merchantId, req.ctx.deviceId as string);
+    if (!publicKey) throw new AppError('forbidden', 'Dispositivo no autorizado');
+    await submitSignature(deps.db, { merchantId, requestId: req.params.id, deviceId: req.ctx.deviceId as string, ownerPublicKey: publicKey, signature, signer: deps.signer, now: now() });
+    return reply.status(202).send({ status: 'firmado' });
   });
 }

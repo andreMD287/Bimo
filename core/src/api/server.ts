@@ -7,6 +7,7 @@ import type { CoreConfig } from '../config';
 import type { Db } from '../db/client';
 import type { MemberRole } from '../db/types';
 import { AppError, errorBody } from '../errors';
+import type { SealSigner } from '../modules/cierre';
 import type { SealPreparer } from '../modules/stellar';
 import { createLogger } from '../logger';
 import { RateLimiter } from './ratelimit';
@@ -50,6 +51,8 @@ export interface ServerDeps {
   health: HealthChecks;
   /** Prepara la firma de los sellos (simula seal_batch en Stellar). Sin esto no se crean solicitudes de firma. */
   seals?: SealPreparer;
+  /** Verifica y normaliza la firma del dueno y firma por el atestador (POST /signing/{id}/signature). */
+  signer?: SealSigner;
   /** Para pruebas: destino de los logs y reloj. */
   logDestination?: NodeJS.WritableStream;
   now?: () => number;

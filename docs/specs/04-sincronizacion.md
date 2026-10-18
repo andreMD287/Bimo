@@ -1,6 +1,6 @@
 # Spec 04 — Sincronización offline
 
-**Estado:** v1.2 (app en React Native: `expo-sqlite` y reglas en el paquete `shared`) · v1.1: `salida`, cálculos de "Hoy", pull antes de firmar · **Depende de:** ARQUITECTURA (ADR-08, 14), spec 01 (v1.3), spec 02 (v1.1) · **Lo usan:** módulo `sync` de la app, módulos `ledger` y `comercios` de `bimo-core`, spec 06 (API)
+**Estado:** v1.3 (canales y anticipos; entidad `channel` en push/pull) · v1.2 (app en React Native: `expo-sqlite` y reglas en el paquete `shared`) · v1.1: `salida`, cálculos de "Hoy", pull antes de firmar · **Depende de:** ARQUITECTURA (ADR-08, 14), spec 01 (v1.4), spec 02 (v1.1) · **Lo usan:** módulo `sync` de la app, módulos `ledger` y `comercios` de `bimo-core`, spec 06 (API)
 
 Define cómo la app vende sin internet y cómo se pone de acuerdo con el servidor sin perder ni duplicar nada (QA-03). Los endpoints exactos (rutas, autenticación, errores HTTP) están en el spec 06; aquí se define **qué** se intercambia y con qué reglas.
 
@@ -27,8 +27,9 @@ Tablas (amplían spec 01 §8):
 | `local_entries` | id, business_date, occurred_at_ms, kind, origin, reverses_entry_id, note, **sync_status**, **reject_code**, created_on_device | `sync_status`: `pendiente` · `sincronizado` · `rechazado` |
 | `local_lines` | id, entry_id, line_no, account_code, direction, amount_minor, currency, channel, customer_id | |
 | `local_customers` | id, display_name, phone, updated_at_ms, sync_status | |
+| `local_channels` | id, name, channel, commission_bps, settlement_days, active, updated_at_ms, sync_status | Configuración de canales (spec 01 v1.4) |
 | `local_days` | business_date, status, counted_cash_minor, seal_status, pending_signature | Copia de lo que manda el servidor |
-| `outbox` | seq (autoincremental), entity (`customer` · `entry` · `close`), entity_id, attempts, next_attempt_at, last_error | Cola FIFO |
+| `outbox` | seq (autoincremental), entity (`customer` · `channel` · `entry` · `close`), entity_id, attempts, next_attempt_at, last_error | Cola FIFO |
 | `sync_state` | pull_cursor, last_push_at, last_pull_at, clock_skew_ms | Una sola fila |
 
 **Regla de escritura:** registrar una venta es **una sola transacción local** que inserta el asiento, sus líneas y la fila de `outbox`. O queda todo o no queda nada.
@@ -122,13 +123,14 @@ La hora **nunca** es motivo de rechazo: una venta registrada con un reloj equivo
 
 ### 5.1 Petición
 
-Lote de hasta 200 ítems del `outbox`, **en el orden de la cola**: los clientes van antes de los asientos que los usan, y los asientos antes de sus reversos.
+Lote de hasta 200 ítems del `outbox`, **en el orden de la cola**: los clientes y canales van antes de los asientos que los usan, y los asientos antes de sus reversos.
 
 ```json
 {
   "device_id": "01JA…",
   "device_time": "2026-10-06T21:00:00.123Z",
   "items": [
+    { "type": "channel", "data": { "id": "01JA…", "name": "Datáfono Bold", "channel": "datafono_externo", "commission_bps": 250, "settlement_days": 2, "active": true, "updated_at": "…" } },
     { "type": "customer", "data": { "id": "01JA…", "display_name": "Doña Rosa", "phone": null, "updated_at": "…" } },
     { "type": "entry", "data": {
         "id": "01JA…", "occurred_at": "2026-10-06T20:30:00.000Z", "kind": "venta", "origin": "declarado",
@@ -213,12 +215,13 @@ El servidor mantiene, por comercio, un **feed de cambios** de solo adición (`me
 |---|---|---|
 | `entry` | Asiento creado por otro dispositivo o por `bimo-core` (verificados, simuladores) | Lo inserta si no lo tiene |
 | `customer` | Cliente creado o editado en otro dispositivo | Inserta o reemplaza si `updated_at` es más reciente |
+| `channel` | Canal creado o editado en otro dispositivo | Inserta o reemplaza si `updated_at` es más reciente |
 | `day` | Cambio de estado de un día | Actualiza `local_days` |
 | `seal` | Cambio de estado de un sello, incluido "esperando tu firma" | Actualiza `local_days` y, si falta firma, muestra el aviso |
 
 La app aplica cada página en **una sola transacción local** junto con el nuevo cursor. Si se interrumpe, repite la página y nada se duplica, porque todo se identifica por ID.
 
-**Clientes:** son los únicos datos editables. Gana la última edición según `updated_at`.
+**Clientes y canales:** son los únicos datos editables (no son contables). Gana la última edición según `updated_at`.
 
 ---
 
@@ -233,7 +236,9 @@ La app aplica cada página en **una sola transacción local** junto con el nuevo
 | Efectivo que debería haber en caja | **Saldo** de `caja` (todos los días) | H4 |
 | En la cuenta (Bre-B y consignaciones) | **Saldo** de `cuenta_socio` | H1 |
 | Pendiente de consignar | **Saldo** de `por_cobrar_psp` | H3 |
-| Te deben (fiado) | **Saldo** de `por_cobrar_clientes`, con detalle por cliente | H8 |
+| Te deben (fiado y anticipos) | **Saldo** de `por_cobrar_clientes`, con detalle por cliente. Un anticipo es una venta con pago parcial: lo que falta queda en `por_cobrar_clientes` y cada abono posterior es un `abono_cliente` (spec 01 §6) | H8 |
+| Comisión estimada de una venta | Por línea de canal configurado: `floor(monto × commission_bps / 10000)`. Es un cálculo de pantalla y no se guarda | H6 |
+| Fecha esperada de la plata | `business_date` de la venta + `settlement_days` del canal (días calendario) | H3 |
 | Comisiones de hoy | Σ `debe` − Σ `haber` de `comisiones` | H6 |
 | Salidas de hoy | Σ `debe` de `gastos` y de `retiros_dueno` | — |
 

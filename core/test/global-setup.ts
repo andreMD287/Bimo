@@ -69,6 +69,12 @@ export default async function setup(project: TestProject) {
   project.provide('pgAdminUrl', adminUrl);
   return async () => {
     await embedded?.stop();
-    if (dir) rmSync(dir, { recursive: true, force: true });
+    if (dir) {
+      try {
+        rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+      } catch {
+        // Windows puede tardar en soltar los archivos del Postgres embebido; el directorio es temporal
+      }
+    }
   };
 }

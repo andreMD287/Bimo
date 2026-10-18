@@ -5,6 +5,7 @@ export {
   consumeChallenge,
   createMerchant,
   getAccountInfo,
+  getDevicePublicKey,
   getMerchantMe,
   issueChallenge,
   merchantOfUser,

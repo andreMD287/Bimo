@@ -11,9 +11,10 @@ import { createDb, createPool } from './db/client';
 import { loadDeployments } from './deployments';
 import { createLogger } from './logger';
 import { Keypair, rpc } from '@stellar/stellar-sdk';
-import { EnviadorDirecto, RpcSealPreparer, StellarAccountDeployer } from './modules/stellar';
+import { EnviadorDirecto, RpcSealPreparer, StellarAccountDeployer, StellarSealSubmitter, createSealSigner } from './modules/stellar';
 import { runWorkers } from './workers';
 import { createAccountDeployWorker } from './workers/account-deploy';
+import { createSealSubmitWorker } from './workers/seal-submit';
 
 const mode = process.argv[2];
 if (mode !== 'api' && mode !== 'worker') {
@@ -35,6 +36,9 @@ if (mode === 'api') {
     devices: createPgDeviceDirectory(db),
     health: createHealthChecks(db, deployments.rpc_url, config.relayerUrl),
     routes: [registerComerciosRoutes, registerSyncRoutes, registerDiasRoutes],
+    ...(config.secrets.attester
+      ? { signer: createSealSigner({ attester: Keypair.fromSecret(config.secrets.attester), networkPassphrase: deployments.network_passphrase }) }
+      : {}),
     seals: new RpcSealPreparer({
       server: new rpc.Server(deployments.rpc_url),
       deployments,
@@ -55,5 +59,6 @@ if (mode === 'api') {
     feeSource: Keypair.fromSecret(fallbackSubmitter),
   });
   const accountDeployer = new StellarAccountDeployer({ server, deployments, deployer: Keypair.fromSecret(deployer), enviador });
-  runWorkers([createAccountDeployWorker({ db, deployer: accountDeployer, log })], log);
+  const submitter = new StellarSealSubmitter({ server, deployments, deployer: Keypair.fromSecret(deployer), enviador });
+  runWorkers([createAccountDeployWorker({ db, deployer: accountDeployer, log }), createSealSubmitWorker({ db, submitter, log })], log);
 }

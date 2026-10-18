@@ -220,3 +220,14 @@ export async function getAccountInfo(
   const row = await db.selectFrom('merchants').select(['stellar_address', 'account_status']).where('id', '=', merchantId).executeTakeFirst();
   return row ? { stellarAddress: row.stellar_address, accountStatus: row.account_status } : null;
 }
+
+/** Clave publica (65 bytes) de un dispositivo activo del comercio; null si no existe o esta revocado. */
+export async function getDevicePublicKey(db: Tx, merchantId: string, deviceId: string): Promise<Buffer | null> {
+  const row = await db
+    .selectFrom('devices')
+    .select(['public_key', 'revoked_at'])
+    .where('merchant_id', '=', merchantId)
+    .where('id', '=', deviceId)
+    .executeTakeFirst();
+  return row && row.revoked_at === null ? row.public_key : null;
+}

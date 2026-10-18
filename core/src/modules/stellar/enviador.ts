@@ -15,9 +15,18 @@ export interface EnvioResult {
   error?: string;
 }
 
+export interface EnviarOpciones {
+  /** Se llama en cuanto la red acepta la transaccion (antes de esperar la confirmacion): permite guardar el `tx_hash`. */
+  onSubmitted?: (hash: string) => Promise<void>;
+}
+
+export type EstadoTx = 'confirmado' | 'fallido' | 'pendiente' | 'desconocido';
+
 export interface Enviador {
   /** Envia la transaccion (ya firmada por quien corresponda) y espera su resultado. Lanza `chain_unavailable` si la red no responde. */
-  enviar(tx: Transaction): Promise<EnvioResult>;
+  enviar(tx: Transaction, opts?: EnviarOpciones): Promise<EnvioResult>;
+  /** Consulta una transaccion ya enviada (por ejemplo tras reiniciar el worker). */
+  estado(hash: string): Promise<EstadoTx>;
 }
 
 /** Subconjunto de rpc.Server que usa el adaptador (permite sustituirlo en pruebas). */
@@ -43,7 +52,18 @@ export class EnviadorDirecto implements Enviador {
     this.timeoutMs = opts.timeoutMs ?? 60_000;
   }
 
-  async enviar(tx: Transaction): Promise<EnvioResult> {
+  async estado(hash: string): Promise<EstadoTx> {
+    try {
+      const got = await this.opts.server.getTransaction(hash);
+      if (got.status === 'SUCCESS') return 'confirmado';
+      if (got.status === 'FAILED') return 'fallido';
+      return 'pendiente';
+    } catch {
+      throw unavailable('getTransaction');
+    }
+  }
+
+  async enviar(tx: Transaction, opts: EnviarOpciones = {}): Promise<EnvioResult> {
     // El fee-bump lo paga fallback-submitter; la tx interna conserva sus firmas y autorizaciones.
     const bump: FeeBumpTransaction = TransactionBuilder.buildFeeBumpTransaction(
       this.opts.feeSource,
@@ -63,6 +83,8 @@ export class EnviadorDirecto implements Enviador {
     if (sent.status === 'ERROR') {
       return { hash: sent.hash, status: 'fallido', error: sent.errorResult ? String((sent.errorResult as { result?: { type?: string } }).result?.type ?? 'ERROR') : 'ERROR' };
     }
+
+    await opts.onSubmitted?.(sent.hash);
 
     const deadline = Date.now() + this.timeoutMs;
     for (;;) {

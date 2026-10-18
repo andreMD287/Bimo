@@ -1,6 +1,6 @@
 # Spec 03 — Contratos Soroban y flujo de firma
 
-**Estado:** v1.3 (`EnviadorRelayer` diferido después de la demo, spec 08 §6.1) · v1.2 (firmante en React Native: llave P-256 de software con `@noble/curves`) · v1.1: Face ID en simulador, pull antes de validar · **Depende de:** ARQUITECTURA (ADR-04, 06, 07, 09, 14, 15), spec 01, spec 02 · **Lo usan:** `contracts/`, módulo `stellar` de `bimo-core`, módulo `cuenta y passkey` de la app, web de verificación
+**Estado:** v1.5 (verificador: `batch_canonicalize_key`, errores y largo del hash; stellar-cli ≥ 25.2) · v1.4 (`SealItem.amend` pasa de `Option<AmendInfo>` a un enum `Amend`) · v1.3 (`EnviadorRelayer` diferido después de la demo, spec 08 §6.1) · v1.2 (firmante en React Native: llave P-256 de software con `@noble/curves`) · v1.1: Face ID en simulador, pull antes de validar · **Depende de:** ARQUITECTURA (ADR-04, 06, 07, 09, 14, 15), spec 01, spec 02 · **Lo usan:** `contracts/`, módulo `stellar` de `bimo-core`, módulo `cuenta y passkey` de la app, web de verificación
 
 Define los tres contratos del incremento 1 y cómo se arma, firma y envía cada transacción. Claude Code no agrega funciones, parámetros, llaves de almacenamiento ni eventos que no estén aquí.
 
@@ -29,7 +29,7 @@ flowchart LR
 | `bimo-account` | Smart account de OpenZeppelin `stellar-contracts` (paquete `accounts`), sin cambios de lógica | 1 por comercio | Solo con la autorización de la propia cuenta, es decir, la firma del dueño. Bimo no puede |
 | `bimo-registry` | Propio | 1 por red | **No** (ADR-15) |
 
-Herramientas: `soroban-sdk` y `stellar-contracts` en la última versión estable compatible entre sí, fijada en `Cargo.lock`; `stellar-cli` para compilar y desplegar.
+Herramientas: `soroban-sdk` y `stellar-contracts` en la última versión estable compatible entre sí, fijada en `Cargo.lock`; `stellar-cli` para compilar y desplegar. Versiones fijadas en el repo: `soroban-sdk 26.1.x` y `stellar-accounts =0.7.2` (OpenZeppelin, comparte el SDK 26); `stellar-cli` ≥ 25.2 (la 23.x no compila con la feature `experimental_spec_shaking_v2` que exige OpenZeppelin).
 
 ---
 
@@ -42,15 +42,21 @@ type KeyData = BytesN<65>;   // clave pública SEC1 sin comprimir: 0x04 ‖ X �
 type SigData = BytesN<64>;   // r ‖ s big-endian, con s en la mitad baja (low-S)
 
 fn verify(e: &Env, hash: Bytes, key_data: BytesN<65>, sig_data: BytesN<64>) -> bool {
-    // hash = auth_digest de 32 bytes que calcula la smart account (sección 5.3)
+    // hash = auth_digest de 32 bytes que calcula la smart account (sección 5.3); otro largo -> Error::InvalidHashLength
     let digest = e.crypto().sha256(&hash);          // el firmante firma SHA-256(auth_digest)
     e.crypto().secp256r1_verify(&key_data, &digest, &sig_data); // falla (panic) si no es válida
     true
 }
 
 fn canonicalize_key(e: &Env, key_data: BytesN<65>) -> Bytes {
-    // exige key_data[0] == 0x04; devuelve los 65 bytes tal cual
+    // exige key_data[0] == 0x04 (si no, Error::InvalidKeyPrefix); devuelve los 65 bytes tal cual
 }
+
+fn batch_canonicalize_key(e: &Env, key_data: Vec<BytesN<65>>) -> Vec<Bytes> {
+    // v1.5: el trait Verifier de stellar-accounts 0.7.2 lo exige; aplica canonicalize_key a cada clave, en orden
+}
+
+#[contracterror] enum Error { InvalidKeyPrefix = 1, InvalidHashLength = 2 }   // v1.5
 ```
 
 **Por qué el doble SHA-256:** es el comportamiento de CryptoKit (`signature(for: Data)` siempre aplica SHA-256 antes de firmar), que usará la llave del Secure Enclave en el incremento 2. Para que el mismo verificador sirva hoy y entonces, la llave de software del incremento 1 firma exactamente lo mismo: un ECDSA P-256 cuyo digest es `SHA-256(auth_digest)`, en low-S, con `@noble/curves`. Cuidado: según la versión de `@noble/curves`, `sign` aplica SHA-256 al mensaje por defecto o espera el digest ya calculado. La implementación debe pasar la prueba con los vectores de abajo (la firma debe verificar contra el digest `79991d75…`), que es lo que decide si está bien.
@@ -93,13 +99,21 @@ Contrato de cuenta de OpenZeppelin compilado tal cual; Bimo solo fija la configu
 ### 4.1 Tipos
 
 ```rust
+/// v1.4: soroban-sdk 26.1 no compila con `testutils` un campo `Option<struct>` dentro de un `#[contracttype]`
+/// (no existe `From<struct> for ScVal`), asi que el opcional es un enum equivalente.
+#[contracttype]
+pub enum Amend {
+    None,                                  // primer sello del dia
+    Of(AmendInfo),                         // enmienda de una version vigente
+}
+
 #[contracttype]
 pub struct SealItem {
     pub date: u32,                         // AAAAMMDD
     pub root: BytesN<32>,                  // spec 02 §4
     pub entry_count: u32,
     pub origin_flags: u32,                 // spec 02 §6; bits 4..31 deben ser 0
-    pub amend: Option<AmendInfo>,          // None = primer sello del día
+    pub amend: Amend,                      // Amend::None = primer sello del día
 }
 
 #[contracttype]
@@ -135,7 +149,7 @@ pub enum DataKey {
 |---|---|---|
 | `__constructor(admin: Address, attester: Address)` | — | Guarda ambos. Se ejecuta una sola vez al desplegar |
 | `seal(merchant, item: SealItem)` | `merchant` **y** atestador vigente | Equivale a `seal_batch(merchant, [item])` |
-| `seal_batch(merchant, items: Vec<SealItem>)` | `merchant` **y** atestador vigente (una sola vez cada uno para todo el lote) | Para cada ítem: si `amend` es `None`, exige que no exista `Latest` y guarda la versión 1. Si es `Some`, exige `Latest == prev_version` y guarda `prev_version + 1`. Todo o nada |
+| `seal_batch(merchant, items: Vec<SealItem>)` | `merchant` **y** atestador vigente (una sola vez cada uno para todo el lote) | Para cada ítem: si `amend` es `Amend::None`, exige que no exista `Latest` y guarda la versión 1. Si es `Amend::Of`, exige `Latest == prev_version` y guarda `prev_version + 1`. Todo o nada |
 | `get(merchant, date) → Vec<SealRecord>` | Público | Todas las versiones, de la 1 a la vigente |
 | `latest(merchant, date) → Option<SealRecord>` | Público | Solo la vigente |
 | `extend_ttl(merchant, date)` | Público, cualquiera puede pagarlo | Extiende el TTL de `Latest` y de todas las versiones de ese día |
@@ -143,7 +157,7 @@ pub enum DataKey {
 | `set_attester(new: Address)` | `admin` | Cambia el atestador. Los sellos viejos conservan el suyo |
 | `set_admin(new: Address)` | `admin` | Cambia el admin |
 
-`amend` del documento de arquitectura es un `SealItem` con `amend = Some(…)`; no hay función aparte. No existe ninguna función que borre, modifique un `SealRecord` o actualice el código del contrato.
+`amend` del documento de arquitectura es un `SealItem` con `amend = Amend::Of(…)`; no hay función aparte. No existe ninguna función que borre, modifique un `SealRecord` o actualice el código del contrato.
 
 ### 4.3 Validaciones y errores
 

@@ -2,10 +2,11 @@
 # soroban-sdk 26.1.0 es la version que usa stellar-contracts (OpenZeppelin) 0.7.x: todos los crates deben compartirla.
 [workspace]
 resolver = "2"
-members = ["registry"]
+members = ["registry", "p256-verifier"]
 
 [workspace.dependencies]
 soroban-sdk = "26.1.0"
+stellar-accounts = "=0.7.2"
 
 [profile.release]
 opt-level = "z"

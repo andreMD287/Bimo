@@ -1,6 +1,6 @@
 # Spec 03 — Contratos Soroban y flujo de firma
 
-**Estado:** v1.4 (`SealItem.amend` pasa de `Option<AmendInfo>` a un enum `Amend`) · v1.3 (`EnviadorRelayer` diferido después de la demo, spec 08 §6.1) · v1.2 (firmante en React Native: llave P-256 de software con `@noble/curves`) · v1.1: Face ID en simulador, pull antes de validar · **Depende de:** ARQUITECTURA (ADR-04, 06, 07, 09, 14, 15), spec 01, spec 02 · **Lo usan:** `contracts/`, módulo `stellar` de `bimo-core`, módulo `cuenta y passkey` de la app, web de verificación
+**Estado:** v1.5 (verificador: `batch_canonicalize_key`, errores y largo del hash; stellar-cli ≥ 25.2) · v1.4 (`SealItem.amend` pasa de `Option<AmendInfo>` a un enum `Amend`) · v1.3 (`EnviadorRelayer` diferido después de la demo, spec 08 §6.1) · v1.2 (firmante en React Native: llave P-256 de software con `@noble/curves`) · v1.1: Face ID en simulador, pull antes de validar · **Depende de:** ARQUITECTURA (ADR-04, 06, 07, 09, 14, 15), spec 01, spec 02 · **Lo usan:** `contracts/`, módulo `stellar` de `bimo-core`, módulo `cuenta y passkey` de la app, web de verificación
 
 Define los tres contratos del incremento 1 y cómo se arma, firma y envía cada transacción. Claude Code no agrega funciones, parámetros, llaves de almacenamiento ni eventos que no estén aquí.
 
@@ -29,7 +29,7 @@ flowchart LR
 | `bimo-account` | Smart account de OpenZeppelin `stellar-contracts` (paquete `accounts`), sin cambios de lógica | 1 por comercio | Solo con la autorización de la propia cuenta, es decir, la firma del dueño. Bimo no puede |
 | `bimo-registry` | Propio | 1 por red | **No** (ADR-15) |
 
-Herramientas: `soroban-sdk` y `stellar-contracts` en la última versión estable compatible entre sí, fijada en `Cargo.lock`; `stellar-cli` para compilar y desplegar.
+Herramientas: `soroban-sdk` y `stellar-contracts` en la última versión estable compatible entre sí, fijada en `Cargo.lock`; `stellar-cli` para compilar y desplegar. Versiones fijadas en el repo: `soroban-sdk 26.1.x` y `stellar-accounts =0.7.2` (OpenZeppelin, comparte el SDK 26); `stellar-cli` ≥ 25.2 (la 23.x no compila con la feature `experimental_spec_shaking_v2` que exige OpenZeppelin).
 
 ---
 
@@ -42,15 +42,21 @@ type KeyData = BytesN<65>;   // clave pública SEC1 sin comprimir: 0x04 ‖ X �
 type SigData = BytesN<64>;   // r ‖ s big-endian, con s en la mitad baja (low-S)
 
 fn verify(e: &Env, hash: Bytes, key_data: BytesN<65>, sig_data: BytesN<64>) -> bool {
-    // hash = auth_digest de 32 bytes que calcula la smart account (sección 5.3)
+    // hash = auth_digest de 32 bytes que calcula la smart account (sección 5.3); otro largo -> Error::InvalidHashLength
     let digest = e.crypto().sha256(&hash);          // el firmante firma SHA-256(auth_digest)
     e.crypto().secp256r1_verify(&key_data, &digest, &sig_data); // falla (panic) si no es válida
     true
 }
 
 fn canonicalize_key(e: &Env, key_data: BytesN<65>) -> Bytes {
-    // exige key_data[0] == 0x04; devuelve los 65 bytes tal cual
+    // exige key_data[0] == 0x04 (si no, Error::InvalidKeyPrefix); devuelve los 65 bytes tal cual
 }
+
+fn batch_canonicalize_key(e: &Env, key_data: Vec<BytesN<65>>) -> Vec<Bytes> {
+    // v1.5: el trait Verifier de stellar-accounts 0.7.2 lo exige; aplica canonicalize_key a cada clave, en orden
+}
+
+#[contracterror] enum Error { InvalidKeyPrefix = 1, InvalidHashLength = 2 }   // v1.5
 ```
 
 **Por qué el doble SHA-256:** es el comportamiento de CryptoKit (`signature(for: Data)` siempre aplica SHA-256 antes de firmar), que usará la llave del Secure Enclave en el incremento 2. Para que el mismo verificador sirva hoy y entonces, la llave de software del incremento 1 firma exactamente lo mismo: un ECDSA P-256 cuyo digest es `SHA-256(auth_digest)`, en low-S, con `@noble/curves`. Cuidado: según la versión de `@noble/curves`, `sign` aplica SHA-256 al mensaje por defecto o espera el digest ya calculado. La implementación debe pasar la prueba con los vectores de abajo (la firma debe verificar contra el digest `79991d75…`), que es lo que decide si está bien.

@@ -1,6 +1,6 @@
 # Spec 03 — Contratos Soroban y flujo de firma
 
-**Estado:** v1.5 (verificador: `batch_canonicalize_key`, errores y largo del hash; stellar-cli ≥ 25.2) · v1.4 (`SealItem.amend` pasa de `Option<AmendInfo>` a un enum `Amend`) · v1.3 (`EnviadorRelayer` diferido después de la demo, spec 08 §6.1) · v1.2 (firmante en React Native: llave P-256 de software con `@noble/curves`) · v1.1: Face ID en simulador, pull antes de validar · **Depende de:** ARQUITECTURA (ADR-04, 06, 07, 09, 14, 15), spec 01, spec 02 · **Lo usan:** `contracts/`, módulo `stellar` de `bimo-core`, módulo `cuenta y passkey` de la app, web de verificación
+**Estado:** v1.6 (preimage `address_v2` en protocolo 29, §5.1) · v1.5 (verificador: `batch_canonicalize_key`, errores y largo del hash; stellar-cli ≥ 25.2) · v1.4 (`SealItem.amend` pasa de `Option<AmendInfo>` a un enum `Amend`) · v1.3 (`EnviadorRelayer` diferido después de la demo, spec 08 §6.1) · v1.2 (firmante en React Native: llave P-256 de software con `@noble/curves`) · v1.1: Face ID en simulador, pull antes de validar · **Depende de:** ARQUITECTURA (ADR-04, 06, 07, 09, 14, 15), spec 01, spec 02 · **Lo usan:** `contracts/`, módulo `stellar` de `bimo-core`, módulo `cuenta y passkey` de la app, web de verificación
 
 Define los tres contratos del incremento 1 y cómo se arma, firma y envía cada transacción. Claude Code no agrega funciones, parámetros, llaves de almacenamiento ni eventos que no estén aquí.
 
@@ -222,6 +222,9 @@ sequenceDiagram
 ```
 
 ### 5.1 Lo que arma `bimo-core`
+
+> **v1.6 (hallazgo en testnet, protocolo 29):** la simulación devuelve auth entries con credenciales `address_v2`, cuyo preimage es `HashIdPreimage::SorobanAuthorizationWithAddress { network_id, nonce, signature_expiration_ledger, invocation, address }`. Las credenciales `address` (v1) siguen aceptadas y todo lo de esta sección funciona con las dos (probado con `bimo-account` real; ver `docs/semana4/contratos-testnet.md`). `bimo-core` conserva el tipo de credencial que devuelve la simulación y la app debe aceptar ambos preimages al validar (§5.2), calculando `signature_payload = SHA-256(XDR(preimage))` del que reciba.
+
 
 1. Construye la invocación `seal_batch(merchant, items)` con los datos del cierre (spec 02 §6) y la simula.
 2. De la simulación toma dos auth entries con credenciales de dirección: la de la smart account y la del atestador.

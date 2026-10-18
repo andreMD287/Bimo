@@ -13,7 +13,7 @@ Diseño detallado del incremento 1 y de la base del producto completo. La arquit
 | 05 | [Enlace de verificación](05-enlace-de-verificacion.md) | 1.0 | Qué ve el verificador y cómo comprueba sin confiar en nadie |
 | 06 | [API](06-api.md) | 1.0 | Endpoints, autenticación, errores, simuladores |
 | 07 | [Máquinas de estado](07-maquinas-de-estado.md) | 1.0 | Día, solicitud de firma, sello, cuenta |
-| 08 | [Repo, stack, pruebas y plan](08-repo-stack-pruebas-y-plan.md) | 1.3 | Estructura, dependencias, entornos, cómo probar sin Mac, CI, tareas T01–T16, lo diferido después de la demo y guion de la demo |
+| 08 | [Repo, stack, pruebas y plan](08-repo-stack-pruebas-y-plan.md) | 1.4 | Estructura, dependencias, entornos, cómo probar sin Mac, CI, tareas T01–T16, lo diferido después de la demo y guion de la demo |
 
 ## Cómo se cambia un spec
 

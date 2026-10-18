@@ -1,0 +1,4 @@
+# Workspace de contratos Soroban (spec 03). Los miembros se agregan en A-03 (p256-verifier), A-04 (registry) y A-05 (account).
+[workspace]
+resolver = "2"
+members = []

@@ -7,6 +7,7 @@ import { buildServer } from '../src/api/server';
 import { createPgDeviceDirectory } from '../src/auth/devices';
 import { AppError } from '../src/errors';
 import { newId } from '../src/ids';
+import type { ChannelCode } from '../src/db/types';
 import { LEDGER_ACCOUNTS } from '../src/modules/comercios';
 import type { SealItemInput, SealPreparer } from '../src/modules/stellar';
 import { insertEntry, seedMerchant, venta } from './fixtures';
@@ -33,6 +34,17 @@ class FakePreparer implements SealPreparer {
   }
 }
 const preparer = new FakePreparer();
+
+interface VecEntry {
+  id: string;
+  occurred_at: string;
+  kind: 'venta' | 'abono_cliente' | 'liquidacion_psp' | 'ajuste_caja' | 'reverso' | 'salida';
+  origin: 'declarado' | 'verificado' | 'on_chain';
+  reverses_entry_id?: string | null;
+  external_source?: string | null;
+  external_ref?: string | null;
+  lines: Array<{ line_no: number; account_code: string; direction: 'debe' | 'haber'; amount_minor: number; currency: 'COP' | 'USDC'; channel?: string; customer_id?: string }>;
+}
 
 const U = (n: number) => `eeeeeeee-eeee-4eee-8eee-${String(n).padStart(12, '0')}`;
 let nUser = 0;
@@ -189,7 +201,7 @@ describe('spec 07 §2: solicitud de firma (S-1, S-3, S-4, D-10)', () => {
   it('spec02-9 la raiz del dia de ejemplo es 0859...c08b (5 asientos, origin_flags declarado + verificado)', async () => {
     const m = await newMerchant();
     const v = JSON.parse(readFileSync(new URL('../../docs/specs/02-vectores.json', import.meta.url), 'utf8')) as {
-      entries: Array<{ entry: any; salt: string }>;
+      entries: Array<{ entry: VecEntry; salt: string }>;
       day_example: { entry_ids: string[]; root: string };
     };
     // el comercio del vector: mismo merchant_id para que los bytes coincidan
@@ -205,7 +217,7 @@ describe('spec 07 §2: solicitud de firma (S-1, S-3, S-4, D-10)', () => {
     await t.db.insertInto('customers').values({ id: '01JA9Y000000000000000000R0', merchant_id: vecMerchant, display_name: 'Rosa', phone: null, created_at: new Date(clock), updated_at: new Date(clock) }).execute();
     const byId = new Map(v.entries.map((e) => [e.entry.id, e]));
     for (const id of v.day_example.entry_ids) {
-      const e = (byId.get(id) as { entry: any; salt: string }).entry;
+      const e = (byId.get(id) as { entry: VecEntry; salt: string }).entry;
       await t.db.transaction().execute(async (tx) => {
         await tx.insertInto('journal_entries').values({
           id: e.id, merchant_id: vecMerchant, occurred_at: e.occurred_at, kind: e.kind, origin: e.origin, reverses_entry_id: e.reverses_entry_id ?? null,
@@ -214,7 +226,7 @@ describe('spec 07 §2: solicitud de firma (S-1, S-3, S-4, D-10)', () => {
         for (const l of e.lines) {
           await tx.insertInto('journal_lines').values({
             id: newId(), entry_id: e.id, line_no: l.line_no, account_id: accountIds.get(l.account_code) as string, direction: l.direction,
-            amount_minor: l.amount_minor, currency: l.currency, channel: l.channel ?? null, customer_id: l.customer_id ?? null,
+            amount_minor: l.amount_minor, currency: l.currency, channel: (l.channel ?? null) as ChannelCode | null, customer_id: l.customer_id ?? null,
           }).execute();
         }
         await tx.insertInto('entry_salts').values({ entry_id: e.id, salt: Buffer.from((byId.get(id) as { salt: string }).salt, 'hex') }).execute();

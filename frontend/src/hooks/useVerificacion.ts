@@ -20,7 +20,10 @@
  * SIMULACIÓN: no lee Stellar ni recalcula el Merkle. La comprobación real (spec 05 §4)
  * usa el formato canónico y el árbol del paquete `shared/`.
  */
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { VerificationPackage, VerificationResult } from '@bimo/verifier';
+import { ApiError } from '../api/client';
+import { MODO_REAL } from '../runtime/config';
 import { textoCanal } from '../lib/estados';
 import { fechaCorta, fechaLarga } from '../lib/fechas';
 import { vendido, vendidoPorCanal } from '../lib/hoy';
@@ -43,11 +46,24 @@ function aLista(m: Partial<Record<ChannelCode, number>>): TotalCanal[] {
 }
 
 export function useVerificacion(token: string) {
-  const { estado, dispatch } = useDatos();
+  const { estado, dispatch, rt } = useDatos();
   const enlace = estado.enlaces.find((e) => e.token === token) ?? null;
 
+  // Real: baja el paquete publico y lo comprueba contra Stellar en ESTE dispositivo (spec 05 §4)
+  const [real, setReal] = useState<{ fase: 'cargando' | 'listo' | 'inactivo' | 'no_encontrado' | 'error'; pkg?: VerificationPackage; result?: VerificationResult }>({ fase: 'cargando' });
   useEffect(() => {
-    if (enlace) dispatch({ tipo: 'ver_enlace', token });
+    if (!rt || !token) return;
+    let vivo = true;
+    rt.verify(token)
+      .then(({ pkg, result }) => vivo && setReal({ fase: result.trusted ? 'listo' : 'error', pkg, result }))
+      .catch((e: unknown) => vivo && setReal({ fase: e instanceof ApiError ? (e.code === 'link_inactive' ? 'inactivo' : e.code === 'unauthenticated' ? 'no_encontrado' : 'error') : 'error' }));
+    return () => {
+      vivo = false;
+    };
+  }, [rt, token]);
+
+  useEffect(() => {
+    if (!rt && enlace) dispatch({ tipo: 'ver_enlace', token });
     // cuenta una vista por token (view_count, spec 05 §3)
   }, [token]);
 
@@ -100,6 +116,34 @@ export function useVerificacion(token: string) {
     };
   }, [enlace, estado]);
 
+  const datosReal = useMemo(() => {
+    if (!real.pkg || !real.result) return null;
+    const { pkg, result } = real;
+    const iso = (n: number) => String(n).replace(/^(\d{4})(\d{2})(\d{2})$/, '$1-$2-$3');
+    return {
+      comercio: { business_name: pkg.merchant.business_name, stellar_address: pkg.merchant.stellar_address ?? '' },
+      periodo: { desde: pkg.link.date_from, hasta: pkg.link.date_to, texto: `${fechaCorta(pkg.link.date_from)} – ${fechaCorta(pkg.link.date_to)}` },
+      dias: result.days.map((d) => ({
+        fecha: iso(d.date),
+        fechaTexto: fechaLarga(iso(d.date)),
+        resultado: d.result as ResultadoDia,
+        enmiendas: d.amendments,
+        ventas_minor: d.salesMinor,
+        porCanal: aLista(d.byChannel),
+        tx_hash: d.txHash,
+      })),
+      resumen: {
+        coinciden: result.summary.matching,
+        sinSellar: result.summary.unsealed,
+        noCoinciden: result.summary.mismatched,
+        ventas_minor: result.summary.salesMinor,
+        porCanal: aLista(result.summary.byChannel),
+        porcentajeTerceros: result.summary.thirdPartyPercent,
+        relojDudoso: result.summary.clockSuspectCount,
+      },
+    };
+  }, [real]);
+
   const simularAlteracion = useCallback(
     (fecha: BusinessDate) => dispatch({ tipo: 'alternar_alteracion', business_date: fecha }),
     [dispatch],
@@ -108,11 +152,21 @@ export function useVerificacion(token: string) {
   const inactivo = enlace !== null && (enlace.revoked_at !== null || enlace.expires_at < new Date().toISOString());
   const estadoPagina: 'no_encontrado' | 'inactivo' | 'listo' = !enlace ? 'no_encontrado' : inactivo ? 'inactivo' : 'listo';
 
+  if (rt) {
+    return {
+      estado: (real.fase === 'listo' ? 'listo' : real.fase) as 'no_encontrado' | 'inactivo' | 'listo' | 'cargando' | 'error',
+      ...(datosReal ?? { comercio: null, periodo: null, dias: [], resumen: null }),
+      alterados: [] as BusinessDate[],
+      simularAlteracion: (_f: BusinessDate) => undefined,
+      simulacion: false as const,
+    };
+  }
+
   return {
-    estado: estadoPagina,
+    estado: estadoPagina as 'no_encontrado' | 'inactivo' | 'listo' | 'cargando' | 'error',
     ...(datos ?? { comercio: null, periodo: null, dias: [], resumen: null }),
     alterados: estado.alterados,
     simularAlteracion,
-    simulacion: true as const,
+    simulacion: MODO_REAL ? (false as const) : (true as const),
   };
 }

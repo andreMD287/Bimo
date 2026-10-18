@@ -68,7 +68,14 @@ export function createRuntime(d: RuntimeDeps) {
   };
 
   let syncing: Promise<SyncReport> | null = null;
+  const listeners = new Set<() => void>();
+  const notify = () => listeners.forEach((f) => f());
   const rt = {
+    /** Avisa cuando la base local cambio por una sincronizacion o por la cuenta (la UI se refresca). */
+    onChange(fn: () => void): () => void {
+      listeners.add(fn);
+      return () => void listeners.delete(fn);
+    },
     api,
     auth,
     store: d.store,
@@ -113,6 +120,7 @@ export function createRuntime(d: RuntimeDeps) {
       const me = await api.me();
       const info: AccountInfo = { merchant_id: me.merchant_id, business_name: me.business_name, stellar_address: me.stellar_address, account_status: me.account_status };
       d.kv.set('bimo.account', JSON.stringify(info));
+      notify();
       return info;
     },
 
@@ -122,6 +130,7 @@ export function createRuntime(d: RuntimeDeps) {
       if (!id) return Promise.resolve({ online: false, pushed: 0, rejected: 0, pulled: 0, clockSkewMs: null });
       syncing ??= syncAll({ store: d.store, api, deviceId: id, now }).finally(() => {
         syncing = null;
+        notify();
       });
       return syncing;
     },

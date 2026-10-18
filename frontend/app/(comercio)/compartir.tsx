@@ -39,7 +39,7 @@ export default function Compartir() {
     if (generando) return;
     setGenerando(true);
     setAviso(null);
-    const r = crear({ desde, hasta, vigencia_dias: vigencia });
+    const r = await crear({ desde, hasta, vigencia_dias: vigencia });
     if (!r.ok) {
       setAviso(r.error);
       setGenerando(false);

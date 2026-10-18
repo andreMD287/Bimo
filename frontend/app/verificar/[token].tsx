@@ -63,12 +63,22 @@ export default function Verificar() {
         <Contenedor estilo={hero}>
           <Text style={s.marca}>bimo</Text>
           <Text style={s.heroTitulo}>
-            {v.estado === 'inactivo' ? 'Este enlace ya no está activo' : 'No encontramos este enlace'}
+            {v.estado === 'cargando'
+              ? 'Verificando el historial…'
+              : v.estado === 'error'
+                ? 'No pudimos verificar este historial'
+                : v.estado === 'inactivo'
+                  ? 'Este enlace ya no está activo'
+                  : 'No encontramos este enlace'}
           </Text>
           <Text style={s.heroTexto}>
-            {v.estado === 'inactivo'
-              ? 'El comercio lo revocó o se venció. Pídele uno nuevo.'
-              : 'Revisa que el enlace esté completo o pídele al comercio que te lo comparta de nuevo.'}
+            {v.estado === 'cargando'
+              ? 'Estamos comprobando los registros contra la red pública. Puede tardar unos segundos.'
+              : v.estado === 'error'
+                ? 'Revisa tu conexión e inténtalo de nuevo. Si el problema sigue, pídele al comercio un enlace nuevo.'
+                : v.estado === 'inactivo'
+                  ? 'El comercio lo revocó o se venció. Pídele uno nuevo.'
+                  : 'Revisa que el enlace esté completo o pídele al comercio que te lo comparta de nuevo.'}
           </Text>
         </Contenedor>
       </ScrollView>

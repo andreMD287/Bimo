@@ -5,6 +5,7 @@
 // estado, y ningún estado se distingue solo por el color (siempre ícono + texto).
 
 import { useState, type ReactNode } from 'react';
+import { MODO_REAL } from '../runtime/config';
 import {
   Platform,
   Pressable,
@@ -61,7 +62,7 @@ export function Pantalla({
               </Text>
             ) : null}
             {subtitulo ? <Text style={s.nota}>{subtitulo}</Text> : null}
-            {simulacion ? <EtiquetaSimulacion /> : null}
+            {simulacion && !MODO_REAL ? <EtiquetaSimulacion /> : null}
           </View>
         ) : null}
         {children}

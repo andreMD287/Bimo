@@ -7,6 +7,7 @@ import type { CoreConfig } from '../config';
 import type { Db } from '../db/client';
 import type { MemberRole } from '../db/types';
 import { AppError, errorBody } from '../errors';
+import type { SealPreparer } from '../modules/stellar';
 import { createLogger } from '../logger';
 import { RateLimiter } from './ratelimit';
 import { registerHealth, type HealthChecks } from './health';
@@ -47,6 +48,8 @@ export interface ServerDeps {
   jwt: JwtVerifier;
   devices: DeviceDirectory;
   health: HealthChecks;
+  /** Prepara la firma de los sellos (simula seal_batch en Stellar). Sin esto no se crean solicitudes de firma. */
+  seals?: SealPreparer;
   /** Para pruebas: destino de los logs y reloj. */
   logDestination?: NodeJS.WritableStream;
   now?: () => number;
@@ -110,7 +113,7 @@ export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
       deviceId: null,
       role: null,
       deviceTime,
-      clockSkewMs: now() - deviceTime.getTime(),
+      clockSkewMs: deviceTime.getTime() - now(), // spec 04 §7: device_time - hora del servidor
     };
 
     let limitKey = `user:${userId}`;

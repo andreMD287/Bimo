@@ -36,42 +36,44 @@ export const Network = z
   })
   .describe('Contenido de contracts/deployments/<red>.json (spec 03 §9)');
 
+// El push es permisivo en los TIPOS y estricto en las REGLAS: un asiento que rompe V-01..V-11 no es un 400 de toda la
+// peticion sino un `rejected` con su codigo, item por item (spec 04 §5.2). Solo una forma imposible es 400.
 export const PushLine = z.object({
-  id: ulid,
-  line_no: z.number().int().min(1).max(20),
+  id: z.string().describe('ULID de la linea (V-01)'),
+  line_no: z.number().describe('1..n sin huecos (V-02)'),
   account_code: accountCode,
   direction: z.enum(['debe', 'haber']),
-  amount_minor: money,
+  amount_minor: z.number().describe('Entero entre 1 y 10^12 (V-03)'),
   currency: z.enum(['COP', 'USDC']),
-  channel: channelCode.optional(),
-  customer_id: ulid.optional(),
+  channel: channelCode.nullish(),
+  customer_id: z.string().nullish(),
 });
 
 export const PushEntry = z.object({
-  id: ulid,
-  occurred_at: instant,
+  id: z.string().describe('ULID (V-01)'),
+  occurred_at: z.string().describe('ISO-8601 UTC con milisegundos (V-11)'),
   kind: entryKind,
-  origin: z.literal('declarado'),
-  reverses_entry_id: ulid.nullable(),
-  note: z.string().max(140).nullable(),
-  lines: z.array(PushLine).min(2).max(20),
+  origin: z.enum(['declarado', 'verificado', 'on_chain']).describe('Desde la app solo `declarado` (V-08)'),
+  reverses_entry_id: z.string().nullish(),
+  note: z.string().nullish().describe('Maximo 140 caracteres (V-10)'),
+  lines: z.array(PushLine).max(100),
 });
 
 export const PushCustomer = z.object({
-  id: ulid,
-  display_name: z.string().min(1).max(60),
+  id: z.string(),
+  display_name: z.string().describe('1 a 60 caracteres'),
   phone: z.string().nullable(),
-  updated_at: instant,
+  updated_at: z.string().describe('ISO-8601 UTC con milisegundos'),
 });
 
 export const PushChannel = z.object({
-  id: ulid,
-  name: z.string().min(1).max(60),
+  id: z.string(),
+  name: z.string().describe('1 a 60 caracteres'),
   channel: channelCode,
-  commission_bps: z.number().int().min(0).max(10000),
-  settlement_days: z.number().int().min(0).max(30),
+  commission_bps: z.number().describe('0 a 10000'),
+  settlement_days: z.number().describe('0 a 30'),
   active: z.boolean(),
-  updated_at: instant,
+  updated_at: z.string().describe('ISO-8601 UTC con milisegundos'),
 });
 
 export const PushItem = z.discriminatedUnion('type', [
@@ -81,14 +83,14 @@ export const PushItem = z.discriminatedUnion('type', [
 ]);
 
 export const PushRequest = z.object({
-  device_id: ulid,
-  device_time: instant,
+  device_id: z.string(),
+  device_time: z.string().describe('ISO-8601 UTC con milisegundos; mide el reloj del celular (spec 04 §7)'),
   items: z.array(PushItem).max(200),
 });
 
 export const PushResult = z.object({
   type: z.enum(['customer', 'channel', 'entry']),
-  id: ulid,
+  id: z.string(),
   result: z.enum(['accepted', 'duplicate', 'id_conflict', 'rejected', 'dependency_failed']),
   code: z.string().optional().describe('Codigo V-xx del spec 04 §4 cuando result = rejected'),
   business_date: day.optional(),
@@ -190,7 +192,10 @@ export const ROUTES: ApiRoute[] = [
   // 3.3 Dias y cierre
   {
     method: 'post', path: '/days/{date}/close', tag: 'Dias', auth: 'device', summary: 'Cerrar un dia de negocio',
-    body: z.object({ counted_cash_minor: money, entry_ids: z.array(ulid) }),
+    body: z.object({
+      counted_cash_minor: money.nullable().describe('Efectivo contado; null en un dia pasado (spec 07 §1)'),
+      entry_ids: z.array(z.string()).max(5000),
+    }),
     success: { status: 200, schema: z.object({ status: dayStatus, signing_request_id: ulid.optional() }) },
     errors: ['invalid_request', 'unauthenticated', 'forbidden', 'device_revoked', 'role_not_allowed', 'missing_entries', 'day_not_closable', 'rate_limited'],
   },
@@ -301,3 +306,10 @@ export const ROUTES: ApiRoute[] = [
     errors: ['invalid_request', 'unauthenticated', 'forbidden', 'device_revoked', 'role_not_allowed', 'not_found'],
   },
 ];
+
+/** Busca un endpoint del contrato; los handlers validan con sus mismos esquemas. */
+export function routeOf(method: HttpMethod, path: string): ApiRoute {
+  const r = ROUTES.find((x) => x.method === method && x.path === path);
+  if (!r) throw new Error(`Ruta fuera del contrato: ${method} ${path}`);
+  return r;
+}

@@ -1,0 +1,3192 @@
+[
+  {
+    "name": "ejemplo 1: venta en efectivo $20.000",
+    "entry": {
+      "id": "01JDEJ10000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0100000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0200000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "ok"
+  },
+  {
+    "name": "ejemplo 2: venta dividida efectivo + Bre-B",
+    "entry": {
+      "id": "01JDEJ20000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0300000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 3000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0400000000000000000000",
+          "line_no": 2,
+          "account_code": "cuenta_socio",
+          "direction": "debe",
+          "amount_minor": 7000000,
+          "currency": "COP",
+          "channel": "breb"
+        },
+        {
+          "id": "01JD0500000000000000000000",
+          "line_no": 3,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 10000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "ok"
+  },
+  {
+    "name": "ejemplo 3: venta con datafono externo",
+    "entry": {
+      "id": "01JDEJ30000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0600000000000000000000",
+          "line_no": 1,
+          "account_code": "por_cobrar_psp",
+          "direction": "debe",
+          "amount_minor": 10000000,
+          "currency": "COP",
+          "channel": "datafono_externo"
+        },
+        {
+          "id": "01JD0700000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 10000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "ok"
+  },
+  {
+    "name": "ejemplo 4: venta fiada a Dona Rosa",
+    "entry": {
+      "id": "01JDEJ40000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0800000000000000000000",
+          "line_no": 1,
+          "account_code": "por_cobrar_clientes",
+          "direction": "debe",
+          "amount_minor": 5000000,
+          "currency": "COP",
+          "channel": "fiado",
+          "customer_id": "01JDC00ENTER0SA00000000000"
+        },
+        {
+          "id": "01JD0900000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 5000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "ok"
+  },
+  {
+    "name": "ejemplo 5: abono de Dona Rosa en efectivo",
+    "entry": {
+      "id": "01JDEJ50000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "abono_cliente",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0100000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0110000000000000000000",
+          "line_no": 2,
+          "account_code": "por_cobrar_clientes",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "fiado",
+          "customer_id": "01JDC00ENTER0SA00000000000"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "ok"
+  },
+  {
+    "name": "ejemplo 6: consignacion del datafono con comision",
+    "entry": {
+      "id": "01JDEJ60000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "liquidacion_psp",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0120000000000000000000",
+          "line_no": 1,
+          "account_code": "cuenta_socio",
+          "direction": "debe",
+          "amount_minor": 9800000,
+          "currency": "COP",
+          "channel": "datafono_externo"
+        },
+        {
+          "id": "01JD0130000000000000000000",
+          "line_no": 2,
+          "account_code": "comisiones",
+          "direction": "debe",
+          "amount_minor": 200000,
+          "currency": "COP"
+        },
+        {
+          "id": "01JD0140000000000000000000",
+          "line_no": 3,
+          "account_code": "por_cobrar_psp",
+          "direction": "haber",
+          "amount_minor": 10000000,
+          "currency": "COP",
+          "channel": "datafono_externo"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "ok"
+  },
+  {
+    "name": "ejemplo 7: faltante en caja al cerrar",
+    "entry": {
+      "id": "01JDEJ70000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "ajuste_caja",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0150000000000000000000",
+          "line_no": 1,
+          "account_code": "diferencias_caja",
+          "direction": "debe",
+          "amount_minor": 500000,
+          "currency": "COP"
+        },
+        {
+          "id": "01JD0160000000000000000000",
+          "line_no": 2,
+          "account_code": "caja",
+          "direction": "haber",
+          "amount_minor": 500000,
+          "currency": "COP",
+          "channel": "efectivo"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "ok"
+  },
+  {
+    "name": "ejemplo 7b: sobrante en caja al cerrar",
+    "entry": {
+      "id": "01JDEJ7B000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "ajuste_caja",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0170000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 500000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0180000000000000000000",
+          "line_no": 2,
+          "account_code": "diferencias_caja",
+          "direction": "haber",
+          "amount_minor": 500000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "ok"
+  },
+  {
+    "name": "ejemplo 8: reverso de una venta mal registrada",
+    "entry": {
+      "id": "01JDEJ80000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "reverso",
+      "origin": "declarado",
+      "reverses_entry_id": "01JDEJ80000000000000000000",
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0210000000000000000000",
+          "line_no": 1,
+          "account_code": "ventas",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        },
+        {
+          "id": "01JD0220000000000000000000",
+          "line_no": 2,
+          "account_code": "caja",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [
+        {
+          "id": "01JDEJ80000000000000000000",
+          "occurred_at": "2026-10-06T20:30:00.000Z",
+          "kind": "venta",
+          "origin": "declarado",
+          "reverses_entry_id": null,
+          "note": null,
+          "lines": [
+            {
+              "id": "01JD0190000000000000000000",
+              "line_no": 1,
+              "account_code": "caja",
+              "direction": "debe",
+              "amount_minor": 2000000,
+              "currency": "COP",
+              "channel": "efectivo"
+            },
+            {
+              "id": "01JD0200000000000000000000",
+              "line_no": 2,
+              "account_code": "ventas",
+              "direction": "haber",
+              "amount_minor": 2000000,
+              "currency": "COP"
+            }
+          ]
+        }
+      ],
+      "reversed": []
+    },
+    "expected": "ok"
+  },
+  {
+    "name": "ejemplo 9: pago a un proveedor en efectivo",
+    "entry": {
+      "id": "01JDEJ90000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "salida",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0230000000000000000000",
+          "line_no": 1,
+          "account_code": "gastos",
+          "direction": "debe",
+          "amount_minor": 3000000,
+          "currency": "COP"
+        },
+        {
+          "id": "01JD0240000000000000000000",
+          "line_no": 2,
+          "account_code": "caja",
+          "direction": "haber",
+          "amount_minor": 3000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "ok"
+  },
+  {
+    "name": "ejemplo 10: el dueno saca plata por Bre-B",
+    "entry": {
+      "id": "01JDEJ10000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "salida",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0250000000000000000000",
+          "line_no": 1,
+          "account_code": "retiros_dueno",
+          "direction": "debe",
+          "amount_minor": 5000000,
+          "currency": "COP"
+        },
+        {
+          "id": "01JD0260000000000000000000",
+          "line_no": 2,
+          "account_code": "cuenta_socio",
+          "direction": "haber",
+          "amount_minor": 5000000,
+          "currency": "COP",
+          "channel": "breb"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "ok"
+  },
+  {
+    "name": "ejemplo 11: venta con anticipo (saldo por cobrar)",
+    "entry": {
+      "id": "01JDEJ11000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0270000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 4000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0280000000000000000000",
+          "line_no": 2,
+          "account_code": "por_cobrar_clientes",
+          "direction": "debe",
+          "amount_minor": 6000000,
+          "currency": "COP",
+          "channel": "fiado",
+          "customer_id": "01JDC00ENTER0SA00000000000"
+        },
+        {
+          "id": "01JD0290000000000000000000",
+          "line_no": 3,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 10000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "ok"
+  },
+  {
+    "name": "la hora nunca es motivo de rechazo: una venta de 2001",
+    "entry": {
+      "id": "01JDH0RA100000000000000000",
+      "occurred_at": "2001-01-01T00:00:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0300000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0310000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "ok"
+  },
+  {
+    "name": "la hora nunca es motivo de rechazo: una venta de 2099",
+    "entry": {
+      "id": "01JDH0RA200000000000000000",
+      "occurred_at": "2099-12-31T23:59:59.999Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0320000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0330000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "ok"
+  },
+  {
+    "name": "V-11 acepta milisegundos como numero entero",
+    "entry": {
+      "id": "01JDH0RA300000000000000000",
+      "occurred_at": 1791318600000,
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0340000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0350000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "ok"
+  },
+  {
+    "name": "V-03 acepta el maximo de 10^12",
+    "entry": {
+      "id": "01JDMAX1000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0360000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 1000000000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0370000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 1000000000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "ok"
+  },
+  {
+    "name": "V-02 acepta 20 lineas",
+    "entry": {
+      "id": "01JD00N2000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0380000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0390000000000000000000",
+          "line_no": 2,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0400000000000000000000",
+          "line_no": 3,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0410000000000000000000",
+          "line_no": 4,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0420000000000000000000",
+          "line_no": 5,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0430000000000000000000",
+          "line_no": 6,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0440000000000000000000",
+          "line_no": 7,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0450000000000000000000",
+          "line_no": 8,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0460000000000000000000",
+          "line_no": 9,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0470000000000000000000",
+          "line_no": 10,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0480000000000000000000",
+          "line_no": 11,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0490000000000000000000",
+          "line_no": 12,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0500000000000000000000",
+          "line_no": 13,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0510000000000000000000",
+          "line_no": 14,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0520000000000000000000",
+          "line_no": 15,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0530000000000000000000",
+          "line_no": 16,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0540000000000000000000",
+          "line_no": 17,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0550000000000000000000",
+          "line_no": 18,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0560000000000000000000",
+          "line_no": 19,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0570000000000000000000",
+          "line_no": 20,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 190,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "ok"
+  },
+  {
+    "name": "V-01 id con minusculas",
+    "entry": {
+      "id": "01jdv01a000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0580000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0590000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_id"
+  },
+  {
+    "name": "V-01 id de 25 caracteres",
+    "entry": {
+      "id": "01JDV01B00000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0600000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0610000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_id"
+  },
+  {
+    "name": "V-01 id con caracter fuera de Crockford (U)",
+    "entry": {
+      "id": "01JDV01C00000000000000000U",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0620000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0630000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_id"
+  },
+  {
+    "name": "V-01 id de linea invalido",
+    "entry": {
+      "id": "01JDV01D000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0640000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "no-es-ulid",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_id"
+  },
+  {
+    "name": "V-02 una sola linea",
+    "entry": {
+      "id": "01JDV02A000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0660000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_lines"
+  },
+  {
+    "name": "V-02 21 lineas",
+    "entry": {
+      "id": "01JDV02B000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0680000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0690000000000000000000",
+          "line_no": 2,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0700000000000000000000",
+          "line_no": 3,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0710000000000000000000",
+          "line_no": 4,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0720000000000000000000",
+          "line_no": 5,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0730000000000000000000",
+          "line_no": 6,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0740000000000000000000",
+          "line_no": 7,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0750000000000000000000",
+          "line_no": 8,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0760000000000000000000",
+          "line_no": 9,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0770000000000000000000",
+          "line_no": 10,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0780000000000000000000",
+          "line_no": 11,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0790000000000000000000",
+          "line_no": 12,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0800000000000000000000",
+          "line_no": 13,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0810000000000000000000",
+          "line_no": 14,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0820000000000000000000",
+          "line_no": 15,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0830000000000000000000",
+          "line_no": 16,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0840000000000000000000",
+          "line_no": 17,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0850000000000000000000",
+          "line_no": 18,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0860000000000000000000",
+          "line_no": 19,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0870000000000000000000",
+          "line_no": 20,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0880000000000000000000",
+          "line_no": 21,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 200,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_lines"
+  },
+  {
+    "name": "V-02 line_no con hueco (1, 3)",
+    "entry": {
+      "id": "01JDV02C000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0890000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0900000000000000000000",
+          "line_no": 3,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_lines"
+  },
+  {
+    "name": "V-02 line_no repetido",
+    "entry": {
+      "id": "01JDV02D000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0910000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0920000000000000000000",
+          "line_no": 1,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_lines"
+  },
+  {
+    "name": "V-03 monto cero",
+    "entry": {
+      "id": "01JDV03A000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0930000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 0,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0940000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 0,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_amount"
+  },
+  {
+    "name": "V-03 monto negativo",
+    "entry": {
+      "id": "01JDV03B000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0950000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": -5,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0960000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": -5,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_amount"
+  },
+  {
+    "name": "V-03 monto mayor a 10^12",
+    "entry": {
+      "id": "01JDV03C000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0970000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 1000000000001,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0980000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 1000000000001,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_amount"
+  },
+  {
+    "name": "V-03 monto con decimales",
+    "entry": {
+      "id": "01JDV03D000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0990000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 10.5,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0100000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 10.5,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_amount"
+  },
+  {
+    "name": "V-04 asiento descuadrado por un centavo",
+    "entry": {
+      "id": "01JDV04A000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0101000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0102000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 1999999,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "unbalanced"
+  },
+  {
+    "name": "V-04 cuadra en COP pero no en USDC",
+    "entry": {
+      "id": "01JDV04B000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0103000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0104000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        },
+        {
+          "id": "01JDV04BX00000000000000000",
+          "line_no": 3,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 5,
+          "currency": "USDC",
+          "channel": "efectivo"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "unbalanced"
+  },
+  {
+    "name": "V-05 venta con la caja en el haber",
+    "entry": {
+      "id": "01JDV05A000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0106000000000000000000",
+          "line_no": 1,
+          "account_code": "ventas",
+          "direction": "debe",
+          "amount_minor": 100,
+          "currency": "COP"
+        },
+        {
+          "id": "01JD0107000000000000000000",
+          "line_no": 2,
+          "account_code": "caja",
+          "direction": "haber",
+          "amount_minor": 100,
+          "currency": "COP",
+          "channel": "efectivo"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_accounts"
+  },
+  {
+    "name": "V-05 conversion no la crea la app",
+    "entry": {
+      "id": "01JDV05B000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "conversion",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0108000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 100,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0109000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 100,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_accounts"
+  },
+  {
+    "name": "V-05 abono contra ventas",
+    "entry": {
+      "id": "01JDV05C000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "abono_cliente",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0110000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 100,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0111000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 100,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_accounts"
+  },
+  {
+    "name": "V-05 ajuste_caja con tres lineas",
+    "entry": {
+      "id": "01JDV05D000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "ajuste_caja",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0112000000000000000000",
+          "line_no": 1,
+          "account_code": "diferencias_caja",
+          "direction": "debe",
+          "amount_minor": 100,
+          "currency": "COP"
+        },
+        {
+          "id": "01JD0113000000000000000000",
+          "line_no": 2,
+          "account_code": "diferencias_caja",
+          "direction": "debe",
+          "amount_minor": 50,
+          "currency": "COP"
+        },
+        {
+          "id": "01JD0114000000000000000000",
+          "line_no": 3,
+          "account_code": "caja",
+          "direction": "haber",
+          "amount_minor": 150,
+          "currency": "COP",
+          "channel": "efectivo"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_accounts"
+  },
+  {
+    "name": "V-05 liquidacion sin cuenta_socio",
+    "entry": {
+      "id": "01JDV05E000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "liquidacion_psp",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0115000000000000000000",
+          "line_no": 1,
+          "account_code": "comisiones",
+          "direction": "debe",
+          "amount_minor": 100,
+          "currency": "COP"
+        },
+        {
+          "id": "01JD0116000000000000000000",
+          "line_no": 2,
+          "account_code": "por_cobrar_psp",
+          "direction": "haber",
+          "amount_minor": 100,
+          "currency": "COP",
+          "channel": "datafono_externo"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_accounts"
+  },
+  {
+    "name": "V-05 salida contra ventas",
+    "entry": {
+      "id": "01JDV05F000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "salida",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0117000000000000000000",
+          "line_no": 1,
+          "account_code": "gastos",
+          "direction": "debe",
+          "amount_minor": 100,
+          "currency": "COP"
+        },
+        {
+          "id": "01JD0118000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 100,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_accounts"
+  },
+  {
+    "name": "V-05 venta con cuenta de otro tipo (bolsillo_usd)",
+    "entry": {
+      "id": "01JDV05G000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0119000000000000000000",
+          "line_no": 1,
+          "account_code": "bolsillo_usd",
+          "direction": "debe",
+          "amount_minor": 100,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0120000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 100,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_accounts"
+  },
+  {
+    "name": "V-06 caja con canal breb",
+    "entry": {
+      "id": "01JDV06A000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0121000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 100,
+          "currency": "COP",
+          "channel": "breb"
+        },
+        {
+          "id": "01JD0122000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 100,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_channel"
+  },
+  {
+    "name": "V-06 cuenta_socio con datafono en una venta",
+    "entry": {
+      "id": "01JDV06B000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0123000000000000000000",
+          "line_no": 1,
+          "account_code": "cuenta_socio",
+          "direction": "debe",
+          "amount_minor": 100,
+          "currency": "COP",
+          "channel": "datafono_externo"
+        },
+        {
+          "id": "01JD0124000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 100,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_channel"
+  },
+  {
+    "name": "V-06 ventas con canal",
+    "entry": {
+      "id": "01JDV06C000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0125000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 100,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0126000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 100,
+          "currency": "COP",
+          "channel": "efectivo"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_channel"
+  },
+  {
+    "name": "V-06 por_cobrar_psp con efectivo",
+    "entry": {
+      "id": "01JDV06D000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0127000000000000000000",
+          "line_no": 1,
+          "account_code": "por_cobrar_psp",
+          "direction": "debe",
+          "amount_minor": 100,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0128000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 100,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_channel"
+  },
+  {
+    "name": "V-06 caja sin canal",
+    "entry": {
+      "id": "01JDV06E000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0129000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 100,
+          "currency": "COP"
+        },
+        {
+          "id": "01JD0130000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 100,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_channel"
+  },
+  {
+    "name": "V-06 salida por cuenta_socio con tap_to_pay",
+    "entry": {
+      "id": "01JDV06F000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "salida",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0131000000000000000000",
+          "line_no": 1,
+          "account_code": "gastos",
+          "direction": "debe",
+          "amount_minor": 100,
+          "currency": "COP"
+        },
+        {
+          "id": "01JD0132000000000000000000",
+          "line_no": 2,
+          "account_code": "cuenta_socio",
+          "direction": "haber",
+          "amount_minor": 100,
+          "currency": "COP",
+          "channel": "tap_to_pay"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_channel"
+  },
+  {
+    "name": "V-07 fiado sin cliente",
+    "entry": {
+      "id": "01JDV07A000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0133000000000000000000",
+          "line_no": 1,
+          "account_code": "por_cobrar_clientes",
+          "direction": "debe",
+          "amount_minor": 100,
+          "currency": "COP",
+          "channel": "fiado"
+        },
+        {
+          "id": "01JD0134000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 100,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_customer"
+  },
+  {
+    "name": "V-07 cliente que no existe",
+    "entry": {
+      "id": "01JDV07B000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0135000000000000000000",
+          "line_no": 1,
+          "account_code": "por_cobrar_clientes",
+          "direction": "debe",
+          "amount_minor": 100,
+          "currency": "COP",
+          "channel": "fiado",
+          "customer_id": "01JDDESC0N0C0D000000000000"
+        },
+        {
+          "id": "01JD0136000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 100,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_customer"
+  },
+  {
+    "name": "V-07 cliente en una linea que no es fiado",
+    "entry": {
+      "id": "01JDV07C000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0137000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 100,
+          "currency": "COP",
+          "channel": "efectivo",
+          "customer_id": "01JDC00ENTER0SA00000000000"
+        },
+        {
+          "id": "01JD0138000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 100,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_customer"
+  },
+  {
+    "name": "V-07 el cliente llego antes en el mismo lote",
+    "entry": {
+      "id": "01JDV07D000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0139000000000000000000",
+          "line_no": 1,
+          "account_code": "por_cobrar_clientes",
+          "direction": "debe",
+          "amount_minor": 100,
+          "currency": "COP",
+          "channel": "fiado",
+          "customer_id": "01JDN0EV000TE0000000000000"
+        },
+        {
+          "id": "01JD0140000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 100,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000",
+        "01JDN0EV000TE0000000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "ok"
+  },
+  {
+    "name": "V-08 origin verificado desde la app",
+    "entry": {
+      "id": "01JDV08A000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "verificado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0141000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0142000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "forbidden_origin"
+  },
+  {
+    "name": "V-08 origin on_chain desde la app",
+    "entry": {
+      "id": "01JDV08B000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "on_chain",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0143000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0144000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "forbidden_origin"
+  },
+  {
+    "name": "V-08 declarado con external_source",
+    "entry": {
+      "id": "01JDV08C000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0145000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0146000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        }
+      ],
+      "external_source": "psp"
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "forbidden_origin"
+  },
+  {
+    "name": "V-08 declarado con external_ref",
+    "entry": {
+      "id": "01JDV08D000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0147000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0148000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        }
+      ],
+      "external_ref": "abc"
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "forbidden_origin"
+  },
+  {
+    "name": "V-09 reverso con otro monto",
+    "entry": {
+      "id": "01JDV09A000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "reverso",
+      "origin": "declarado",
+      "reverses_entry_id": "01JDV090000000000000000000",
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0151000000000000000000",
+          "line_no": 1,
+          "account_code": "ventas",
+          "direction": "debe",
+          "amount_minor": 1999999,
+          "currency": "COP"
+        },
+        {
+          "id": "01JD0152000000000000000000",
+          "line_no": 2,
+          "account_code": "caja",
+          "direction": "haber",
+          "amount_minor": 1999999,
+          "currency": "COP",
+          "channel": "efectivo"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [
+        {
+          "id": "01JDV090000000000000000000",
+          "occurred_at": "2026-10-06T20:30:00.000Z",
+          "kind": "venta",
+          "origin": "declarado",
+          "reverses_entry_id": null,
+          "note": null,
+          "lines": [
+            {
+              "id": "01JD0149000000000000000000",
+              "line_no": 1,
+              "account_code": "caja",
+              "direction": "debe",
+              "amount_minor": 2000000,
+              "currency": "COP",
+              "channel": "efectivo"
+            },
+            {
+              "id": "01JD0150000000000000000000",
+              "line_no": 2,
+              "account_code": "ventas",
+              "direction": "haber",
+              "amount_minor": 2000000,
+              "currency": "COP"
+            }
+          ]
+        }
+      ],
+      "reversed": []
+    },
+    "expected": "invalid_reversal"
+  },
+  {
+    "name": "V-09 reverso sin invertir la direccion",
+    "entry": {
+      "id": "01JDV09B000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "reverso",
+      "origin": "declarado",
+      "reverses_entry_id": "01JDV090000000000000000000",
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0153000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0154000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [
+        {
+          "id": "01JDV090000000000000000000",
+          "occurred_at": "2026-10-06T20:30:00.000Z",
+          "kind": "venta",
+          "origin": "declarado",
+          "reverses_entry_id": null,
+          "note": null,
+          "lines": [
+            {
+              "id": "01JD0149000000000000000000",
+              "line_no": 1,
+              "account_code": "caja",
+              "direction": "debe",
+              "amount_minor": 2000000,
+              "currency": "COP",
+              "channel": "efectivo"
+            },
+            {
+              "id": "01JD0150000000000000000000",
+              "line_no": 2,
+              "account_code": "ventas",
+              "direction": "haber",
+              "amount_minor": 2000000,
+              "currency": "COP"
+            }
+          ]
+        }
+      ],
+      "reversed": []
+    },
+    "expected": "invalid_reversal"
+  },
+  {
+    "name": "V-09 reverso de un asiento que no existe",
+    "entry": {
+      "id": "01JDV09C000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "reverso",
+      "origin": "declarado",
+      "reverses_entry_id": "01JDV090000000000000000000",
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0155000000000000000000",
+          "line_no": 1,
+          "account_code": "ventas",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        },
+        {
+          "id": "01JD0156000000000000000000",
+          "line_no": 2,
+          "account_code": "caja",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_reversal"
+  },
+  {
+    "name": "V-09 reverso de un asiento ya reversado",
+    "entry": {
+      "id": "01JDV09D000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "reverso",
+      "origin": "declarado",
+      "reverses_entry_id": "01JDV090000000000000000000",
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0157000000000000000000",
+          "line_no": 1,
+          "account_code": "ventas",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        },
+        {
+          "id": "01JD0158000000000000000000",
+          "line_no": 2,
+          "account_code": "caja",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [
+        {
+          "id": "01JDV090000000000000000000",
+          "occurred_at": "2026-10-06T20:30:00.000Z",
+          "kind": "venta",
+          "origin": "declarado",
+          "reverses_entry_id": null,
+          "note": null,
+          "lines": [
+            {
+              "id": "01JD0149000000000000000000",
+              "line_no": 1,
+              "account_code": "caja",
+              "direction": "debe",
+              "amount_minor": 2000000,
+              "currency": "COP",
+              "channel": "efectivo"
+            },
+            {
+              "id": "01JD0150000000000000000000",
+              "line_no": 2,
+              "account_code": "ventas",
+              "direction": "haber",
+              "amount_minor": 2000000,
+              "currency": "COP"
+            }
+          ]
+        }
+      ],
+      "reversed": [
+        "01JDV090000000000000000000"
+      ]
+    },
+    "expected": "invalid_reversal"
+  },
+  {
+    "name": "V-09 reverso sin reverses_entry_id",
+    "entry": {
+      "id": "01JDV09E000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "reverso",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0159000000000000000000",
+          "line_no": 1,
+          "account_code": "ventas",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        },
+        {
+          "id": "01JD0160000000000000000000",
+          "line_no": 2,
+          "account_code": "caja",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [
+        {
+          "id": "01JDV090000000000000000000",
+          "occurred_at": "2026-10-06T20:30:00.000Z",
+          "kind": "venta",
+          "origin": "declarado",
+          "reverses_entry_id": null,
+          "note": null,
+          "lines": [
+            {
+              "id": "01JD0149000000000000000000",
+              "line_no": 1,
+              "account_code": "caja",
+              "direction": "debe",
+              "amount_minor": 2000000,
+              "currency": "COP",
+              "channel": "efectivo"
+            },
+            {
+              "id": "01JD0150000000000000000000",
+              "line_no": 2,
+              "account_code": "ventas",
+              "direction": "haber",
+              "amount_minor": 2000000,
+              "currency": "COP"
+            }
+          ]
+        }
+      ],
+      "reversed": []
+    },
+    "expected": "invalid_reversal"
+  },
+  {
+    "name": "V-09 reverso del mismo lote (el original va antes)",
+    "entry": {
+      "id": "01JDV09F000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "reverso",
+      "origin": "declarado",
+      "reverses_entry_id": "01JDV090000000000000000000",
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0161000000000000000000",
+          "line_no": 1,
+          "account_code": "ventas",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        },
+        {
+          "id": "01JD0162000000000000000000",
+          "line_no": 2,
+          "account_code": "caja",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [
+        {
+          "id": "01JDV090000000000000000000",
+          "occurred_at": "2026-10-06T20:30:00.000Z",
+          "kind": "venta",
+          "origin": "declarado",
+          "reverses_entry_id": null,
+          "note": null,
+          "lines": [
+            {
+              "id": "01JD0149000000000000000000",
+              "line_no": 1,
+              "account_code": "caja",
+              "direction": "debe",
+              "amount_minor": 2000000,
+              "currency": "COP",
+              "channel": "efectivo"
+            },
+            {
+              "id": "01JD0150000000000000000000",
+              "line_no": 2,
+              "account_code": "ventas",
+              "direction": "haber",
+              "amount_minor": 2000000,
+              "currency": "COP"
+            }
+          ]
+        }
+      ],
+      "reversed": []
+    },
+    "expected": "ok"
+  },
+  {
+    "name": "V-09 un asiento que no es reverso trae reverses_entry_id",
+    "entry": {
+      "id": "01JDV09G000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": "01JDV090000000000000000000",
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0163000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0164000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [
+        {
+          "id": "01JDV090000000000000000000",
+          "occurred_at": "2026-10-06T20:30:00.000Z",
+          "kind": "venta",
+          "origin": "declarado",
+          "reverses_entry_id": null,
+          "note": null,
+          "lines": [
+            {
+              "id": "01JD0149000000000000000000",
+              "line_no": 1,
+              "account_code": "caja",
+              "direction": "debe",
+              "amount_minor": 2000000,
+              "currency": "COP",
+              "channel": "efectivo"
+            },
+            {
+              "id": "01JD0150000000000000000000",
+              "line_no": 2,
+              "account_code": "ventas",
+              "direction": "haber",
+              "amount_minor": 2000000,
+              "currency": "COP"
+            }
+          ]
+        }
+      ],
+      "reversed": []
+    },
+    "expected": "invalid_reversal"
+  },
+  {
+    "name": "V-07 (antes que V-09) reverso con un cliente desconocido",
+    "entry": {
+      "id": "01JDV090000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "reverso",
+      "origin": "declarado",
+      "reverses_entry_id": "01JDV09H000000000000000000",
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0167000000000000000000",
+          "line_no": 1,
+          "account_code": "ventas",
+          "direction": "debe",
+          "amount_minor": 500,
+          "currency": "COP"
+        },
+        {
+          "id": "01JD0168000000000000000000",
+          "line_no": 2,
+          "account_code": "por_cobrar_clientes",
+          "direction": "haber",
+          "amount_minor": 500,
+          "currency": "COP",
+          "channel": "fiado",
+          "customer_id": "01JD0TR0C00ENTE00000000000"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [
+        {
+          "id": "01JDV09H000000000000000000",
+          "occurred_at": "2026-10-06T20:30:00.000Z",
+          "kind": "venta",
+          "origin": "declarado",
+          "reverses_entry_id": null,
+          "note": null,
+          "lines": [
+            {
+              "id": "01JD0165000000000000000000",
+              "line_no": 1,
+              "account_code": "por_cobrar_clientes",
+              "direction": "debe",
+              "amount_minor": 500,
+              "currency": "COP",
+              "channel": "fiado",
+              "customer_id": "01JDC00ENTER0SA00000000000"
+            },
+            {
+              "id": "01JD0166000000000000000000",
+              "line_no": 2,
+              "account_code": "ventas",
+              "direction": "haber",
+              "amount_minor": 500,
+              "currency": "COP"
+            }
+          ]
+        }
+      ],
+      "reversed": []
+    },
+    "expected": "invalid_customer"
+  },
+  {
+    "name": "V-10 nota de 140 caracteres",
+    "entry": {
+      "id": "01JDV10A000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "lines": [
+        {
+          "id": "01JD0169000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0170000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "ok"
+  },
+  {
+    "name": "V-10 nota de 141 caracteres",
+    "entry": {
+      "id": "01JDV10B000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "lines": [
+        {
+          "id": "01JD0171000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0172000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_text"
+  },
+  {
+    "name": "V-10 nota que no esta en NFC",
+    "entry": {
+      "id": "01JDV10C000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": "café",
+      "lines": [
+        {
+          "id": "01JD0173000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0174000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_text"
+  },
+  {
+    "name": "V-10 nota en NFC con tilde",
+    "entry": {
+      "id": "01JDV10D000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.000Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": "café del día",
+      "lines": [
+        {
+          "id": "01JD0175000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0176000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "ok"
+  },
+  {
+    "name": "V-11 hora sin milisegundos",
+    "entry": {
+      "id": "01JDV11A000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0177000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0178000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_time"
+  },
+  {
+    "name": "V-11 hora con microsegundos",
+    "entry": {
+      "id": "01JDV11B000000000000000000",
+      "occurred_at": "2026-10-06T20:30:00.123456Z",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0179000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0180000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_time"
+  },
+  {
+    "name": "V-11 milisegundos con fraccion",
+    "entry": {
+      "id": "01JDV11C000000000000000000",
+      "occurred_at": 1791318600000.5,
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0181000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0182000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_time"
+  },
+  {
+    "name": "V-11 texto que no es una fecha",
+    "entry": {
+      "id": "01JDV11D000000000000000000",
+      "occurred_at": "ayer",
+      "kind": "venta",
+      "origin": "declarado",
+      "reverses_entry_id": null,
+      "note": null,
+      "lines": [
+        {
+          "id": "01JD0183000000000000000000",
+          "line_no": 1,
+          "account_code": "caja",
+          "direction": "debe",
+          "amount_minor": 2000000,
+          "currency": "COP",
+          "channel": "efectivo"
+        },
+        {
+          "id": "01JD0184000000000000000000",
+          "line_no": 2,
+          "account_code": "ventas",
+          "direction": "haber",
+          "amount_minor": 2000000,
+          "currency": "COP"
+        }
+      ]
+    },
+    "context": {
+      "customers": [
+        "01JDC00ENTER0SA00000000000"
+      ],
+      "entries": [],
+      "reversed": []
+    },
+    "expected": "invalid_time"
+  }
+]

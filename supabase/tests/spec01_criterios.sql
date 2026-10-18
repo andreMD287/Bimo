@@ -78,8 +78,8 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------- La migracion crea lo del spec
-select pg_temp.assert_eq('spec01 11: 21 tablas en public',
-  (select count(*)::int from information_schema.tables where table_schema = 'public' and table_type = 'BASE TABLE'), 21);
+select pg_temp.assert_eq('spec01 11: 22 tablas en public',
+  (select count(*)::int from information_schema.tables where table_schema = 'public' and table_type = 'BASE TABLE'), 22);
 select pg_temp.assert_eq('spec01 11: RLS activo en todas las tablas',
   (select count(*)::int from pg_tables where schemaname = 'public' and not rowsecurity), 0);
 

@@ -34,3 +34,14 @@ Se intentó sellar con la smart account de prueba firmando el `AuthPayload` con 
 | `attester` | `GCDRSXTAE34Q6BLZUIC3LIFN3326LI3R75BNH4DLGZJFCDQBOZQF7VQX` | Llave en el llavero local de `stellar keys`; irá a las variables de Railway |
 | `deployer` | `GCSGJMK4653I7I5HKI7CIYKROGA5EOFEINSG43LIVSLVEIPOYRCXQCBE` | Ídem |
 | `fallback-submitter` | `GCVKJX6WOVWBGPG6ANDUTHCIYF7S4QMKSSULQ4CB4DIJRURAGOU6P27C` | Ídem |
+
+## Despliegue de cuentas con el código de `core` (A-08)
+
+`pnpm --filter @bimo/core exec tsx scripts/e2e-testnet-account.ts` ejecuta el mismo código del worker (`StellarAccountDeployer` +
+`EnviadorDirecto`): la cuenta `deployer` crea la `bimo-account`, `fallback-submitter` paga la comisión con un fee-bump, y se
+comprueba leyendo la regla 0 directo de RPC que el único firmante es la llave del comercio (Bimo no es firmante).
+
+| Qué | Enlace |
+|---|---|
+| Cuenta creada por el worker (`CCFVALFKXWRV7FREHNTCBGZYTGX5Q7THJZ7HVE6UQSXOZKGGDWQZFVLS`) | https://stellar.expert/explorer/testnet/contract/CCFVALFKXWRV7FREHNTCBGZYTGX5Q7THJZ7HVE6UQSXOZKGGDWQZFVLS |
+| Transacción de despliegue (fee-bump) | https://stellar.expert/explorer/testnet/tx/03da953b5f154ca0f9dcd5f2ba78d59a8e25a5104800dd0243be019a7ba99b66 |

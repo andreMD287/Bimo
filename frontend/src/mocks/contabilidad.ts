@@ -2,14 +2,13 @@
 // SIMULACIÓN: en la app real los IDs son ULID y las reglas V-01..V-11 vienen del
 // paquete `shared/`; aquí solo se arma lo necesario para los datos de ejemplo.
 
+import { newUlid } from '@bimo/shared';
 import type { AccountCode, Asiento, CanalConfig, ChannelCode, Linea } from '../lib/tipos';
 import { fechaBogota } from '../lib/fechas';
 
-let contador = 0;
-/** ID de prueba. En la app real es un ULID generado con `shared/`. */
-export function nuevoId(prefijo: string): string {
-  contador += 1;
-  return `${prefijo}_${Date.now().toString(36)}_${contador.toString(36)}`;
+/** ID nuevo: un ULID de `@bimo/shared` (V-01). El prefijo ya no se usa; se conserva para no tocar a quien llama. */
+export function nuevoId(_prefijo?: string): string {
+  return newUlid();
 }
 
 /** Cuenta de activo que recibe un cobro por cada canal (spec 01 §6, spec 04 §4.2). */
@@ -40,7 +39,7 @@ function armar(
     ...base,
     id: entryId,
     business_date: fechaBogota(base.occurred_at),
-    lines: lineas.map((l, i) => ({ ...l, id: `${entryId}_l${i + 1}`, line_no: i + 1, currency: 'COP' })),
+    lines: lineas.map((l, i) => ({ ...l, id: newUlid(), line_no: i + 1, currency: 'COP' })),
   };
 }
 

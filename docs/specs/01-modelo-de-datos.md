@@ -1,6 +1,6 @@
 # Spec 01 — Modelo de datos
 
-**Estado:** v1.3 · v1.3: salidas de plata (`salida`, `gastos`, `retiros_dueno`, tipo `patrimonio`) · v1.1: `merchant_changes`, `customers.updated_at`, regla de reloj (spec 04) · v1.2: `signing_requests`, `seals.signing_request_id`, `merchants.account_status`, DB-12 (spec 07) · **Depende de:** `docs/arquitectura/ARQUITECTURA.md` (ADR-05, 06, 08, 14, 16) · **Lo usan:** specs 02 a 09
+**Estado:** v1.4 · v1.4: `merchant_channels` (comisión y días de consignación por canal) y ejemplo de anticipo · v1.3: salidas de plata (`salida`, `gastos`, `retiros_dueno`, tipo `patrimonio`) · v1.1: `merchant_changes`, `customers.updated_at`, regla de reloj (spec 04) · v1.2: `signing_requests`, `seals.signing_request_id`, `merchants.account_status`, DB-12 (spec 07) · **Depende de:** `docs/arquitectura/ARQUITECTURA.md` (ADR-05, 06, 08, 14, 16) · **Lo usan:** specs 02 a 09
 
 Este documento es la fuente de verdad del esquema. Claude Code **no** crea tablas, columnas, enums ni estados que no estén aquí. Si algo falta, se actualiza este spec primero.
 
@@ -45,6 +45,7 @@ erDiagram
   seals ||--|{ seal_leaves : hojas
   journal_entries ||--o{ seal_leaves : incluido
   merchants ||--o{ verification_links : comparte
+  merchants ||--o{ merchant_channels : configura
 ```
 
 ---
@@ -164,6 +165,20 @@ Al crear un comercio, `bimo-core` crea en la misma transacción estas cuentas:
 `adelantos_por_pagar` se crea en el inc. 3.
 
 ```sql
+-- Configuración de canales de cobro del comercio (Blueprint H3, H6). No es contable:
+-- nunca entra a asientos, hashes ni a la cadena. Las líneas siguen usando solo el enum channel_code.
+create table merchant_channels (
+  id                text primary key,                 -- ULID del celular
+  merchant_id       text not null references merchants(id) on delete cascade,
+  name              text not null check (length(name) between 1 and 60),   -- "Datáfono Bold", "Nequi"
+  channel           channel_code not null,
+  commission_bps    int not null check (commission_bps between 0 and 10000), -- 150 = 1,5 %
+  settlement_days   smallint not null check (settlement_days between 0 and 30), -- días calendario hasta que llega la plata
+  active            boolean not null default true,
+  created_at        timestamptz not null,
+  updated_at        timestamptz not null            -- gana la edición más reciente (spec 04 §8)
+);
+
 -- [PII de terceros] clientes que compran fiado
 create table customers (
   id                text primary key,                 -- ULID del celular
@@ -330,7 +345,7 @@ create table chain_events (               -- modelo de lectura del indexador (AD
 create table merchant_changes (          -- feed de cambios por comercio para el pull (spec 04 §8); solo adición
   seq               bigserial primary key,
   merchant_id       text not null references merchants(id) on delete cascade,
-  entity            text not null check (entity in ('entry','customer','day','seal')),
+  entity            text not null check (entity in ('entry','customer','channel','day','seal')),
   entity_id         text not null,
   at                timestamptz not null default now()
 );
@@ -362,6 +377,7 @@ create index on seals (status) where status in ('firmado','enviado','fallido');
 create index on outbox_messages (status, next_attempt_at) where status = 'pendiente';
 create index on chain_events (contract_id, ledger_seq);
 create index on merchant_changes (merchant_id, seq);
+create index on merchant_channels (merchant_id);
 ```
 
 ---
@@ -380,7 +396,7 @@ create index on merchant_changes (merchant_id, seq);
 | DB-08 | Un reverso apunta a un asiento del mismo comercio que no haya sido reversado antes | Trigger `BEFORE INSERT` |
 | DB-09 | Si llega un asiento para un día en estado `sellado`, el día pasa a `requiere_enmienda` | Trigger `AFTER INSERT` (ver spec 07) |
 | DB-10 | `verification_links`, `inbox_events`, `seals`: solo `bimo-core` escribe | RLS + rol de servicio |
-| DB-11 | Todo `INSERT` en `journal_entries` y `customers`, todo `UPDATE` de `customers`, todo cambio de `status` en `business_days` y en `seals` agrega una fila a `merchant_changes` | Triggers `AFTER INSERT` / `AFTER UPDATE` |
+| DB-11 | Todo `INSERT` en `journal_entries` y `customers`, todo `INSERT` y `UPDATE` de `merchant_channels`, todo `UPDATE` de `customers`, todo cambio de `status` en `business_days` y en `seals` agrega una fila a `merchant_changes` | Triggers `AFTER INSERT` / `AFTER UPDATE` |
 | DB-12 | Un sello en estado `confirmado` no se edita ni se borra (salvo `forget_merchant`). Los sellos en otros estados sí pueden borrarse según spec 07 (L-6, S-3, S-4) | Trigger `BEFORE UPDATE OR DELETE` sobre `seals` |
 
 ### Saldos
@@ -412,6 +428,7 @@ Todos los montos en COP centavos; en los ejemplos se omiten los dos ceros.
 | Consignación del datáfono $98.000 (comisión $2.000) | D cuenta_socio 98.000 · D comisiones 2.000 / H por_cobrar_psp 100.000 | liquidacion_psp · declarado (inc. 1) / verificado (inc. 2) |
 | Al cerrar faltan $5.000 en caja | D diferencias_caja 5.000 / H caja 5.000 (efectivo) | ajuste_caja · declarado |
 | Corregir una venta mal registrada | Asiento espejo de la original | reverso · declarado |
+| Venta de $100.000 con anticipo de $40.000 en efectivo a Doña Rosa (los $60.000 restantes quedan por cobrar) | D caja 40.000 (efectivo) · D por_cobrar_clientes 60.000 (fiado, customer) / H ventas 100.000 | venta · declarado |
 | Pago de $30.000 en efectivo a un proveedor | D gastos 30.000 / H caja 30.000 (efectivo) | salida · declarado |
 | El dueño saca $50.000 por Bre-B | D retiros_dueno 50.000 / H cuenta_socio 50.000 (breb) | salida · declarado |
 
@@ -438,6 +455,7 @@ La app guarda solo lo necesario para vender sin red y mostrar "Hoy". La versión
 | `local_entries` | id, business_date, occurred_at, kind, origin, reverses_entry_id, note, sync_status | `business_date` con la misma regla de DB-02 |
 | `local_lines` | id, entry_id, line_no, account_code, direction, amount_minor, currency, channel, customer_id | Usa `account_code`, no IDs del servidor |
 | `local_customers` | id, display_name, phone, updated_at_ms, sync_status | |
+| `local_channels` | id, name, channel, commission_bps, settlement_days, active, updated_at_ms, sync_status | Configuración de canales (spec 04 §2) |
 | `local_days` | business_date, status, counted_cash_minor | Copia del estado que manda el servidor |
 | `outbox` | entity, entity_id, attempts, last_error | Lo que falta subir |
 
@@ -472,7 +490,8 @@ Tablas del inc. 2 y 3 (adelantos, conversiones reales con el rail, empleados con
 - [ ] Un asiento con `occurred_at = 2026-10-07T04:30:00Z` queda con `business_date = 2026-10-06` (DB-02).
 - [ ] Reenviar el mismo asiento (mismo ID) no crea duplicados.
 - [ ] Insertar un asiento en un día `sellado` lo pasa a `requiere_enmienda` (DB-09).
-- [ ] Los 10 ejemplos de la sección 6 se insertan y `account_balances` da los saldos esperados.
+- [ ] Un `INSERT` o `UPDATE` en `merchant_channels` agrega una fila a `merchant_changes` (DB-11); `commission_bps` fuera de 0–10000 o `settlement_days` fuera de 0–30 falla.
+- [ ] Los 11 ejemplos de la sección 6 se insertan y `account_balances` da los saldos esperados.
 - [ ] `forget_merchant` deja al comercio sin asientos, sales ni PII, y `seals` solo con raíz, versión y `tx_hash`.
 - [ ] Un usuario autenticado no puede leer datos de un comercio del que no es miembro (RLS).
 - [ ] No se pueden crear dos `signing_requests` abiertas para el mismo comercio.

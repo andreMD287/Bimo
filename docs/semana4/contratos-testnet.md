@@ -45,3 +45,19 @@ comprueba leyendo la regla 0 directo de RPC que el único firmante es la llave d
 |---|---|
 | Cuenta creada por el worker (`CCFVALFKXWRV7FREHNTCBGZYTGX5Q7THJZ7HVE6UQSXOZKGGDWQZFVLS`) | https://stellar.expert/explorer/testnet/contract/CCFVALFKXWRV7FREHNTCBGZYTGX5Q7THJZ7HVE6UQSXOZKGGDWQZFVLS |
 | Transacción de despliegue (fee-bump) | https://stellar.expert/explorer/testnet/tx/03da953b5f154ca0f9dcd5f2ba78d59a8e25a5104800dd0243be019a7ba99b66 |
+
+## Día de ejemplo del spec 02 sellado desde el código de `core` (A-12, spec 03 §10)
+
+`BIMO_E2E_TESTNET=1 … pnpm --filter @bimo/core exec vitest run test/e2e-testnet.test.ts` corre el flujo completo con el
+código real: el worker despliega la `bimo-account` del comercio de los vectores, se cierra el día, `core` simula
+`seal_batch` y arma la preimagen, una llave P-256 de software (la del spec 03 §2) firma como lo hará el iPhone, `core`
+verifica la firma, la normaliza a low-S y firma la entrada del atestador, y el worker envía la transacción con la doble
+autorización. Después `get` devuelve el sello con la raíz del spec.
+
+| Qué | Enlace |
+|---|---|
+| Cuenta del comercio del vector (`CDDYB3LCUTI7JEATRDAUI3CHYKAPH7UNGO6O4S4PHIONJVI2EMFIIX6W`) | https://stellar.expert/explorer/testnet/contract/CDDYB3LCUTI7JEATRDAUI3CHYKAPH7UNGO6O4S4PHIONJVI2EMFIIX6W |
+| `seal_batch` del 6 de octubre de 2026: 5 asientos, raíz `08594093d062d8af0c1130c30ec1944acb254293eaf291b956d27ac68716c08b`, `origin_flags = 3` | https://stellar.expert/explorer/testnet/tx/5af5af5ecaefe5a824a3dfdae21c454651210d156099837afa3e57f39c514834 |
+
+**QA-02:** la misma prueba intenta sellar otro día firmando con una llave P-256 que no es la del comercio (lo único que
+Bimo podría fabricar): la red la rechaza en la simulación y el registro no guarda nada.

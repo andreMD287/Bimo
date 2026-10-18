@@ -8,7 +8,7 @@ Diseño detallado del incremento 1 y de la base del producto completo. La arquit
 |---|---|---|---|
 | 01 | [Modelo de datos](01-modelo-de-datos.md) | 1.5 | Tablas, enums, reglas de la base de datos, borrado |
 | 02 | [Formato canónico y Merkle](02-formato-canonico-y-merkle.md) | 1.1 | Bytes exactos de cada asiento, árbol y raíz. Con [vectores](02-vectores.json), [referencia](02-referencia.mjs) y [chequeo](02-check.mjs) |
-| 03 | [Contratos Soroban y flujo de firma](03-contratos-soroban.md) | 1.5 | Verificador P-256, smart account, `bimo-registry`, cómo se firma y envía |
+| 03 | [Contratos Soroban y flujo de firma](03-contratos-soroban.md) | 1.6 | Verificador P-256, smart account, `bimo-registry`, cómo se firma y envía |
 | 04 | [Sincronización offline](04-sincronizacion.md) | 1.3 | Base local, reglas V-01..V-11, push, pull, cierre, reloj, "Hoy" |
 | 05 | [Enlace de verificación](05-enlace-de-verificacion.md) | 1.0 | Qué ve el verificador y cómo comprueba sin confiar en nadie |
 | 06 | [API](06-api.md) | 1.1 | Endpoints, autenticación, errores, simuladores |

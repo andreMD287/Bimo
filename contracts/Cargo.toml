@@ -1,4 +1,22 @@
-# Workspace de contratos Soroban (spec 03). Los miembros se agregan en A-03 (p256-verifier), A-04 (registry) y A-05 (account).
+# Workspace de contratos Soroban (spec 03). Se agregan p256-verifier (A-03) y account (A-05).
+# soroban-sdk 26.1.0 es la version que usa stellar-contracts (OpenZeppelin) 0.7.x: todos los crates deben compartirla.
 [workspace]
 resolver = "2"
-members = []
+members = ["registry"]
+
+[workspace.dependencies]
+soroban-sdk = "26.1.0"
+
+[profile.release]
+opt-level = "z"
+overflow-checks = true
+debug = 0
+strip = "symbols"
+debug-assertions = false
+panic = "abort"
+codegen-units = 1
+lto = true
+
+[profile.release-with-logs]
+inherits = "release"
+debug-assertions = true

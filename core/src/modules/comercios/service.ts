@@ -231,3 +231,14 @@ export async function getDevicePublicKey(db: Tx, merchantId: string, deviceId: s
     .executeTakeFirst();
   return row && row.revoked_at === null ? row.public_key : null;
 }
+
+/** Nombre del negocio y direccion de la cuenta: lo unico del comercio que ve un verificador (spec 05 §1). */
+export async function getPublicProfile(db: Tx, merchantId: string): Promise<{ businessName: string; stellarAddress: string | null } | null> {
+  const row = await db
+    .selectFrom('merchants as m')
+    .innerJoin('merchant_profiles as p', 'p.merchant_id', 'm.id')
+    .select(['p.business_name', 'm.stellar_address'])
+    .where('m.id', '=', merchantId)
+    .executeTakeFirst();
+  return row ? { businessName: row.business_name, stellarAddress: row.stellar_address } : null;
+}

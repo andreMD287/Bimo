@@ -5,6 +5,7 @@ import { createHealthChecks } from './api/health';
 import { registerComerciosRoutes } from './api/routes/comercios';
 import { registerDiasRoutes } from './api/routes/dias';
 import { registerSyncRoutes } from './api/routes/sync';
+import { registerVerificacionRoutes } from './api/routes/verificacion';
 import { buildServer } from './api/server';
 import { loadConfig } from './config';
 import { createDb, createPool } from './db/client';
@@ -35,7 +36,7 @@ if (mode === 'api') {
     jwt: createJwtVerifier({ jwksUrl: config.supabaseJwksUrl, supabaseUrl: config.supabaseUrl }),
     devices: createPgDeviceDirectory(db),
     health: createHealthChecks(db, deployments.rpc_url, config.relayerUrl),
-    routes: [registerComerciosRoutes, registerSyncRoutes, registerDiasRoutes],
+    routes: [registerComerciosRoutes, registerSyncRoutes, registerDiasRoutes, registerVerificacionRoutes],
     ...(config.secrets.attester
       ? { signer: createSealSigner({ attester: Keypair.fromSecret(config.secrets.attester), networkPassphrase: deployments.network_passphrase }) }
       : {}),

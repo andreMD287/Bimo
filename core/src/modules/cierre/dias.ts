@@ -133,3 +133,40 @@ export async function listDays(db: Db, merchantId: string, from?: string, to?: s
   }
   return out;
 }
+
+export interface DayHistory {
+  date: string;
+  status: string;
+  seals: Array<{ version: number; tx_hash: string | null; added_entry_ids: string[] }>;
+}
+
+/** Estado de cada dia con fila y sus sellos confirmados, con los asientos que agrego cada enmienda (spec 05 §3). */
+export async function sealHistory(db: Db, merchantId: string, from: string, to: string): Promise<Map<string, DayHistory>> {
+  const days = await db
+    .selectFrom('business_days')
+    .select(['id', 'business_date', 'status'])
+    .where('merchant_id', '=', merchantId)
+    .where('business_date', '>=', from)
+    .where('business_date', '<=', to)
+    .execute();
+  const out = new Map<string, DayHistory>();
+  for (const d of days) {
+    const seals = await db
+      .selectFrom('seals')
+      .select(['id', 'version', 'tx_hash'])
+      .where('day_id', '=', d.id)
+      .where('status', '=', 'confirmado')
+      .orderBy('version')
+      .execute();
+    const history: DayHistory['seals'] = [];
+    let before = new Set<string>();
+    for (const s of seals) {
+      const leaves = await db.selectFrom('seal_leaves').select('entry_id').where('seal_id', '=', s.id).execute();
+      const now = new Set(leaves.map((l) => l.entry_id));
+      history.push({ version: s.version, tx_hash: s.tx_hash, added_entry_ids: [...now].filter((id) => !before.has(id)).sort() });
+      before = now;
+    }
+    out.set(d.business_date, { date: d.business_date, status: d.status, seals: history });
+  }
+  return out;
+}

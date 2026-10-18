@@ -6,6 +6,7 @@ export {
   createMerchant,
   getAccountInfo,
   getDevicePublicKey,
+  getPublicProfile,
   getMerchantMe,
   issueChallenge,
   merchantOfUser,

@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import { p256 } from '@noble/curves/nist.js';
 import { sql } from 'kysely';
 import type { Db } from '../src/db/client';
@@ -63,6 +64,7 @@ export async function insertEntry(
         })
         .execute();
     }
+    await tx.insertInto('entry_salts').values({ entry_id: id, salt: randomBytes(32) }).execute(); // la sal la crea core al recibir el asiento
     await sql`set constraints all immediate`.execute(tx);
   });
   return id;

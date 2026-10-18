@@ -165,3 +165,47 @@ export async function dayOfEntry(db: Db, entryId: string): Promise<{ businessDat
     .executeTakeFirst();
   return row ? { businessDate: row.business_date, dayStatus: row.status } : null;
 }
+
+/** De los IDs dados, los que ya existen en el comercio (para validar el `close`, spec 07 D-3). */
+export async function existingEntryIds(db: Db, merchantId: string, ids: string[]): Promise<Set<string>> {
+  if (ids.length === 0) return new Set();
+  const rows = await db.selectFrom('journal_entries').select('id').where('merchant_id', '=', merchantId).where('id', 'in', ids).execute();
+  return new Set(rows.map((r) => r.id));
+}
+
+export interface SealableEntry {
+  entry: StoredEntry;
+  salt: Buffer;
+}
+
+/** Todos los asientos de un dia de negocio (incluidos los reversos), por `id` ascendente, con su sal (spec 02 §4). */
+export async function loadDayEntriesForSeal(db: Db, merchantId: string, businessDate: string): Promise<SealableEntry[]> {
+  const ids = (
+    await db
+      .selectFrom('journal_entries')
+      .select('id')
+      .where('merchant_id', '=', merchantId)
+      .where('business_date', '=', businessDate)
+      .orderBy('id')
+      .execute()
+  ).map((r) => r.id);
+  if (ids.length === 0) return [];
+  const entries = await loadEntries(db, merchantId, ids);
+  const salts = await db.selectFrom('entry_salts').select(['entry_id', 'salt']).where('entry_id', 'in', ids).execute();
+  const saltOf = new Map(salts.map((s) => [s.entry_id, s.salt]));
+  return ids.map((id) => {
+    const salt = saltOf.get(id);
+    if (!salt) throw new Error('asiento sin sal');
+    return { entry: entries.get(id) as StoredEntry, salt };
+  });
+}
+
+export async function countDayEntries(db: Db, merchantId: string, businessDate: string): Promise<number> {
+  const row = await db
+    .selectFrom('journal_entries')
+    .select((eb) => eb.fn.countAll<string>().as('n'))
+    .where('merchant_id', '=', merchantId)
+    .where('business_date', '=', businessDate)
+    .executeTakeFirstOrThrow();
+  return Number(row.n);
+}

@@ -211,3 +211,12 @@ export async function getMerchantMe(db: Tx, merchantId: string, role: MemberRole
     role,
   };
 }
+
+/** Direccion de la smart account y su estado (para los sellos: solo se firma con la cuenta `ready`). */
+export async function getAccountInfo(
+  db: Tx,
+  merchantId: string,
+): Promise<{ stellarAddress: string | null; accountStatus: 'pending' | 'deploying' | 'ready' | 'failed' } | null> {
+  const row = await db.selectFrom('merchants').select(['stellar_address', 'account_status']).where('id', '=', merchantId).executeTakeFirst();
+  return row ? { stellarAddress: row.stellar_address, accountStatus: row.account_status } : null;
+}

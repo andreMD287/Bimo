@@ -192,7 +192,10 @@ export const ROUTES: ApiRoute[] = [
   // 3.3 Dias y cierre
   {
     method: 'post', path: '/days/{date}/close', tag: 'Dias', auth: 'device', summary: 'Cerrar un dia de negocio',
-    body: z.object({ counted_cash_minor: money, entry_ids: z.array(ulid) }),
+    body: z.object({
+      counted_cash_minor: money.nullable().describe('Efectivo contado; null en un dia pasado (spec 07 §1)'),
+      entry_ids: z.array(z.string()).max(5000),
+    }),
     success: { status: 200, schema: z.object({ status: dayStatus, signing_request_id: ulid.optional() }) },
     errors: ['invalid_request', 'unauthenticated', 'forbidden', 'device_revoked', 'role_not_allowed', 'missing_entries', 'day_not_closable', 'rate_limited'],
   },

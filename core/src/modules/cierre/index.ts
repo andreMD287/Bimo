@@ -1,2 +1,6 @@
 // Interfaz publica del modulo cierre (spec 08 §1).
-export { loadDays, loadSeals } from './dias';
+export { closeDay, listDays, loadDays, loadSeals, parseDate, todayInBogota } from './dias';
+export type { CloseInput, DaySummary } from './dias';
+export { MAX_DAYS_PER_REQUEST, ensureSigningRequest, getPendingSigning, supersedeIfAffected, supersedeOpenRequest } from './firma';
+export type { PendingView } from './firma';
+export { withMerchantLock } from './lock';

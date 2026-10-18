@@ -907,16 +907,18 @@ paths:
               type: "object"
               properties:
                 counted_cash_minor:
-                  type: "integer"
-                  minimum: -9007199254740991
-                  maximum: 9007199254740991
-                  description: "Entero en unidades minimas (COP en centavos)"
+                  anyOf:
+                    - type: "integer"
+                      minimum: -9007199254740991
+                      maximum: 9007199254740991
+                      description: "Entero en unidades minimas (COP en centavos)"
+                    - type: "null"
+                  description: "Efectivo contado; null en un dia pasado (spec 07 §1)"
                 entry_ids:
+                  maxItems: 5000
                   type: "array"
                   items:
                     type: "string"
-                    pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
-                    description: "ULID (26 caracteres Crockford base32)"
               required:
                 - "counted_cash_minor"
                 - "entry_ids"

@@ -6,6 +6,7 @@ import { randomBytes } from 'node:crypto';
 import { encodeEntry, isUlid, validateEntry, type Entry, type ValidationCode, type ValidationContext } from '@bimo/shared';
 import type { Kysely, Transaction } from 'kysely';
 import type { Database } from '../../db/types';
+import { supersedeIfAffected } from '../cierre';
 import { upsertChannel } from '../comercios';
 import { dayOfEntry, entryOwner, existingCustomerIds, insertEntry, isReversed, loadEntries, upsertCustomer } from '../ledger';
 
@@ -169,6 +170,8 @@ async function pushEntry(db: Db, input: PushInput, raw: Record<string, unknown>,
         salt: randomBytes(32),
       }),
     );
+    // D-10 / S-4: si la solicitud de firma abierta incluye ese dia, ya no sirve (los asientos cambiaron)
+    await supersedeIfAffected(db, input.merchantId, day.businessDate, input.serverNow);
     return { type: 'entry', id, result: 'accepted', business_date: day.businessDate, day_status: day.dayStatus };
   } catch (e) {
     if (isUniqueViolation(e)) {

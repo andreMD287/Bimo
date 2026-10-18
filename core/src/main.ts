@@ -3,6 +3,7 @@ import { createPgDeviceDirectory } from './auth/devices';
 import { createJwtVerifier } from './auth/jwt';
 import { createHealthChecks } from './api/health';
 import { registerComerciosRoutes } from './api/routes/comercios';
+import { registerDiasRoutes } from './api/routes/dias';
 import { registerSyncRoutes } from './api/routes/sync';
 import { buildServer } from './api/server';
 import { loadConfig } from './config';
@@ -10,7 +11,7 @@ import { createDb, createPool } from './db/client';
 import { loadDeployments } from './deployments';
 import { createLogger } from './logger';
 import { Keypair, rpc } from '@stellar/stellar-sdk';
-import { EnviadorDirecto, StellarAccountDeployer } from './modules/stellar';
+import { EnviadorDirecto, RpcSealPreparer, StellarAccountDeployer } from './modules/stellar';
 import { runWorkers } from './workers';
 import { createAccountDeployWorker } from './workers/account-deploy';
 
@@ -33,7 +34,12 @@ if (mode === 'api') {
     jwt: createJwtVerifier({ jwksUrl: config.supabaseJwksUrl, supabaseUrl: config.supabaseUrl }),
     devices: createPgDeviceDirectory(db),
     health: createHealthChecks(db, deployments.rpc_url, config.relayerUrl),
-    routes: [registerComerciosRoutes, registerSyncRoutes],
+    routes: [registerComerciosRoutes, registerSyncRoutes, registerDiasRoutes],
+    seals: new RpcSealPreparer({
+      server: new rpc.Server(deployments.rpc_url),
+      deployments,
+      sourceAddress: deployments.deployer,
+    }),
   });
   await app.listen({ port: config.port, host: '0.0.0.0' });
 } else {

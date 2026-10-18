@@ -4,6 +4,7 @@ export {
   LEDGER_ACCOUNTS,
   consumeChallenge,
   createMerchant,
+  getAccountInfo,
   getMerchantMe,
   issueChallenge,
   merchantOfUser,

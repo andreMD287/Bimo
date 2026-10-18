@@ -5,8 +5,19 @@
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
-  "exports": { ".": "./src/index.ts" },
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@bimo/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "^5.0.0",
+    "@types/node": "^22.18.0",
+    "@stellar/stellar-sdk": "^17.2.1"
   }
 }

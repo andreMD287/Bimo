@@ -134,6 +134,9 @@ importers:
         specifier: ^3.0.0
         version: 3.0.2
     devDependencies:
+      '@stellar/stellar-sdk':
+        specifier: ^17.2.1
+        version: 17.2.1
       '@types/node':
         specifier: ^22.18.0
         version: 22.20.5
@@ -141,7 +144,21 @@ importers:
         specifier: ^5.0.0
         version: 5.0.5(@types/node@22.20.5)(vite@8.3.4(@types/node@22.20.5)(esbuild@0.28.2)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
 
-  verifier: {}
+  verifier:
+    dependencies:
+      '@bimo/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      '@stellar/stellar-sdk':
+        specifier: ^17.2.1
+        version: 17.2.1
+      '@types/node':
+        specifier: ^22.18.0
+        version: 22.20.5
+      vitest:
+        specifier: ^5.0.0
+        version: 5.0.5(@types/node@22.20.5)(vite@8.3.4(@types/node@22.20.5)(esbuild@0.28.2)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
 
 packages:
 

@@ -5,8 +5,32 @@
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
-  "exports": { ".": "./src/index.ts" },
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "dev": "tsx watch src/main.ts api",
+    "start:api": "tsx src/main.ts api",
+    "start:worker": "tsx src/main.ts worker",
+    "gen:openapi": "tsx scripts/gen-openapi.ts"
+  },
+  "dependencies": {
+    "fastify": "^5.12.0",
+    "zod": "^4.1.0",
+    "kysely": "^0.28.0",
+    "pg": "^8.16.0",
+    "jose": "^6.1.0",
+    "pino": "^10.0.0",
+    "tsx": "^4.20.0",
+    "@bimo/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.0",
+    "@types/pg": "^8.15.0",
+    "vitest": "^5.0.0",
+    "@seriousme/openapi-schema-validator": "^2.4.0",
+    "embedded-postgres": "18.4.0-beta.17"
   }
 }

@@ -1,0 +1,1914 @@
+# Generado por scripts/gen-openapi.ts desde src/api/contract.ts. No editar a mano.
+openapi: "3.1.0"
+info:
+  title: "bimo-core"
+  version: "1.1.0"
+  description: "API de bimo-core (spec 06). Generado por `pnpm --filter @bimo/core gen:openapi`; no se edita a mano."
+servers:
+  - url: "https://api.bimo.example/v1"
+    description: "Base /v1 (spec 06 §1)"
+paths:
+  "/merchants":
+    post:
+      summary: "Crear el comercio del usuario"
+      tags:
+        - "Comercio"
+      operationId: "post_merchants"
+      parameters:
+        - name: "X-Device-Time"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+          description: "ISO-8601 UTC con milisegundos (spec 04 §7)"
+      responses:
+        "201":
+          description: "Exito"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  merchant_id:
+                    type: "string"
+                    pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+                    description: "ULID (26 caracteres Crockford base32)"
+                required:
+                  - "merchant_id"
+        "400":
+          description: "Error: invalid_request"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "401":
+          description: "Error: unauthenticated"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "409":
+          description: "Error: already_exists"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "429":
+          description: "Error: rate_limited"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                business_name:
+                  type: "string"
+                  minLength: 1
+                  maxLength: 80
+                owner_name:
+                  type: "string"
+                  maxLength: 80
+                city:
+                  type: "string"
+              required:
+                - "business_name"
+      security:
+        - supabaseJwt: []
+  "/devices/challenge":
+    post:
+      summary: "Pedir un reto de un solo uso (vence en 5 min)"
+      tags:
+        - "Comercio"
+      operationId: "post_devices_challenge"
+      parameters:
+        - name: "X-Device-Time"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+          description: "ISO-8601 UTC con milisegundos (spec 04 §7)"
+      responses:
+        "200":
+          description: "Exito"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  challenge_id:
+                    type: "string"
+                    pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+                    description: "ULID (26 caracteres Crockford base32)"
+                  challenge:
+                    type: "string"
+                    description: "Base64 estandar"
+                  expires_at:
+                    type: "string"
+                    pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                    description: "ISO-8601 UTC con milisegundos"
+                required:
+                  - "challenge_id"
+                  - "challenge"
+                  - "expires_at"
+        "401":
+          description: "Error: unauthenticated"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "429":
+          description: "Error: rate_limited"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties: {}
+      security:
+        - supabaseJwt: []
+  "/devices":
+    post:
+      summary: "Registrar el dispositivo con la firma del reto"
+      tags:
+        - "Comercio"
+      operationId: "post_devices"
+      parameters:
+        - name: "X-Device-Time"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+          description: "ISO-8601 UTC con milisegundos (spec 04 §7)"
+      responses:
+        "201":
+          description: "Exito"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  device_id:
+                    type: "string"
+                    pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+                    description: "ULID (26 caracteres Crockford base32)"
+                  account_status:
+                    type: "string"
+                    enum:
+                      - "pending"
+                      - "deploying"
+                      - "ready"
+                      - "failed"
+                required:
+                  - "device_id"
+                  - "account_status"
+        "400":
+          description: "Error: invalid_request"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "401":
+          description: "Error: unauthenticated"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "409":
+          description: "Error: already_exists"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "422":
+          description: "Error: invalid_signature, invalid_challenge"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "429":
+          description: "Error: rate_limited"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                device_id:
+                  type: "string"
+                  pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+                  description: "ULID (26 caracteres Crockford base32)"
+                challenge_id:
+                  type: "string"
+                  pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+                  description: "ULID (26 caracteres Crockford base32)"
+                public_key:
+                  type: "string"
+                  description: "P-256 sin comprimir, 65 bytes"
+                key_kind:
+                  type: "string"
+                  enum:
+                    - "secure_enclave_p256"
+                    - "software_p256"
+                    - "passkey_webauthn"
+                signature:
+                  type: "string"
+                  description: "64 bytes (r || s) sobre el reto"
+              required:
+                - "device_id"
+                - "challenge_id"
+                - "public_key"
+                - "key_kind"
+                - "signature"
+      security:
+        - supabaseJwt: []
+  "/merchants/me":
+    get:
+      summary: "Datos del comercio del usuario"
+      tags:
+        - "Comercio"
+      operationId: "get_merchants_me"
+      parameters:
+        - name: "X-Device-Id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+        - name: "X-Device-Time"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+          description: "ISO-8601 UTC con milisegundos (spec 04 §7)"
+      responses:
+        "200":
+          description: "Exito"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  merchant_id:
+                    type: "string"
+                    pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+                    description: "ULID (26 caracteres Crockford base32)"
+                  business_name:
+                    type: "string"
+                  stellar_address:
+                    type:
+                      - "string"
+                      - "null"
+                  account_status:
+                    type: "string"
+                    enum:
+                      - "pending"
+                      - "deploying"
+                      - "ready"
+                      - "failed"
+                  network:
+                    type: "object"
+                    properties:
+                      network:
+                        type: "string"
+                        enum:
+                          - "testnet"
+                          - "mainnet"
+                      network_passphrase:
+                        type: "string"
+                      rpc_url:
+                        type: "string"
+                      registry_ids:
+                        type: "array"
+                        items:
+                          type: "string"
+                      p256_verifier_id:
+                        type: "string"
+                      account_wasm_hash:
+                        type: "string"
+                      attester:
+                        type: "string"
+                      admin:
+                        type: "string"
+                      deployer:
+                        type: "string"
+                      usdc_sac:
+                        type: "string"
+                    required:
+                      - "network"
+                      - "network_passphrase"
+                      - "rpc_url"
+                      - "registry_ids"
+                      - "p256_verifier_id"
+                      - "account_wasm_hash"
+                      - "attester"
+                      - "admin"
+                      - "deployer"
+                      - "usdc_sac"
+                    description: "Contenido de contracts/deployments/<red>.json (spec 03 §9)"
+                  role:
+                    type: "string"
+                    enum:
+                      - "dueno"
+                      - "empleado"
+                required:
+                  - "merchant_id"
+                  - "business_name"
+                  - "stellar_address"
+                  - "account_status"
+                  - "network"
+                  - "role"
+        "401":
+          description: "Error: unauthenticated"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "403":
+          description: "Error: forbidden, device_revoked"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "429":
+          description: "Error: rate_limited"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+      security:
+        - supabaseJwt: []
+    delete:
+      summary: "Borrar la cuenta (ADR-16); exige firma del dispositivo"
+      tags:
+        - "Comercio"
+      operationId: "delete_merchants_me"
+      parameters:
+        - name: "X-Device-Id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+        - name: "X-Device-Time"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+          description: "ISO-8601 UTC con milisegundos (spec 04 §7)"
+      responses:
+        "202":
+          description: "Exito (sin cuerpo)"
+        "400":
+          description: "Error: invalid_request"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "401":
+          description: "Error: unauthenticated"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "403":
+          description: "Error: forbidden, device_revoked, role_not_allowed"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "422":
+          description: "Error: invalid_signature, invalid_challenge"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "429":
+          description: "Error: rate_limited"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                challenge_id:
+                  type: "string"
+                  pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+                  description: "ULID (26 caracteres Crockford base32)"
+                signature:
+                  type: "string"
+                  description: "Base64 estandar"
+              required:
+                - "challenge_id"
+                - "signature"
+      security:
+        - supabaseJwt: []
+  "/sync/push":
+    post:
+      summary: "Subir el outbox (maximo 200 items y 1 MB)"
+      tags:
+        - "Sincronizacion"
+      operationId: "post_sync_push"
+      parameters:
+        - name: "X-Device-Id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+        - name: "X-Device-Time"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+          description: "ISO-8601 UTC con milisegundos (spec 04 §7)"
+      responses:
+        "200":
+          description: "Exito"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  results:
+                    type: "array"
+                    items:
+                      type: "object"
+                      properties:
+                        type:
+                          type: "string"
+                          enum:
+                            - "customer"
+                            - "channel"
+                            - "entry"
+                        id:
+                          type: "string"
+                          pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+                          description: "ULID (26 caracteres Crockford base32)"
+                        result:
+                          type: "string"
+                          enum:
+                            - "accepted"
+                            - "duplicate"
+                            - "id_conflict"
+                            - "rejected"
+                            - "dependency_failed"
+                        code:
+                          description: "Codigo V-xx del spec 04 §4 cuando result = rejected"
+                          type: "string"
+                        business_date:
+                          type: "string"
+                          pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+                          description: "Dia de negocio AAAA-MM-DD (America/Bogota)"
+                        day_status:
+                          type: "string"
+                          enum:
+                            - "abierto"
+                            - "cerrado"
+                            - "firmado"
+                            - "sellado"
+                            - "requiere_enmienda"
+                      required:
+                        - "type"
+                        - "id"
+                        - "result"
+                  clock_skew_ms:
+                    type: "integer"
+                    minimum: -9007199254740991
+                    maximum: 9007199254740991
+                required:
+                  - "results"
+                  - "clock_skew_ms"
+        "400":
+          description: "Error: invalid_request"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "401":
+          description: "Error: unauthenticated"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "403":
+          description: "Error: forbidden, device_revoked"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "429":
+          description: "Error: rate_limited"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                device_id:
+                  type: "string"
+                  pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+                  description: "ULID (26 caracteres Crockford base32)"
+                device_time:
+                  type: "string"
+                  pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                  description: "ISO-8601 UTC con milisegundos"
+                items:
+                  maxItems: 200
+                  type: "array"
+                  items:
+                    oneOf:
+                      - type: "object"
+                        properties:
+                          type:
+                            type: "string"
+                            const: "customer"
+                          data:
+                            type: "object"
+                            properties:
+                              id:
+                                type: "string"
+                                pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+                                description: "ULID (26 caracteres Crockford base32)"
+                              display_name:
+                                type: "string"
+                                minLength: 1
+                                maxLength: 60
+                              phone:
+                                type:
+                                  - "string"
+                                  - "null"
+                              updated_at:
+                                type: "string"
+                                pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                                description: "ISO-8601 UTC con milisegundos"
+                            required:
+                              - "id"
+                              - "display_name"
+                              - "phone"
+                              - "updated_at"
+                        required:
+                          - "type"
+                          - "data"
+                      - type: "object"
+                        properties:
+                          type:
+                            type: "string"
+                            const: "channel"
+                          data:
+                            type: "object"
+                            properties:
+                              id:
+                                type: "string"
+                                pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+                                description: "ULID (26 caracteres Crockford base32)"
+                              name:
+                                type: "string"
+                                minLength: 1
+                                maxLength: 60
+                              channel:
+                                type: "string"
+                                enum:
+                                  - "efectivo"
+                                  - "breb"
+                                  - "datafono_externo"
+                                  - "tap_to_pay"
+                                  - "fiado"
+                                  - "transferencia_otro"
+                              commission_bps:
+                                type: "integer"
+                                minimum: 0
+                                maximum: 10000
+                              settlement_days:
+                                type: "integer"
+                                minimum: 0
+                                maximum: 30
+                              active:
+                                type: "boolean"
+                              updated_at:
+                                type: "string"
+                                pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                                description: "ISO-8601 UTC con milisegundos"
+                            required:
+                              - "id"
+                              - "name"
+                              - "channel"
+                              - "commission_bps"
+                              - "settlement_days"
+                              - "active"
+                              - "updated_at"
+                        required:
+                          - "type"
+                          - "data"
+                      - type: "object"
+                        properties:
+                          type:
+                            type: "string"
+                            const: "entry"
+                          data:
+                            type: "object"
+                            properties:
+                              id:
+                                type: "string"
+                                pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+                                description: "ULID (26 caracteres Crockford base32)"
+                              occurred_at:
+                                type: "string"
+                                pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                                description: "ISO-8601 UTC con milisegundos"
+                              kind:
+                                type: "string"
+                                enum:
+                                  - "venta"
+                                  - "abono_cliente"
+                                  - "liquidacion_psp"
+                                  - "ajuste_caja"
+                                  - "reverso"
+                                  - "conversion"
+                                  - "salida"
+                              origin:
+                                type: "string"
+                                const: "declarado"
+                              reverses_entry_id:
+                                anyOf:
+                                  - type: "string"
+                                    pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+                                    description: "ULID (26 caracteres Crockford base32)"
+                                  - type: "null"
+                              note:
+                                anyOf:
+                                  - type: "string"
+                                    maxLength: 140
+                                  - type: "null"
+                              lines:
+                                minItems: 2
+                                maxItems: 20
+                                type: "array"
+                                items:
+                                  type: "object"
+                                  properties:
+                                    id:
+                                      type: "string"
+                                      pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+                                      description: "ULID (26 caracteres Crockford base32)"
+                                    line_no:
+                                      type: "integer"
+                                      minimum: 1
+                                      maximum: 20
+                                    account_code:
+                                      type: "string"
+                                      enum:
+                                        - "caja"
+                                        - "por_cobrar_clientes"
+                                        - "por_cobrar_psp"
+                                        - "cuenta_socio"
+                                        - "bolsillo_usd"
+                                        - "adelantos_por_pagar"
+                                        - "ventas"
+                                        - "comisiones"
+                                        - "diferencias_caja"
+                                        - "gastos"
+                                        - "retiros_dueno"
+                                    direction:
+                                      type: "string"
+                                      enum:
+                                        - "debe"
+                                        - "haber"
+                                    amount_minor:
+                                      type: "integer"
+                                      minimum: -9007199254740991
+                                      maximum: 9007199254740991
+                                      description: "Entero en unidades minimas (COP en centavos)"
+                                    currency:
+                                      type: "string"
+                                      enum:
+                                        - "COP"
+                                        - "USDC"
+                                    channel:
+                                      type: "string"
+                                      enum:
+                                        - "efectivo"
+                                        - "breb"
+                                        - "datafono_externo"
+                                        - "tap_to_pay"
+                                        - "fiado"
+                                        - "transferencia_otro"
+                                    customer_id:
+                                      type: "string"
+                                      pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+                                      description: "ULID (26 caracteres Crockford base32)"
+                                  required:
+                                    - "id"
+                                    - "line_no"
+                                    - "account_code"
+                                    - "direction"
+                                    - "amount_minor"
+                                    - "currency"
+                            required:
+                              - "id"
+                              - "occurred_at"
+                              - "kind"
+                              - "origin"
+                              - "reverses_entry_id"
+                              - "note"
+                              - "lines"
+                        required:
+                          - "type"
+                          - "data"
+              required:
+                - "device_id"
+                - "device_time"
+                - "items"
+      security:
+        - supabaseJwt: []
+  "/sync/pull":
+    get:
+      summary: "Bajar cambios desde un cursor (maximo 500)"
+      tags:
+        - "Sincronizacion"
+      operationId: "get_sync_pull"
+      parameters:
+        - name: "cursor"
+          in: "query"
+          required: false
+          schema:
+            type: "integer"
+            minimum: 0
+            maximum: 9007199254740991
+        - name: "limit"
+          in: "query"
+          required: false
+          schema:
+            type: "integer"
+            minimum: 1
+            maximum: 500
+        - name: "X-Device-Id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+        - name: "X-Device-Time"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+          description: "ISO-8601 UTC con milisegundos (spec 04 §7)"
+      responses:
+        "200":
+          description: "Exito"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  changes:
+                    type: "array"
+                    items:
+                      type: "object"
+                      properties:
+                        seq:
+                          type: "integer"
+                          minimum: -9007199254740991
+                          maximum: 9007199254740991
+                        entity:
+                          type: "string"
+                          enum:
+                            - "entry"
+                            - "customer"
+                            - "channel"
+                            - "day"
+                            - "seal"
+                        data:
+                          type: "object"
+                          propertyNames:
+                            type: "string"
+                          additionalProperties: {}
+                      required:
+                        - "seq"
+                        - "entity"
+                        - "data"
+                  next_cursor:
+                    type: "integer"
+                    minimum: -9007199254740991
+                    maximum: 9007199254740991
+                  has_more:
+                    type: "boolean"
+                required:
+                  - "changes"
+                  - "next_cursor"
+                  - "has_more"
+        "400":
+          description: "Error: invalid_request"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "401":
+          description: "Error: unauthenticated"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "403":
+          description: "Error: forbidden, device_revoked"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "429":
+          description: "Error: rate_limited"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+      security:
+        - supabaseJwt: []
+  "/days/{date}/close":
+    post:
+      summary: "Cerrar un dia de negocio"
+      tags:
+        - "Dias"
+      operationId: "post_days_date_close"
+      parameters:
+        - name: "date"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+        - name: "X-Device-Id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+        - name: "X-Device-Time"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+          description: "ISO-8601 UTC con milisegundos (spec 04 §7)"
+      responses:
+        "200":
+          description: "Exito"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  status:
+                    type: "string"
+                    enum:
+                      - "abierto"
+                      - "cerrado"
+                      - "firmado"
+                      - "sellado"
+                      - "requiere_enmienda"
+                  signing_request_id:
+                    type: "string"
+                    pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+                    description: "ULID (26 caracteres Crockford base32)"
+                required:
+                  - "status"
+        "400":
+          description: "Error: invalid_request"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "401":
+          description: "Error: unauthenticated"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "403":
+          description: "Error: forbidden, device_revoked, role_not_allowed"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "409":
+          description: "Error: missing_entries, day_not_closable"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "429":
+          description: "Error: rate_limited"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                counted_cash_minor:
+                  type: "integer"
+                  minimum: -9007199254740991
+                  maximum: 9007199254740991
+                  description: "Entero en unidades minimas (COP en centavos)"
+                entry_ids:
+                  type: "array"
+                  items:
+                    type: "string"
+                    pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+                    description: "ULID (26 caracteres Crockford base32)"
+              required:
+                - "counted_cash_minor"
+                - "entry_ids"
+      security:
+        - supabaseJwt: []
+  "/days":
+    get:
+      summary: "Estado de los dias de un rango"
+      tags:
+        - "Dias"
+      operationId: "get_days"
+      parameters:
+        - name: "from"
+          in: "query"
+          required: false
+          schema:
+            type: "string"
+            pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+            description: "Dia de negocio AAAA-MM-DD (America/Bogota)"
+        - name: "to"
+          in: "query"
+          required: false
+          schema:
+            type: "string"
+            pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+            description: "Dia de negocio AAAA-MM-DD (America/Bogota)"
+        - name: "X-Device-Id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+        - name: "X-Device-Time"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+          description: "ISO-8601 UTC con milisegundos (spec 04 §7)"
+      responses:
+        "200":
+          description: "Exito"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  days:
+                    type: "array"
+                    items:
+                      type: "object"
+                      properties:
+                        date:
+                          type: "string"
+                          pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+                          description: "Dia de negocio AAAA-MM-DD (America/Bogota)"
+                        status:
+                          type: "string"
+                          enum:
+                            - "abierto"
+                            - "cerrado"
+                            - "firmado"
+                            - "sellado"
+                            - "requiere_enmienda"
+                        entry_count:
+                          type: "integer"
+                          minimum: -9007199254740991
+                          maximum: 9007199254740991
+                        seal_version:
+                          type: "integer"
+                          minimum: -9007199254740991
+                          maximum: 9007199254740991
+                        tx_hash:
+                          type: "string"
+                      required:
+                        - "date"
+                        - "status"
+                        - "entry_count"
+                        - "seal_version"
+                required:
+                  - "days"
+        "400":
+          description: "Error: invalid_request"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "401":
+          description: "Error: unauthenticated"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "403":
+          description: "Error: forbidden, device_revoked"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "429":
+          description: "Error: rate_limited"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+      security:
+        - supabaseJwt: []
+  "/signing/pending":
+    get:
+      summary: "Solicitud de firma vigente (o null)"
+      tags:
+        - "Firma"
+      operationId: "get_signing_pending"
+      parameters:
+        - name: "X-Device-Id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+        - name: "X-Device-Time"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+          description: "ISO-8601 UTC con milisegundos (spec 04 §7)"
+      responses:
+        "200":
+          description: "Exito"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  request:
+                    anyOf:
+                      - type: "object"
+                        properties:
+                          signing_request_id:
+                            type: "string"
+                            pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+                            description: "ULID (26 caracteres Crockford base32)"
+                          preimage_xdr:
+                            type: "string"
+                            description: "Base64 estandar"
+                          items:
+                            type: "array"
+                            items:
+                              type: "object"
+                              properties:
+                                date:
+                                  type: "string"
+                                  pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+                                  description: "Dia de negocio AAAA-MM-DD (America/Bogota)"
+                                entry_count:
+                                  type: "integer"
+                                  minimum: -9007199254740991
+                                  maximum: 9007199254740991
+                                is_amend:
+                                  type: "boolean"
+                              required:
+                                - "date"
+                                - "entry_count"
+                                - "is_amend"
+                          expiration_ledger:
+                            type: "integer"
+                            minimum: -9007199254740991
+                            maximum: 9007199254740991
+                          expires_at:
+                            type: "string"
+                            pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                            description: "ISO-8601 UTC con milisegundos"
+                        required:
+                          - "signing_request_id"
+                          - "preimage_xdr"
+                          - "items"
+                          - "expiration_ledger"
+                          - "expires_at"
+                      - type: "null"
+                required:
+                  - "request"
+        "401":
+          description: "Error: unauthenticated"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "403":
+          description: "Error: forbidden, device_revoked, role_not_allowed"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "429":
+          description: "Error: rate_limited"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+      security:
+        - supabaseJwt: []
+  "/signing/{id}/signature":
+    post:
+      summary: "Enviar la firma P-256 de la preimagen"
+      tags:
+        - "Firma"
+      operationId: "post_signing_id_signature"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+        - name: "X-Device-Id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+        - name: "X-Device-Time"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+          description: "ISO-8601 UTC con milisegundos (spec 04 §7)"
+      responses:
+        "202":
+          description: "Exito"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  status:
+                    type: "string"
+                    const: "firmado"
+                required:
+                  - "status"
+        "400":
+          description: "Error: invalid_request"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "401":
+          description: "Error: unauthenticated"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "403":
+          description: "Error: forbidden, device_revoked, role_not_allowed"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "409":
+          description: "Error: signature_expired, request_superseded"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "422":
+          description: "Error: invalid_signature"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "429":
+          description: "Error: rate_limited"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                signature:
+                  type: "string"
+                  description: "64 bytes (r || s)"
+              required:
+                - "signature"
+      security:
+        - supabaseJwt: []
+  "/verification-links":
+    post:
+      summary: "Crear un enlace de verificacion"
+      tags:
+        - "Verificacion"
+      operationId: "post_verification-links"
+      parameters:
+        - name: "X-Device-Id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+        - name: "X-Device-Time"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+          description: "ISO-8601 UTC con milisegundos (spec 04 §7)"
+      responses:
+        "201":
+          description: "Exito"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  id:
+                    type: "string"
+                    pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+                    description: "ULID (26 caracteres Crockford base32)"
+                  url:
+                    type: "string"
+                  expires_at:
+                    type: "string"
+                    pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                    description: "ISO-8601 UTC con milisegundos"
+                required:
+                  - "id"
+                  - "url"
+                  - "expires_at"
+        "400":
+          description: "Error: invalid_request"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "401":
+          description: "Error: unauthenticated"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "403":
+          description: "Error: forbidden, device_revoked, role_not_allowed"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "429":
+          description: "Error: rate_limited"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                date_from:
+                  type: "string"
+                  pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+                  description: "Dia de negocio AAAA-MM-DD (America/Bogota)"
+                date_to:
+                  type: "string"
+                  pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+                  description: "Dia de negocio AAAA-MM-DD (America/Bogota)"
+                expires_in_days:
+                  anyOf:
+                    - type: "number"
+                      const: 7
+                    - type: "number"
+                      const: 30
+                    - type: "number"
+                      const: 90
+              required:
+                - "date_from"
+                - "date_to"
+                - "expires_in_days"
+      security:
+        - supabaseJwt: []
+    get:
+      summary: "Listar mis enlaces"
+      tags:
+        - "Verificacion"
+      operationId: "get_verification-links"
+      parameters:
+        - name: "X-Device-Id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+        - name: "X-Device-Time"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+          description: "ISO-8601 UTC con milisegundos (spec 04 §7)"
+      responses:
+        "200":
+          description: "Exito"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  links:
+                    type: "array"
+                    items:
+                      type: "object"
+                      properties:
+                        id:
+                          type: "string"
+                          pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+                          description: "ULID (26 caracteres Crockford base32)"
+                        date_from:
+                          type: "string"
+                          pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+                          description: "Dia de negocio AAAA-MM-DD (America/Bogota)"
+                        date_to:
+                          type: "string"
+                          pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+                          description: "Dia de negocio AAAA-MM-DD (America/Bogota)"
+                        expires_at:
+                          type: "string"
+                          pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                          description: "ISO-8601 UTC con milisegundos"
+                        revoked_at:
+                          anyOf:
+                            - type: "string"
+                              pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                              description: "ISO-8601 UTC con milisegundos"
+                            - type: "null"
+                        view_count:
+                          type: "integer"
+                          minimum: -9007199254740991
+                          maximum: 9007199254740991
+                        status:
+                          type: "string"
+                          enum:
+                            - "activo"
+                            - "vencido"
+                            - "revocado"
+                      required:
+                        - "id"
+                        - "date_from"
+                        - "date_to"
+                        - "expires_at"
+                        - "revoked_at"
+                        - "view_count"
+                        - "status"
+                required:
+                  - "links"
+        "401":
+          description: "Error: unauthenticated"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "403":
+          description: "Error: forbidden, device_revoked, role_not_allowed"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "429":
+          description: "Error: rate_limited"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+      security:
+        - supabaseJwt: []
+  "/verification-links/{id}":
+    delete:
+      summary: "Revocar un enlace"
+      tags:
+        - "Verificacion"
+      operationId: "delete_verification-links_id"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+        - name: "X-Device-Id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+        - name: "X-Device-Time"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+          description: "ISO-8601 UTC con milisegundos (spec 04 §7)"
+      responses:
+        "204":
+          description: "Exito (sin cuerpo)"
+        "401":
+          description: "Error: unauthenticated"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "403":
+          description: "Error: forbidden, device_revoked, role_not_allowed"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "404":
+          description: "Error: not_found"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "429":
+          description: "Error: rate_limited"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+      security:
+        - supabaseJwt: []
+  "/public/verification":
+    get:
+      summary: "Paquete de verificacion (spec 05 §3)"
+      tags:
+        - "Publico"
+      operationId: "get_public_verification"
+      parameters:
+        - name: "from"
+          in: "query"
+          required: false
+          schema:
+            type: "string"
+            pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+            description: "Dia de negocio AAAA-MM-DD (America/Bogota)"
+        - name: "to"
+          in: "query"
+          required: false
+          schema:
+            type: "string"
+            pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+            description: "Dia de negocio AAAA-MM-DD (America/Bogota)"
+      responses:
+        "200":
+          description: "Exito"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                propertyNames:
+                  type: "string"
+                additionalProperties: {}
+                description: "Paquete del spec 05 §3"
+        "401":
+          description: "Error: unauthenticated"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "404":
+          description: "Error: not_found"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "410":
+          description: "Error: link_inactive"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "429":
+          description: "Error: rate_limited"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+      security:
+        - linkToken: []
+  "/public/verification/restore":
+    post:
+      summary: "Pedir la restauracion de un dia archivado"
+      tags:
+        - "Publico"
+      operationId: "post_public_verification_restore"
+      parameters: []
+      responses:
+        "202":
+          description: "Exito (sin cuerpo)"
+        "400":
+          description: "Error: invalid_request"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "401":
+          description: "Error: unauthenticated"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "410":
+          description: "Error: link_inactive"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "429":
+          description: "Error: rate_limited"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                date:
+                  type: "string"
+                  pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+                  description: "Dia de negocio AAAA-MM-DD (America/Bogota)"
+              required:
+                - "date"
+      security:
+        - linkToken: []
+  "/public/entry-proof":
+    get:
+      summary: "Reservado para el incremento 2 (hoy responde 404)"
+      tags:
+        - "Publico"
+      operationId: "get_public_entry-proof"
+      parameters:
+        - name: "entry_id"
+          in: "query"
+          required: true
+          schema:
+            type: "string"
+            pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+            description: "ULID (26 caracteres Crockford base32)"
+      responses:
+        "200":
+          description: "Exito"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                propertyNames:
+                  type: "string"
+                additionalProperties: {}
+        "401":
+          description: "Error: unauthenticated"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "404":
+          description: "Error: not_found"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "410":
+          description: "Error: link_inactive"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+      security:
+        - linkToken: []
+  "/health":
+    get:
+      summary: "Estado de la base de datos, el RPC y el relayer"
+      tags:
+        - "Publico"
+      operationId: "get_health"
+      parameters: []
+      responses:
+        "200":
+          description: "Exito"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  status:
+                    type: "string"
+                    enum:
+                      - "ok"
+                      - "degraded"
+                  db:
+                    type: "string"
+                    enum:
+                      - "ok"
+                      - "down"
+                  rpc:
+                    type: "string"
+                    enum:
+                      - "ok"
+                      - "down"
+                  relayer:
+                    type: "string"
+                    enum:
+                      - "ok"
+                      - "down"
+                      - "not_configured"
+                required:
+                  - "status"
+                  - "db"
+                  - "rpc"
+                  - "relayer"
+      security: []
+  "/dev/simulate/breb-incoming":
+    post:
+      summary: "Simular un pago Bre-B entrante (asiento verificado)"
+      tags:
+        - "Simuladores"
+      operationId: "post_dev_simulate_breb-incoming"
+      parameters:
+        - name: "X-Device-Id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+        - name: "X-Device-Time"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+          description: "ISO-8601 UTC con milisegundos (spec 04 §7)"
+      responses:
+        "201":
+          description: "Exito"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  entry_id:
+                    type: "string"
+                    pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+                    description: "ULID (26 caracteres Crockford base32)"
+                required:
+                  - "entry_id"
+        "400":
+          description: "Error: invalid_request"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "401":
+          description: "Error: unauthenticated"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "403":
+          description: "Error: forbidden, device_revoked, role_not_allowed"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "404":
+          description: "Error: not_found"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+      description: "Solo existe con BIMO_SIMULATORS=on; con off responde 404."
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                amount_minor:
+                  type: "integer"
+                  minimum: 1
+                  maximum: 9007199254740991
+                  description: "Entero en unidades minimas (COP en centavos)"
+                occurred_at:
+                  type: "string"
+                  pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                  description: "ISO-8601 UTC con milisegundos"
+              required:
+                - "amount_minor"
+      security:
+        - supabaseJwt: []
+  "/dev/simulate/card-sale":
+    post:
+      summary: "Simular una venta con Tap to Pay (asiento verificado)"
+      tags:
+        - "Simuladores"
+      operationId: "post_dev_simulate_card-sale"
+      parameters:
+        - name: "X-Device-Id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+        - name: "X-Device-Time"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+          description: "ISO-8601 UTC con milisegundos (spec 04 §7)"
+      responses:
+        "201":
+          description: "Exito"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  entry_id:
+                    type: "string"
+                    pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+                    description: "ULID (26 caracteres Crockford base32)"
+                required:
+                  - "entry_id"
+        "400":
+          description: "Error: invalid_request"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "401":
+          description: "Error: unauthenticated"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "403":
+          description: "Error: forbidden, device_revoked, role_not_allowed"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "404":
+          description: "Error: not_found"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+      description: "Solo existe con BIMO_SIMULATORS=on; con off responde 404."
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                amount_minor:
+                  type: "integer"
+                  minimum: 1
+                  maximum: 9007199254740991
+                  description: "Entero en unidades minimas (COP en centavos)"
+              required:
+                - "amount_minor"
+      security:
+        - supabaseJwt: []
+  "/dev/simulate/psp-settlement":
+    post:
+      summary: "Simular la liquidacion del PSP (asiento verificado)"
+      tags:
+        - "Simuladores"
+      operationId: "post_dev_simulate_psp-settlement"
+      parameters:
+        - name: "X-Device-Id"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+        - name: "X-Device-Time"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+          description: "ISO-8601 UTC con milisegundos (spec 04 §7)"
+      responses:
+        "201":
+          description: "Exito"
+          content:
+            "application/json":
+              schema:
+                type: "object"
+                properties:
+                  entry_id:
+                    type: "string"
+                    pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+                    description: "ULID (26 caracteres Crockford base32)"
+                required:
+                  - "entry_id"
+        "400":
+          description: "Error: invalid_request"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "401":
+          description: "Error: unauthenticated"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "403":
+          description: "Error: forbidden, device_revoked, role_not_allowed"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+        "404":
+          description: "Error: not_found"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/Error"
+      description: "Solo existe con BIMO_SIMULATORS=on; con off responde 404."
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                sale_entry_ids:
+                  minItems: 1
+                  type: "array"
+                  items:
+                    type: "string"
+                    pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+                    description: "ULID (26 caracteres Crockford base32)"
+                fee_bps:
+                  type: "integer"
+                  minimum: 0
+                  maximum: 10000
+              required:
+                - "sale_entry_ids"
+                - "fee_bps"
+      security:
+        - supabaseJwt: []
+components:
+  schemas:
+    Error:
+      type: "object"
+      required:
+        - "error"
+      properties:
+        error:
+          type: "object"
+          required:
+            - "code"
+            - "message"
+            - "details"
+          properties:
+            code:
+              type: "string"
+            message:
+              type: "string"
+            details:
+              type: "object"
+              additionalProperties: true
+  securitySchemes:
+    supabaseJwt:
+      type: "http"
+      scheme: "bearer"
+      bearerFormat: "JWT"
+      description: "JWT de Supabase Auth (spec 06 §2)"
+    linkToken:
+      type: "http"
+      scheme: "bearer"
+      description: "Token del enlace de verificacion (spec 05)"

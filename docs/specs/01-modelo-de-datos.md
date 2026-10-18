@@ -1,6 +1,6 @@
 # Spec 01 — Modelo de datos
 
-**Estado:** v1.4 · v1.4: `merchant_channels` (comisión y días de consignación por canal) y ejemplo de anticipo · v1.3: salidas de plata (`salida`, `gastos`, `retiros_dueno`, tipo `patrimonio`) · v1.1: `merchant_changes`, `customers.updated_at`, regla de reloj (spec 04) · v1.2: `signing_requests`, `seals.signing_request_id`, `merchants.account_status`, DB-12 (spec 07) · **Depende de:** `docs/arquitectura/ARQUITECTURA.md` (ADR-05, 06, 08, 14, 16) · **Lo usan:** specs 02 a 09
+**Estado:** v1.5 (`device_challenges`: retos de un solo uso del spec 06) · v1.4 · v1.4: `merchant_channels` (comisión y días de consignación por canal) y ejemplo de anticipo · v1.3: salidas de plata (`salida`, `gastos`, `retiros_dueno`, tipo `patrimonio`) · v1.1: `merchant_changes`, `customers.updated_at`, regla de reloj (spec 04) · v1.2: `signing_requests`, `seals.signing_request_id`, `merchants.account_status`, DB-12 (spec 07) · **Depende de:** `docs/arquitectura/ARQUITECTURA.md` (ADR-05, 06, 08, 14, 16) · **Lo usan:** specs 02 a 09
 
 Este documento es la fuente de verdad del esquema. Claude Code **no** crea tablas, columnas, enums ni estados que no estén aquí. Si algo falta, se actualiza este spec primero.
 
@@ -133,6 +133,22 @@ create table devices (
   unique (merchant_id, public_key)
 );
 ```
+
+```sql
+-- v1.5. Retos de un solo uso (spec 06 §3.1): registro de dispositivo y borrado de cuenta.
+create table device_challenges (
+  id                text primary key,                 -- ULID del servidor
+  user_id           uuid not null references auth.users(id),
+  purpose           text not null check (purpose in ('register_device','delete_merchant')),
+  challenge         bytea not null check (length(challenge) = 32),
+  expires_at        timestamptz not null,             -- 5 minutos despues de crearse
+  used_at           timestamptz,                      -- se marca al consumirlo; un reto no se reutiliza
+  created_at        timestamptz not null default now()
+);
+create index on device_challenges (user_id, created_at);
+```
+
+Solo `bimo-core` (rol de servicio) lee y escribe `device_challenges`: RLS activado y sin políticas.
 
 ### 4.2 Ledger
 

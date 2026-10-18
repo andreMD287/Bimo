@@ -301,3 +301,10 @@ export const ROUTES: ApiRoute[] = [
     errors: ['invalid_request', 'unauthenticated', 'forbidden', 'device_revoked', 'role_not_allowed', 'not_found'],
   },
 ];
+
+/** Busca un endpoint del contrato; los handlers validan con sus mismos esquemas. */
+export function routeOf(method: HttpMethod, path: string): ApiRoute {
+  const r = ROUTES.find((x) => x.method === method && x.path === path);
+  if (!r) throw new Error(`Ruta fuera del contrato: ${method} ${path}`);
+  return r;
+}

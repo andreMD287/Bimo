@@ -249,11 +249,22 @@ export interface AuditLogTable {
   at: Ts;
 }
 
+export interface DeviceChallengesTable {
+  id: string;
+  user_id: string;
+  purpose: 'register_device' | 'delete_merchant';
+  challenge: Buffer;
+  expires_at: TsRequired;
+  used_at: Date | null;
+  created_at: Ts;
+}
+
 export interface Database {
   merchants: MerchantsTable;
   merchant_profiles: MerchantProfilesTable;
   merchant_members: MerchantMembersTable;
   devices: DevicesTable;
+  device_challenges: DeviceChallengesTable;
   ledger_accounts: LedgerAccountsTable;
   merchant_channels: MerchantChannelsTable;
   customers: CustomersTable;

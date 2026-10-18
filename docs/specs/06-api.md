@@ -1,6 +1,6 @@
 # Spec 06 — API de `bimo-core`
 
-**Estado:** v1.0 · **Depende de:** specs 01 a 05, spec 07 · **Lo usan:** app iOS, web de verificación, `bimo-core`
+**Estado:** v1.1 (`internal_error` 500; `X-Device-Time` obligatorio en toda petición autenticada) · v1.0 · **Depende de:** specs 01 a 05, spec 07 · **Lo usan:** app iOS, web de verificación, `bimo-core`
 
 Contrato HTTP entre la app, la web de verificación y `bimo-core`. La primera tarea de `bimo-core` es generar `core/openapi.yaml` a partir de este spec; desde entonces ese archivo y este spec deben coincidir.
 
@@ -34,6 +34,7 @@ Contrato HTTP entre la app, la web de verificación y `bimo-core`. La primera ta
 | 410 | `link_inactive` |
 | 422 | `invalid_signature`, `invalid_challenge` |
 | 429 | `rate_limited` (con encabezado `Retry-After`) |
+| 500 | `internal_error` (error del servidor no previsto; el cuerpo nunca trae datos del comercio) |
 | 503 | `chain_unavailable` (Stellar, el RPC o el relayer no responden; el cliente reintenta) |
 
 Los rechazos de validación de asientos **no** son errores HTTP: van ítem por ítem dentro de la respuesta del push (spec 04 §5.2).

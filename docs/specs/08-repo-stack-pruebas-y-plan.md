@@ -1,6 +1,6 @@
 # Spec 08 — Repositorio, stack, entornos, pruebas y plan de construcción
 
-**Estado:** v1.4 (herramientas de desarrollo del monorepo) · v1.3 (dependencias de `expo-router` y de la versión web de la app) · v1.2 (la app vive en `frontend/` y también corre como web) · v1.1: app en React Native con Expo, paquete `shared` · **Depende de:** specs 01 a 07 · **Lo usan:** todo el equipo y Claude Code
+**Estado:** v1.5 (dependencias de desarrollo de `core`) · v1.4 (herramientas de desarrollo del monorepo) · v1.3 (dependencias de `expo-router` y de la versión web de la app) · v1.2 (la app vive en `frontend/` y también corre como web) · v1.1: app en React Native con Expo, paquete `shared` · **Depende de:** specs 01 a 07 · **Lo usan:** todo el equipo y Claude Code
 
 Cierra el diseño detallado: dónde va cada cosa, con qué se construye, cómo se prueba y en qué orden se implementa el incremento 1.
 
@@ -49,6 +49,7 @@ Agregar una dependencia que no esté en esta lista requiere justificarla en el P
 | Pieza | Elección | Dependencias permitidas |
 |---|---|---|
 | `core` | Node 22 LTS, TypeScript `strict` | `fastify`, `zod`, `@fastify/swagger`, `kysely` + `pg`, `@stellar/stellar-sdk`, `@noble/curves` y `@noble/hashes` (P-256 y low-S), `ulid`, `pino`, `jose` (JWT de Supabase), `shared`; pruebas con `vitest` |
+| Dependencias de desarrollo de `core` | `@types/node`, `@types/pg`; `@seriousme/openapi-schema-validator` (valida `openapi.yaml` como OpenAPI 3.1); `embedded-postgres` (las pruebas de base de datos levantan su propio Postgres, sin Docker; con `TEST_DATABASE_URL` usan el de Supabase local o el de la CI) | — |
 | Cola de trabajos | `outbox_messages` en Postgres con `FOR UPDATE SKIP LOCKED` | Ninguna (sin Redis) |
 | Base de datos | Supabase (Postgres 15+, Auth) | `supabase` CLI para migraciones |
 | Contratos | Rust, `soroban-sdk`, `stellar-contracts` (OpenZeppelin) | `stellar-cli` |

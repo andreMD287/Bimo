@@ -1,6 +1,6 @@
 # Spec 04 — Sincronización offline
 
-**Estado:** v1.3 (canales y anticipos; entidad `channel` en push/pull) · v1.2 (app en React Native: `expo-sqlite` y reglas en el paquete `shared`) · v1.1: `salida`, cálculos de "Hoy", pull antes de firmar · **Depende de:** ARQUITECTURA (ADR-08, 14), spec 01 (v1.4), spec 02 (v1.1) · **Lo usan:** módulo `sync` de la app, módulos `ledger` y `comercios` de `bimo-core`, spec 06 (API)
+**Estado:** v1.4 (códigos de rechazo de clientes y canales, §5.2) · v1.3 (canales y anticipos; entidad `channel` en push/pull) · v1.2 (app en React Native: `expo-sqlite` y reglas en el paquete `shared`) · v1.1: `salida`, cálculos de "Hoy", pull antes de firmar · **Depende de:** ARQUITECTURA (ADR-08, 14), spec 01 (v1.4), spec 02 (v1.1) · **Lo usan:** módulo `sync` de la app, módulos `ledger` y `comercios` de `bimo-core`, spec 06 (API)
 
 Define cómo la app vende sin internet y cómo se pone de acuerdo con el servidor sin perder ni duplicar nada (QA-03). Los endpoints exactos (rutas, autenticación, errores HTTP) están en el spec 06; aquí se define **qué** se intercambia y con qué reglas.
 
@@ -156,6 +156,8 @@ El servidor procesa los ítems **en orden, cada uno en su propia transacción**.
 | `id_conflict` | Ya existía ese ID con **otro contenido** | `rechazado`; reporta el error (es un bug) |
 | `rejected` + `code` | Falló una regla de la sección 4 | `rechazado` con el código |
 | `dependency_failed` | Depende de un ítem de este lote que no se aceptó | Queda `pendiente` y se reintenta después del ítem del que depende |
+
+Los ítems `customer` y `channel` usan los mismos códigos de rechazo: `invalid_id` (ID), `invalid_text` (nombre vacío o de más de 60 caracteres) e `invalid_time` (`updated_at`); la comisión fuera de 0–10000 o los días fuera de 0–30 dan `invalid_amount`. Con clientes y canales, una edición con `updated_at` más vieja que la guardada se responde `duplicate` (ya fue superada). Un ID que existe en otro comercio es siempre `id_conflict`, sin revelar nada más.
 
 Para cada asiento aceptado o duplicado, el servidor devuelve también `business_date` y el estado del día. La app los usa para corregir su copia si su reloj estaba mal.
 

@@ -1,2 +1,2 @@
-// Interfaz publica del modulo cierre (spec 08 §1): otros modulos solo importan desde aqui.
-export {};
+// Interfaz publica del modulo cierre (spec 08 §1).
+export { loadDays, loadSeals } from './dias';

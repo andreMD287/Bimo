@@ -110,7 +110,7 @@ export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
       deviceId: null,
       role: null,
       deviceTime,
-      clockSkewMs: now() - deviceTime.getTime(),
+      clockSkewMs: deviceTime.getTime() - now(), // spec 04 §7: device_time - hora del servidor
     };
 
     let limitKey = `user:${userId}`;

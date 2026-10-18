@@ -23,3 +23,5 @@ export {
   startDeploying,
 } from './cuentas';
 export type { DeployContext, DeployMessage } from './cuentas';
+export { loadChannels, upsertChannel } from './canales';
+export type { ChannelInput, ChannelUpsertResult } from './canales';

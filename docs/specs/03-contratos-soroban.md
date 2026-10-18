@@ -1,6 +1,6 @@
 # Spec 03 — Contratos Soroban y flujo de firma
 
-**Estado:** v1.3 (`EnviadorRelayer` diferido después de la demo, spec 08 §6.1) · v1.2 (firmante en React Native: llave P-256 de software con `@noble/curves`) · v1.1: Face ID en simulador, pull antes de validar · **Depende de:** ARQUITECTURA (ADR-04, 06, 07, 09, 14, 15), spec 01, spec 02 · **Lo usan:** `contracts/`, módulo `stellar` de `bimo-core`, módulo `cuenta y passkey` de la app, web de verificación
+**Estado:** v1.4 (`SealItem.amend` pasa de `Option<AmendInfo>` a un enum `Amend`) · v1.3 (`EnviadorRelayer` diferido después de la demo, spec 08 §6.1) · v1.2 (firmante en React Native: llave P-256 de software con `@noble/curves`) · v1.1: Face ID en simulador, pull antes de validar · **Depende de:** ARQUITECTURA (ADR-04, 06, 07, 09, 14, 15), spec 01, spec 02 · **Lo usan:** `contracts/`, módulo `stellar` de `bimo-core`, módulo `cuenta y passkey` de la app, web de verificación
 
 Define los tres contratos del incremento 1 y cómo se arma, firma y envía cada transacción. Claude Code no agrega funciones, parámetros, llaves de almacenamiento ni eventos que no estén aquí.
 
@@ -93,13 +93,21 @@ Contrato de cuenta de OpenZeppelin compilado tal cual; Bimo solo fija la configu
 ### 4.1 Tipos
 
 ```rust
+/// v1.4: soroban-sdk 26.1 no compila con `testutils` un campo `Option<struct>` dentro de un `#[contracttype]`
+/// (no existe `From<struct> for ScVal`), asi que el opcional es un enum equivalente.
+#[contracttype]
+pub enum Amend {
+    None,                                  // primer sello del dia
+    Of(AmendInfo),                         // enmienda de una version vigente
+}
+
 #[contracttype]
 pub struct SealItem {
     pub date: u32,                         // AAAAMMDD
     pub root: BytesN<32>,                  // spec 02 §4
     pub entry_count: u32,
     pub origin_flags: u32,                 // spec 02 §6; bits 4..31 deben ser 0
-    pub amend: Option<AmendInfo>,          // None = primer sello del día
+    pub amend: Amend,                      // Amend::None = primer sello del día
 }
 
 #[contracttype]
@@ -135,7 +143,7 @@ pub enum DataKey {
 |---|---|---|
 | `__constructor(admin: Address, attester: Address)` | — | Guarda ambos. Se ejecuta una sola vez al desplegar |
 | `seal(merchant, item: SealItem)` | `merchant` **y** atestador vigente | Equivale a `seal_batch(merchant, [item])` |
-| `seal_batch(merchant, items: Vec<SealItem>)` | `merchant` **y** atestador vigente (una sola vez cada uno para todo el lote) | Para cada ítem: si `amend` es `None`, exige que no exista `Latest` y guarda la versión 1. Si es `Some`, exige `Latest == prev_version` y guarda `prev_version + 1`. Todo o nada |
+| `seal_batch(merchant, items: Vec<SealItem>)` | `merchant` **y** atestador vigente (una sola vez cada uno para todo el lote) | Para cada ítem: si `amend` es `Amend::None`, exige que no exista `Latest` y guarda la versión 1. Si es `Amend::Of`, exige `Latest == prev_version` y guarda `prev_version + 1`. Todo o nada |
 | `get(merchant, date) → Vec<SealRecord>` | Público | Todas las versiones, de la 1 a la vigente |
 | `latest(merchant, date) → Option<SealRecord>` | Público | Solo la vigente |
 | `extend_ttl(merchant, date)` | Público, cualquiera puede pagarlo | Extiende el TTL de `Latest` y de todas las versiones de ese día |
@@ -143,7 +151,7 @@ pub enum DataKey {
 | `set_attester(new: Address)` | `admin` | Cambia el atestador. Los sellos viejos conservan el suyo |
 | `set_admin(new: Address)` | `admin` | Cambia el admin |
 
-`amend` del documento de arquitectura es un `SealItem` con `amend = Some(…)`; no hay función aparte. No existe ninguna función que borre, modifique un `SealRecord` o actualice el código del contrato.
+`amend` del documento de arquitectura es un `SealItem` con `amend = Amend::Of(…)`; no hay función aparte. No existe ninguna función que borre, modifique un `SealRecord` o actualice el código del contrato.
 
 ### 4.3 Validaciones y errores
 

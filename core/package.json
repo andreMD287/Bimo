@@ -27,7 +27,8 @@
     "@bimo/shared": "workspace:*",
     "ulid": "^3.0.0",
     "@noble/curves": "^2.0.0",
-    "@noble/hashes": "^2.0.0"
+    "@noble/hashes": "^2.0.0",
+    "@stellar/stellar-sdk": "^17.2.1"
   },
   "devDependencies": {
     "@types/node": "^22.18.0",

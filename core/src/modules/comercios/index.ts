@@ -12,3 +12,14 @@ export {
   verifyChallengeSignature,
 } from './service';
 export type { MerchantMe } from './service';
+export {
+  DEPLOY_LEASE_MS,
+  claimAccountDeploy,
+  closeDeployMessage,
+  completeDeploy,
+  failDeploy,
+  getDeployContext,
+  retryDeployLater,
+  startDeploying,
+} from './cuentas';
+export type { DeployContext, DeployMessage } from './cuentas';

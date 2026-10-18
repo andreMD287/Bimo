@@ -8,7 +8,10 @@ import { loadConfig } from './config';
 import { createDb, createPool } from './db/client';
 import { loadDeployments } from './deployments';
 import { createLogger } from './logger';
+import { Keypair, rpc } from '@stellar/stellar-sdk';
+import { EnviadorDirecto, StellarAccountDeployer } from './modules/stellar';
 import { runWorkers } from './workers';
+import { createAccountDeployWorker } from './workers/account-deploy';
 
 const mode = process.argv[2];
 if (mode !== 'api' && mode !== 'worker') {
@@ -33,5 +36,17 @@ if (mode === 'api') {
   });
   await app.listen({ port: config.port, host: '0.0.0.0' });
 } else {
-  runWorkers([], log);
+  const { deployer, fallbackSubmitter } = config.secrets;
+  if (!deployer || !fallbackSubmitter) {
+    log.error('Faltan DEPLOYER_SECRET o FALLBACK_SUBMITTER_SECRET para el worker');
+    process.exit(1);
+  }
+  const server = new rpc.Server(deployments.rpc_url);
+  const enviador = new EnviadorDirecto({
+    server,
+    networkPassphrase: deployments.network_passphrase,
+    feeSource: Keypair.fromSecret(fallbackSubmitter),
+  });
+  const accountDeployer = new StellarAccountDeployer({ server, deployments, deployer: Keypair.fromSecret(deployer), enviador });
+  runWorkers([createAccountDeployWorker({ db, deployer: accountDeployer, log })], log);
 }

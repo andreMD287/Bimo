@@ -1,2 +1,5 @@
-// Interfaz publica del modulo stellar (spec 08 §1): otros modulos solo importan desde aqui.
-export {};
+// Interfaz publica del modulo stellar (spec 08 §1): solo `stellar` e `integraciones` hablan con el exterior.
+export { EnviadorDirecto } from './enviador';
+export type { Enviador, EnvioResult, EnviadorDirectoOptions, RpcLike } from './enviador';
+export { StellarAccountDeployer, accountSalt, computeAccountAddress, constructorArgs } from './cuenta';
+export type { AccountDeployer, StellarAccountDeployerOptions } from './cuenta';

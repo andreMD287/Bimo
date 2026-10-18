@@ -3,6 +3,7 @@ import { createPgDeviceDirectory } from './auth/devices';
 import { createJwtVerifier } from './auth/jwt';
 import { createHealthChecks } from './api/health';
 import { registerComerciosRoutes } from './api/routes/comercios';
+import { registerSyncRoutes } from './api/routes/sync';
 import { buildServer } from './api/server';
 import { loadConfig } from './config';
 import { createDb, createPool } from './db/client';
@@ -32,7 +33,7 @@ if (mode === 'api') {
     jwt: createJwtVerifier({ jwksUrl: config.supabaseJwksUrl, supabaseUrl: config.supabaseUrl }),
     devices: createPgDeviceDirectory(db),
     health: createHealthChecks(db, deployments.rpc_url, config.relayerUrl),
-    routes: [registerComerciosRoutes],
+    routes: [registerComerciosRoutes, registerSyncRoutes],
   });
   await app.listen({ port: config.port, host: '0.0.0.0' });
 } else {

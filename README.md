@@ -3,7 +3,7 @@
 ## Requisitos
 
 - [Node.js](https://nodejs.org/) 22 (también funciona con Node 20 LTS)
-- npm (viene con Node) o pnpm
+- [pnpm](https://pnpm.io/) 10 (`npm i -g pnpm@10`)
 - Opcional: [Expo Go](https://expo.dev/go) en el celular, para probar la app sin compilar
 
 ## Instalación
@@ -11,8 +11,7 @@
 ```bash
 git clone https://github.com/andreMD287/Bimo.git
 cd Bimo
-cd frontend
-npm install
+pnpm install   # desde la raíz: instala todos los paquetes del monorepo
 ```
 
 ## Cómo correrlo

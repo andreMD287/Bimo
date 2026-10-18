@@ -1,0 +1,22 @@
+node_modules/
+dist/
+.expo/
+*.tsbuildinfo
+.DS_Store
+
+# secretos: solo se versiona .env.example
+.env
+.env.*
+!.env.example
+
+# Rust
+contracts/target/
+contracts/**/target/
+
+# Supabase local
+supabase/.branches/
+supabase/.temp/
+
+# Stellar CLI: nunca versionar llaves
+.stellar/
+*.secret

@@ -61,7 +61,8 @@ function contractDataValue(xdrB64: string): ScVal {
 export class RpcSealReader implements SealReader {
   constructor(
     private readonly rpcUrl: string,
-    private readonly fetchImpl: typeof fetch = fetch,
+    // envuelto: en el navegador `fetch` falla con "Illegal invocation" si se llama como metodo de otro objeto
+    private readonly fetchImpl: typeof fetch = (...a) => fetch(...a),
   ) {}
 
   private async entries(keys: string[]): Promise<Array<{ key: string; xdr: string }>> {

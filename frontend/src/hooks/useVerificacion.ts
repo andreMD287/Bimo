@@ -55,8 +55,14 @@ export function useVerificacion(token: string) {
     if (!rt || !token) return;
     let vivo = true;
     rt.verify(token)
-      .then(({ pkg, result }) => vivo && setReal({ fase: result.trusted ? 'listo' : 'error', pkg, result }))
-      .catch((e: unknown) => vivo && setReal({ fase: e instanceof ApiError ? (e.code === 'link_inactive' ? 'inactivo' : e.code === 'unauthenticated' ? 'no_encontrado' : 'error') : 'error' }));
+      .then(({ pkg, result }) => {
+        if (!result.trusted) console.warn('verificacion: red o registro no confiable');
+        if (vivo) setReal({ fase: result.trusted ? 'listo' : 'error', pkg, result });
+      })
+      .catch((e: unknown) => {
+      console.warn('verificacion fallida:', e instanceof Error ? `${e.name}: ${e.message}` : 'desconocido');
+      return vivo && setReal({ fase: e instanceof ApiError ? (e.code === 'link_inactive' ? 'inactivo' : e.code === 'unauthenticated' ? 'no_encontrado' : 'error') : 'error' });
+      });
     return () => {
       vivo = false;
     };

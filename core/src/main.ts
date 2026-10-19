@@ -1,4 +1,4 @@
-/** Punto de entrada: `tsx src/main.ts api|worker` (ADR-01: dos servicios con la misma imagen). */
+/** Punto de entrada: `tsx src/main.ts api|worker|all` (ADR-01: dos servicios con la misma imagen; `all` corre los dos en un proceso, para hosting gratuito de un solo servicio). */
 import { createPgDeviceDirectory } from './auth/devices';
 import { createJwtVerifier } from './auth/jwt';
 import { createHealthChecks } from './api/health';
@@ -18,8 +18,8 @@ import { createAccountDeployWorker } from './workers/account-deploy';
 import { createSealSubmitWorker } from './workers/seal-submit';
 
 const mode = process.argv[2];
-if (mode !== 'api' && mode !== 'worker') {
-  console.error('Uso: main.ts api|worker');
+if (mode !== 'api' && mode !== 'worker' && mode !== 'all') {
+  console.error('Uso: main.ts api|worker|all');
   process.exit(2);
 }
 
@@ -29,7 +29,7 @@ const pool = createPool(config.databaseUrl);
 const db = createDb(pool);
 const deployments = loadDeployments(config.stellarNetwork);
 
-if (mode === 'api') {
+if (mode === 'api' || mode === 'all') {
   const app = await buildServer({
     config,
     db,
@@ -47,7 +47,8 @@ if (mode === 'api') {
     }),
   });
   await app.listen({ port: config.port, host: '0.0.0.0' });
-} else {
+}
+if (mode === 'worker' || mode === 'all') {
   const { deployer, fallbackSubmitter } = config.secrets;
   if (!deployer || !fallbackSubmitter) {
     log.error('Faltan DEPLOYER_SECRET o FALLBACK_SUBMITTER_SECRET para el worker');

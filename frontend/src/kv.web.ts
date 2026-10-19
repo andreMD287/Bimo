@@ -1,4 +1,4 @@
-import { memoryKv, type Kv } from './kv';
+import { memoryKv, type Kv } from './kvMemoria';
 
 /** localStorage del navegador (con respaldo en memoria si esta bloqueado). Solo para la demo web. */
 function webKv(): Kv {

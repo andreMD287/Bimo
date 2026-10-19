@@ -1,5 +1,5 @@
 import * as SecureStore from 'expo-secure-store';
-import type { Kv } from './kv';
+import type { Kv } from './kvMemoria';
 
 /** Llavero del telefono (Keychain). Las llaves de SecureStore solo admiten letras, numeros, `.`, `-` y `_`. */
 const safe = (k: string) => k.replace(/[^A-Za-z0-9._-]/g, '_');
@@ -11,4 +11,4 @@ export const kv: Kv = {
   remove: (k) => SecureStore.setItem(safe(k), ''),
 };
 
-export { memoryKv } from './kv';
+export { memoryKv } from './kvMemoria';

@@ -15,6 +15,12 @@ Estado: **Vercel ya está desplegado** (https://bimo-frontend.vercel.app, modo d
   `ATTESTER_SECRET`, `DEPLOYER_SECRET`, `FALLBACK_SUBMITTER_SECRET` (salen de `stellar keys secret bimo-attester|bimo-deployer|bimo-fallback`).
 - Comprobar: `GET /health` debe responder `{"status":"ok","db":"ok","rpc":"ok"}`.
 
+## 2b. Alternativa gratuita de un solo servicio (Render)
+Si Railway no está disponible: un solo *Web Service* con el modo `all` (API y worker en el mismo proceso).
+- Build: `corepack enable && pnpm install --frozen-lockfile`
+- Start: `pnpm --filter @bimo/core exec tsx src/main.ts all`
+- Mismas variables que en Railway. En el plan gratis el servicio se duerme tras 15 min sin tráfico y la primera petición tarda ~50 s.
+
 ## 3. Vercel (variables públicas del proyecto `bimo-frontend`)
 Project → Settings → Environment Variables (Production y Preview):
 - `EXPO_PUBLIC_API_URL` = URL pública de la API de Railway

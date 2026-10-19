@@ -5,7 +5,7 @@
 
 import * as Crypto from 'expo-crypto';
 import { AppState } from 'react-native';
-import { configureRandom } from '@bimo/shared';
+import { configureRandom, newUlid } from '@bimo/shared';
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, type Dispatch, type ReactNode } from 'react';
 import { kv } from '../kv';
 import { config, MODO_REAL } from '../runtime/config';
@@ -14,7 +14,7 @@ import { cargarFirmante } from '../signer';
 import { openStore } from '../store/open';
 import type { Store } from '../store/types';
 import { reducer, type Accion, type DiaMock, type EstadoMock } from './estado';
-import { crearEstadoInicial } from './semilla';
+import { CANALES_SEMILLA, crearEstadoInicial } from './semilla';
 
 interface Ctx {
   estado: EstadoMock;
@@ -63,6 +63,14 @@ function estadoDesdeStore(store: Store, rt: Runtime, enlaces: EstadoMock['enlace
     enlaces,
     alterados: [],
   };
+}
+
+/** Canales con los que arranca un comercio nuevo (el dueño los ajusta despues). Ids ULID, como todo lo que sube. */
+function sembrarCanales(store: Store): void {
+  const ahora = Date.now();
+  for (const c of CANALES_SEMILLA.filter((x) => x.activo && x.channel !== 'datafono_externo')) {
+    store.upsertChannel({ ...c, id: newUlid(), updated_at_ms: ahora }, 'local');
+  }
 }
 
 /** Guarda la accion en la base local (UNA transaccion: asiento + lineas + outbox). */
@@ -123,9 +131,30 @@ export function DatosProvider({ children }: { children: ReactNode }) {
   // Modo real: refresca la pantalla cuando cambia la base (sincronizacion), sincroniza al abrir, cada 30 s y al volver a primer plano.
   useEffect(() => {
     if (!rt) return;
-    const off = rt.onChange(refrescar);
+    let sembrando = false;
+    let ultimo = 0;
+    // Comercio nuevo: despues del primer sync, si el servidor no trae canales, se crean los basicos y se suben.
+    const sembrar = async () => {
+      if (!rt.ready || sembrando || Date.now() - ultimo < 10_000) return;
+      sembrando = true;
+      ultimo = Date.now();
+      try {
+        const rep = await rt.sync();
+        if (rep.online && rt.store.snapshot().channels.length === 0) {
+          sembrarCanales(rt.store);
+          refrescar();
+          void rt.sync();
+        }
+      } finally {
+        sembrando = false;
+      }
+    };
+    const off = rt.onChange(() => {
+      refrescar();
+      void sembrar();
+    });
     const tick = () => {
-      if (rt.ready) void rt.sync();
+      if (rt.ready) void sembrar();
     };
     if (rt.ready) void rt.refreshAccount().catch(() => undefined);
     tick();

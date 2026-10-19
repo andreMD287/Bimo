@@ -61,3 +61,13 @@ autorización. Después `get` devuelve el sello con la raíz del spec.
 
 **QA-02:** la misma prueba intenta sellar otro día firmando con una llave P-256 que no es la del comercio (lo único que
 Bimo podría fabricar): la red la rechaza en la simulación y el registro no guarda nada.
+
+## Sellos creados desde la app (flujo real, A-15 a A-19)
+
+La app (runtime real) registra ventas, cierra el día, valida la preimagen, firma con la llave P-256 del dispositivo y `core` envía `seal_batch`; la página de verificación comprueba el sello contra el contrato. Todos con el comercio «Tienda Doña Marta» de prueba.
+
+| Qué | Transacción |
+|---|---|
+| Recorrido en la interfaz web (2 ventas, $42.000) y verificación pública: coincide | https://stellar.expert/explorer/testnet/tx/d3664460549fe0c72e57c74b88c30251079e8ac2dafda31a0bc2d54f35b36f88 |
+| Recorrido en la interfaz web (primera corrida) | https://stellar.expert/explorer/testnet/tx/25de9570377fe745c356633668924de60328d574efb892275f0ce334cac0bb65 |
+| Recorrido sin pantalla (`smoke-local.mts`, 3 ventas, $46.000) | https://stellar.expert/explorer/testnet/tx/e7163e7a7796420a0ca3e6cb508ae6460d0cba5a42aa179c2bec109cf43f9ab0 |

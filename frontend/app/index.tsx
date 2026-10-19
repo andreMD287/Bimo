@@ -8,7 +8,7 @@ import { Boton, Campo, Pantalla, Texto } from '../src/ui';
 type Paso = 'datos' | 'codigo';
 
 export default function Bienvenida() {
-  const { comercio, enviarCodigo, verificarCodigo, registrar } = useComercio();
+  const { comercio, enviarCodigo, verificarCodigo, registrar, simulacion } = useComercio();
   const [paso, setPaso] = useState<Paso>('datos');
   const [nombre, setNombre] = useState(comercio.business_name);
   const [correo, setCorreo] = useState(comercio.correo ?? 'marta@ejemplo.co');
@@ -23,23 +23,35 @@ export default function Bienvenida() {
     if (!nombreOk || !correoOk || enviando) return;
     setEnviando(true);
     setAviso(null);
-    await enviarCodigo(correo.trim());
+    try {
+      await enviarCodigo(correo.trim());
+    } catch {
+      setEnviando(false);
+      setAviso('No pudimos enviar el código. Revisa tu conexión y el correo.');
+      return;
+    }
     setEnviando(false);
     setPaso('codigo');
-    setAviso('Te enviamos un código de 6 dígitos a tu correo. En esta demo sirve cualquiera.');
+    setAviso(simulacion ? 'Te enviamos un código de 6 dígitos a tu correo. En esta demo sirve cualquiera.' : 'Te enviamos un código de 6 dígitos a tu correo.');
   };
 
-  const confirmar = () => {
+  const confirmar = async () => {
     if (!verificarCodigo(codigo.trim())) {
       setAviso('Escribe un código de 6 dígitos.');
       return;
     }
-    registrar(nombre.trim(), correo.trim());
+    setEnviando(true);
+    const r = await registrar(nombre.trim(), correo.trim());
+    setEnviando(false);
+    if (!r.ok) {
+      setAviso(r.error);
+      return;
+    }
     router.push('/canales');
   };
 
   return (
-    <Pantalla titulo="Bienvenida a Bimo" simulacion centrado>
+    <Pantalla titulo="Bienvenida a Bimo" simulacion={simulacion} centrado>
       <Texto>Tus ventas de todos los canales, en un solo lugar.</Texto>
 
       {paso === 'datos' ? (
@@ -79,7 +91,13 @@ export default function Bienvenida() {
             placeholder="123456"
             maxLength={6}
           />
-          <Boton titulo="Verificar y continuar" deshabilitado={codigo.length !== 6} onPress={confirmar} />
+          <Boton
+            titulo={enviando ? 'Creando tu cuenta…' : 'Verificar y continuar'}
+            deshabilitado={codigo.length !== 6 || enviando}
+            onPress={() => {
+              void confirmar();
+            }}
+          />
           <Boton
             titulo="Cambiar correo"
             variante="secundario"

@@ -20,14 +20,40 @@ import { textoEstadoDia } from '../lib/estados';
 import { ahoraISO, fechaLarga } from '../lib/fechas';
 import { cantidadVentas, vendido } from '../lib/hoy';
 import { useDatos } from '../mocks/DatosProvider';
+import { MODO_REAL } from '../runtime/config';
+import { SigningError } from '../runtime/runtime';
+
+/** Mensajes en lenguaje del dueno (nunca jerga tecnica). */
+function mensajeFirma(e: unknown): string {
+  if (e instanceof SigningError) {
+    switch (e.code) {
+      case 'sin_cuenta':
+        return 'Tu cuenta todavía se está preparando. Inténtalo en unos minutos.';
+      case 'nada':
+        return 'No hay nada por confirmar ahora.';
+      case 'red':
+        return 'No hay conexión. Cuando vuelva, inténtalo de nuevo.';
+      case 'vencida':
+        return 'Tardaste un poco y el permiso venció. Inténtalo de nuevo.';
+      case 'cambio':
+        return 'Cambiaron tus datos mientras confirmabas. Revisa y vuelve a intentarlo.';
+      case 'sin_confirmar':
+        return 'Tu cierre se está guardando. Revisa el historial en un momento.';
+      default:
+        return 'Lo que se iba a confirmar no coincide con tus datos, por eso no lo firmamos. Inténtalo de nuevo.';
+    }
+  }
+  return 'No pudimos confirmar tu cierre. Inténtalo de nuevo.';
+}
 
 export type FaseSello = 'nada' | 'listo' | 'confirmando' | 'guardando' | 'sellado';
 
 const esperar = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 export function useSello() {
-  const { estado, dispatch } = useDatos();
+  const { estado, dispatch, rt } = useDatos();
   const [enCurso, setEnCurso] = useState<'confirmando' | 'guardando' | 'sellado' | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const pendientes = useMemo(
     () =>
@@ -55,6 +81,19 @@ export function useSello() {
   const confirmar = useCallback(async () => {
     const fechas = pendientes.map((p) => p.fecha);
     if (fechas.length === 0) return;
+    setError(null);
+    if (rt) {
+      // Real: valida la preimagen con la base local, firma y espera el sello en Stellar (spec 03 §5)
+      setEnCurso('confirmando');
+      try {
+        await rt.signPending({ onPhase: (p) => setEnCurso(p === 'guardando' ? 'guardando' : 'confirmando') });
+        setEnCurso('sellado');
+      } catch (e) {
+        setEnCurso(null);
+        setError(mensajeFirma(e));
+      }
+      return;
+    }
     setEnCurso('confirmando');
     await esperar(1000); // SIMULACIÓN de Face ID
     dispatch({ tipo: 'firmar_dias', fechas });
@@ -62,9 +101,12 @@ export function useSello() {
     await esperar(1500); // SIMULACIÓN del envío y la confirmación del sello
     dispatch({ tipo: 'confirmar_sellos', fechas, at: ahoraISO() });
     setEnCurso('sellado');
-  }, [pendientes, dispatch]);
+  }, [pendientes, dispatch, rt]);
 
-  const reiniciar = useCallback(() => setEnCurso(null), []);
+  const reiniciar = useCallback(() => {
+    setEnCurso(null);
+    setError(null);
+  }, []);
 
   const fase: FaseSello = enCurso ?? (pendientes.length > 0 ? 'listo' : 'nada');
   const textoFase: Record<FaseSello, string> = {
@@ -75,5 +117,5 @@ export function useSello() {
     sellado: textoEstadoDia('sellado'),
   };
 
-  return { pendientes, resumen, fase, textoFase: textoFase[fase], confirmar, reiniciar, simulacion: true as const };
+  return { pendientes, resumen, fase, textoFase: textoFase[fase], error, confirmar, reiniciar, simulacion: !MODO_REAL };
 }

@@ -20,7 +20,10 @@ export function createPool(connectionString: string, max = 10): pg.Pool {
       return pg.types.getTypeParser(oid, format as 'text');
     },
   };
-  return new pg.Pool({ connectionString, max, types: types as unknown as pg.CustomTypesConfig });
+  const pool = new pg.Pool({ connectionString, max, types: types as unknown as pg.CustomTypesConfig });
+  // una conexion ociosa que se cae (reinicio de la base) no debe tumbar el proceso; el pool abre otra en el siguiente uso
+  pool.on('error', () => undefined);
+  return pool;
 }
 
 export function createDb(pool: pg.Pool): Kysely<Database> {

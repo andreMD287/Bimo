@@ -63,12 +63,22 @@ export default function Verificar() {
         <Contenedor estilo={hero}>
           <Text style={s.marca}>bimo</Text>
           <Text style={s.heroTitulo}>
-            {v.estado === 'inactivo' ? 'Este enlace ya no está activo' : 'No encontramos este enlace'}
+            {v.estado === 'cargando'
+              ? 'Verificando el historial…'
+              : v.estado === 'error'
+                ? 'No pudimos verificar este historial'
+                : v.estado === 'inactivo'
+                  ? 'Este enlace ya no está activo'
+                  : 'No encontramos este enlace'}
           </Text>
           <Text style={s.heroTexto}>
-            {v.estado === 'inactivo'
-              ? 'El comercio lo revocó o se venció. Pídele uno nuevo.'
-              : 'Revisa que el enlace esté completo o pídele al comercio que te lo comparta de nuevo.'}
+            {v.estado === 'cargando'
+              ? 'Estamos comprobando los registros contra la red pública. Puede tardar unos segundos.'
+              : v.estado === 'error'
+                ? 'Revisa tu conexión e inténtalo de nuevo. Si el problema sigue, pídele al comercio un enlace nuevo.'
+                : v.estado === 'inactivo'
+                  ? 'El comercio lo revocó o se venció. Pídele uno nuevo.'
+                  : 'Revisa que el enlace esté completo o pídele al comercio que te lo comparta de nuevo.'}
           </Text>
         </Contenedor>
       </ScrollView>
@@ -87,7 +97,7 @@ export default function Verificar() {
       <Contenedor estilo={hero}>
         <View style={s.heroArriba}>
           <Text style={s.marca}>bimo</Text>
-          <EtiquetaSimulacion />
+          {v.simulacion ? <EtiquetaSimulacion /> : null}
         </View>
         <Text style={s.heroEtiqueta}>VERIFICACIÓN DE HISTORIAL DE VENTAS</Text>
         <Text style={s.heroTitulo} accessibilityRole="header">
@@ -149,7 +159,7 @@ export default function Verificar() {
                     <View style={{ flex: 1, gap: spacing.xs }}>
                       <Text style={s.diaFecha}>{mayuscula(d.fechaTexto)}</Text>
                       <InsigniaResultado resultado={d.resultado} enmiendas={d.enmiendas} />
-                      {d.tx_hash ? <Text style={s.nota}>Comprobante del sello: {abreviar(d.tx_hash)} (simulado)</Text> : null}
+                      {d.tx_hash ? <Text style={s.nota}>Comprobante del sello: {abreviar(d.tx_hash)}{v.simulacion ? ' (simulado)' : ''}</Text> : null}
                     </View>
                     <View style={{ alignItems: 'flex-end', gap: spacing.xxs }}>
                       <Text style={[s.diaMonto, no ? s.tachado : d.resultado === 'sin_sellar' ? s.apagado : null]}>
@@ -253,7 +263,7 @@ export default function Verificar() {
           ))}
         </View>
         <Text style={s.comoNota}>
-          Cuenta del comercio en Stellar: {abreviar(v.comercio.stellar_address)}. En esta demostración la comprobación es simulada.
+          Cuenta del comercio en Stellar: {abreviar(v.comercio.stellar_address)}.{v.simulacion ? ' En esta demostración la comprobación es simulada.' : ' Esta página comprobó los registros contra la red pública en tu dispositivo.'}
         </Text>
       </Contenedor>
     </ScrollView>

@@ -94,7 +94,7 @@ export default function Sellar() {
   return (
     <Pantalla
       titulo="Confirmar y sellar"
-      simulacion
+      simulacion={sello.simulacion}
       pie={
         <Boton
           titulo="Confirmar con Face ID"
@@ -116,6 +116,12 @@ export default function Sellar() {
           Revisa que esté bien. Al confirmar, este cierre queda guardado y nadie lo puede cambiar sin que se note.
         </Texto>
       </Tarjeta>
+
+      {sello.error ? (
+        <Aviso tono="error" titulo="No pudimos confirmar">
+          {sello.error}
+        </Aviso>
+      ) : null}
 
       {sello.pendientes.length > 1 ? (
         <Aviso tono="info" titulo={`Tienes ${sello.pendientes.length} días por confirmar`}>

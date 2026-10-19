@@ -12,12 +12,13 @@
  *     SIMULADO: el token lo genera el front; en la app real lo genera bimo-core y se ve una sola vez
  *   revocar(id)
  */
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import * as Linking from 'expo-linking';
 import { fechaCorta, hoyBogota, instanteBogota, sumarDias, fechaBogota } from '../lib/fechas';
 import type { BusinessDate } from '../lib/tipos';
 import { nuevoId } from '../mocks/contabilidad';
 import { useDatos } from '../mocks/DatosProvider';
+import { MODO_REAL } from '../runtime/config';
 
 export const VIGENCIAS = [7, 30, 90] as const;
 export type Vigencia = (typeof VIGENCIAS)[number];
@@ -34,8 +35,28 @@ function tokenSimulado(): string {
 }
 
 export function useEnlaces() {
-  const { estado, dispatch } = useDatos();
+  const { estado, dispatch, rt } = useDatos();
   const hoy = hoyBogota();
+
+  // Real: la lista sale de la API (el token solo se ve al crear el enlace, spec 05 §2)
+  useEffect(() => {
+    if (!rt?.ready) return;
+    void rt.listLinks().then((rows) =>
+      dispatch({
+        tipo: 'enlaces',
+        enlaces: rows.map((r) => ({
+          id: r.id,
+          token: '',
+          date_from: r.date_from,
+          date_to: r.date_to,
+          expires_at: r.expires_at,
+          revoked_at: r.revoked_at,
+          created_at: r.expires_at,
+          view_count: r.view_count,
+        })),
+      }),
+    ).catch(() => undefined);
+  }, [rt, dispatch]);
 
   const periodoPosible = useMemo(() => {
     const primero = estado.dias[0]?.business_date ?? hoy;
@@ -50,7 +71,7 @@ export function useEnlaces() {
       const vencido = e.expires_at < ahora;
       return {
         id: e.id,
-        url: urlDeVerificacion(e.token),
+        url: e.token ? urlDeVerificacion(e.token) : '',
         desde: e.date_from,
         hasta: e.date_to,
         periodoTexto: `${fechaCorta(e.date_from)} – ${fechaCorta(e.date_to)}`,
@@ -66,10 +87,26 @@ export function useEnlaces() {
   const crear = useCallback(
     (p: { desde: BusinessDate; hasta: BusinessDate; vigencia_dias: Vigencia }):
       | { ok: true; url: string }
-      | { ok: false; error: string } => {
+      | { ok: false; error: string }
+      | Promise<{ ok: true; url: string } | { ok: false; error: string }> => {
       if (p.hasta < p.desde) return { ok: false, error: 'La fecha final es antes de la inicial.' };
       if (p.hasta > periodoPosible.hasta) return { ok: false, error: 'Solo puedes compartir días ya cerrados y sellados.' };
       if (sumarDias(p.desde, 365) < p.hasta) return { ok: false, error: 'El período máximo es de un año.' };
+      if (rt) {
+        return rt
+          .createLink({ date_from: p.desde, date_to: p.hasta, expires_in_days: p.vigencia_dias })
+          .then(async (r) => {
+            const rows = await rt.listLinks();
+            dispatch({
+              tipo: 'enlaces',
+              enlaces: rows.map((x) => ({ id: x.id, token: '', date_from: x.date_from, date_to: x.date_to, expires_at: x.expires_at, revoked_at: x.revoked_at, created_at: x.expires_at, view_count: x.view_count })),
+            });
+            // el token viaja en el fragmento del enlace de la API (spec 05 §2); la pagina de la app lo recibe en la ruta
+            const token = r.url.split('#t=')[1] ?? '';
+            return { ok: true as const, url: urlDeVerificacion(token) };
+          })
+          .catch(() => ({ ok: false as const, error: 'No pudimos crear el enlace. Revisa tu conexión e inténtalo de nuevo.' }));
+      }
       const token = tokenSimulado();
       dispatch({
         tipo: 'crear_enlace',
@@ -86,13 +123,16 @@ export function useEnlaces() {
       });
       return { ok: true, url: urlDeVerificacion(token) };
     },
-    [dispatch, hoy, periodoPosible.hasta],
+    [dispatch, hoy, periodoPosible.hasta, rt],
   );
 
   const revocar = useCallback(
-    (id: string) => dispatch({ tipo: 'revocar_enlace', id, at: new Date().toISOString() }),
-    [dispatch],
+    (id: string) => {
+      if (rt) void rt.revokeLink(id).then(() => dispatch({ tipo: 'revocar_enlace', id, at: new Date().toISOString() })).catch(() => undefined);
+      else dispatch({ tipo: 'revocar_enlace', id, at: new Date().toISOString() });
+    },
+    [dispatch, rt],
   );
 
-  return { enlaces, periodoPosible, vigencias: VIGENCIAS, crear, revocar, simulacion: true as const };
+  return { enlaces, periodoPosible, vigencias: VIGENCIAS, crear, revocar, simulacion: !MODO_REAL };
 }

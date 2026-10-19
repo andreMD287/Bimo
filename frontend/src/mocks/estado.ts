@@ -64,6 +64,8 @@ export interface EstadoMock {
 }
 
 export type Accion =
+  | { tipo: 'hidratar'; estado: EstadoMock }
+  | { tipo: 'enlaces'; enlaces: EnlaceMock[] }
   | { tipo: 'registrar_comercio'; business_name: string; correo: string }
   | { tipo: 'guardar_canal'; canal: CanalConfig }
   | { tipo: 'agregar_cliente'; cliente: Cliente }
@@ -97,6 +99,10 @@ export function txHashSimulado(semilla: string): string {
 
 export function reducer(estado: EstadoMock, accion: Accion): EstadoMock {
   switch (accion.tipo) {
+    case 'hidratar':
+      return accion.estado;
+    case 'enlaces':
+      return { ...estado, enlaces: accion.enlaces };
     case 'registrar_comercio':
       return {
         ...estado,

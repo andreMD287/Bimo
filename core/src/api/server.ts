@@ -101,6 +101,15 @@ export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
 
   app.addHook('onRequest', async (req: FastifyRequest, reply: FastifyReply) => {
     reply.header('X-Request-Id', req.id);
+    // CORS para la app web: la autenticacion va en el encabezado Authorization (sin cookies), por eso basta el comodin.
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Expose-Headers', 'X-Request-Id');
+    if (req.method === 'OPTIONS') {
+      reply.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+      reply.header('Access-Control-Allow-Headers', req.headers['access-control-request-headers'] ?? 'authorization,content-type');
+      reply.header('Access-Control-Max-Age', '600');
+      return reply.code(204).send();
+    }
     if (req.is404) return;
     const access = req.routeOptions.config.access ?? 'device';
     if (access === 'public') {

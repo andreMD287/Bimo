@@ -66,11 +66,22 @@ Además de lo anterior, el flujo completo desde la app (registro, ventas, cierre
 
 ### Cómo verificar tú mismo
 
-<!-- Escribe aquí: Santiago -->
+1. **CLI de verificación:**
+   ```bash
+   # Dentro de verifier/
+   npm run verify -- paquete.json --rpc <URL_RPC_STELLAR>
+   ```
+   Recibirás un JSON con el resultado de la verificación por día y los totales. Si algún día no coincide, el JSON detallará qué versión o raíz falló.
+
+2. **Verificación en el navegador:**
+   - Abre `https://verificar.bimo.com/#t=<token_del_enlace>`.
+   - La página leerá automáticamente el paquete y verificará cada sello contra Stellar RPC.
+   - ✅ significa que todo coincide; ❌ significa alteración.
+
 
 ## Participación del equipo
 
 **André:** contratos `bimo-registry`, `bimo-p256-verifier` y `bimo-account` en testnet; migraciones de Supabase (verificadas con `supabase db reset`); `core` completo (comercios, sincronización, cierre, firma y sello, enlaces y verificación pública); paquete `shared` y `verifier` (adelanto); conexión de la app con datos reales; recorrido de punta a punta y evidencia; video del Challenge #4.
 
 <!-- Escribe aquí: Lizeth -->
-<!-- Escribe aquí: Santiago -->
+**Santiago:** paquete `shared` (formatos canónicos, Merkle, validaciones, ULID); pruebas de base de datos; lógica de verificación web (`verifier`) y CLI (`npm run verify`); documentación de desarrollo en `docs/dev-build.md`.

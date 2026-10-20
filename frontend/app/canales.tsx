@@ -1,9 +1,10 @@
-// Pantalla 2 — Configurar canales (dueño: Santiago). Paso 1 del Blueprint.
+// Pantalla 2 — Configurar canales (dueña: Lizeth desde el Entregable 4; L-02). Paso 1 del Blueprint.
+// Mientras la cuenta se prepara se muestra el texto del spec 07 §6, sin bloquear.
 
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { formatoBps, useCanales, type CanalConfig } from '../src/hooks';
-import { Boton, Campo, Pantalla, Tarjeta, Texto, color } from '../src/ui';
+import { formatoBps, useCanales, useComercio, type CanalConfig } from '../src/hooks';
+import { Aviso, Boton, Campo, Pantalla, Tarjeta, Texto, color } from '../src/ui';
 
 /** 150 → "1,5"; 300 → "3". */
 function bpsAInput(bps: number): string {
@@ -96,9 +97,12 @@ function EditorCanal({
 
 export default function Canales() {
   const { canales, guardar, alternar } = useCanales();
+  const { comercio } = useComercio();
 
   return (
     <Pantalla titulo="¿Cómo te pagan?">
+      <Texto variante="etiqueta">PASO 3 DE 3 · TUS CANALES</Texto>
+      {comercio.avisoCuenta ? <Aviso tono="info">{comercio.avisoCuenta}</Aviso> : null}
       <Texto variante="nota">
         Enciende los canales que usas. Para cada uno indica la comisión y en cuántos días te consignan.
       </Texto>
@@ -110,7 +114,7 @@ export default function Canales() {
           onAlternar={() => alternar(c.id)}
         />
       ))}
-      <Boton titulo="Listo" onPress={() => router.replace('/hoy')} />
+      <Boton titulo="Listo, empezar a vender" grande onPress={() => router.replace('/hoy')} />
     </Pantalla>
   );
 }

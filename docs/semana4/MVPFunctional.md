@@ -22,7 +22,31 @@
 
 ## Plan de validación con usuarios
 
-<!-- Escribe aquí: Lizeth -->
+**A quiénes.** Al usuario del Problem Brief: el dueño de un negocio pequeño o informal que maneja él mismo la plata, sin contador, y que cobra por al menos dos canales. Vamos a buscar **5 comercios en Bogotá**: dos tiendas de barrio, una miscelánea o papelería, y dos salones de belleza o manicuristas independientes (de ahí salen las historias de pago dividido y anticipos). Los conseguimos por conocidos del equipo, porque ya sabemos que viven el problema. Ninguno debe saber de cripto.
+
+**Con qué métodos.**
+1. **Entrevista corta (5 min):** por qué medios le pagan, cómo sabe hoy cuánto vendió, cuánto tarda en cuadrar y si un banco le ha pedido demostrar sus ventas.
+2. **Prueba con el producto (12 min), con tareas guiadas en su local:** registrar una venta en efectivo de $ 8.500 con una mano ocupada; una venta dividida entre efectivo y Nequi; decir cuánto vendió y cuánto le falta que llegue del datáfono; cerrar el día con un conteo que no cuadra; confirmar y sellar; y crear un enlace para un banco. Usamos la app en nuestro celular con datos de ejemplo, para que nadie ponga datos reales de su negocio.
+3. **Métricas:** toques fuera del teclado y segundos por tarea (cronómetro o grabación de pantalla si la persona acepta), errores, veces que pide ayuda, palabras que no entendió y facilidad del 1 al 5. Al final le pedimos que explique con sus palabras qué significa "Sellado ✓".
+
+El guion completo y la tabla de registro están en [`docs/usabilidad.md`](../usabilidad.md).
+
+**Qué hipótesis.**
+- H-A: un dueño registra una venta en efectivo en ≤ 3 toques y ≤ 5 s (QA-04).
+- H-B: entiende "Hoy" sin explicación: encuentra lo vendido y lo pendiente de consignar.
+- H-C: el cierre con diferencia no lo asusta y entiende qué hacer.
+- H-D: entiende para qué sirve el sello ("ya nadie lo puede cambiar").
+- H-E: le mandaría el enlace a un banco o prestamista. Esta es la que pone a prueba el supuesto 2 del Problem Brief: si a nadie le importa que el historial no se pueda alterar, una herramienta más simple bastaría.
+
+**Con qué criterio sabremos que se cumplen.**
+- H-A: 4 de 5 completan la venta en efectivo sin ayuda, con mediana ≤ 5 s y ≤ 3 toques.
+- H-B: 4 de 5 responden en ≤ 20 s.
+- H-C: 4 de 5 cierran el día sin pedir ayuda.
+- H-D: 3 de 5 explican el sello como algo que no se puede cambiar.
+- H-E: 3 de 5 dicen que sí lo compartirían. Si son 2 o menos, revisamos si el sello merece estar en el centro del producto o si es mejor presentarlo como un extra.
+- Jerga: 0 palabras técnicas marcadas como no entendidas.
+
+Registramos solo lo que de verdad pase. Si no alcanzamos a 5 personas, decimos con cuántas se hizo y lo dejamos en "Riesgos y pendientes".
 
 ## Evidencia verificable
 

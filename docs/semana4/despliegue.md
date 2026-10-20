@@ -1,6 +1,6 @@
 # Despliegue (Vercel, Railway y Supabase)
 
-Estado: **Vercel ya está desplegado** (https://bimo-frontend.vercel.app, modo demostración). Falta publicar `core` y la base para que el enlace público trabaje con datos reales. Estos pasos **no se han probado** porque requieren cuentas de Railway y Supabase en la nube.
+Estado: Vercel (https://bimo-frontend.vercel.app), Supabase en la nube y `core` en Render (https://bimo-xtcr.onrender.com, modo `all`, plan gratuito, ver 2b) están desplegados y `/health` responde `ok`. Railway no se usó (sin plan gratuito). Para pasar a producción real hace falta un plan sin suspensión y rotar las contraseñas usadas en las pruebas.
 
 ## 1. Supabase (proyecto en la nube)
 1. Crear el proyecto. Aplicar `supabase/migrations/*` (`supabase link` y `supabase db push`).

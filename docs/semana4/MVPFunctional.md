@@ -6,7 +6,7 @@
 2. **Que el código calcule lo que firma (impacto alto, esfuerzo alto).** La app valida la preimagen y calcula el resumen por su cuenta; nunca firma uno ya hecho. Costó trabajo, pero así la prueba QA-02 (Bimo no puede sellar por un comercio) es real y se comprueba en la red.
 3. **Las herramientas de Stellar cambian rápido (impacto medio).** El SDK y el CLI nuevos cambiaron tipos y credenciales. Se resolvió fijando versiones y dejando scripts que cualquiera puede repetir.
 
-**Ya hecho:** la base está en Supabase en la nube y `core` (API y worker en un solo proceso, modo `all`) corre en el equipo de André detrás de un túnel de Cloudflare, porque Railway y Render no ofrecían plan gratuito; el enlace público trabaja con datos reales solo mientras ese equipo esté encendido (ver `despliegue.md`). **Queda pendiente:** la llave del comercio en el Secure Enclave del iPhone, el indexador de eventos y la multifirma del administrador.
+**Ya hecho:** la base está en Supabase en la nube y `core` (API y worker en un solo proceso, modo `all`) corre en Render, plan gratuito: https://bimo-xtcr.onrender.com. El enlace público trabaja con datos reales. Límite del plan gratis: el servicio se duerme tras 15 minutos sin uso y la primera petición tarda cerca de un minuto. **No se ejecutó una prueba completa desde el enlace público de Vercel con el servicio de Render** (sí se probó de punta a punta en local y contra testnet). **Queda pendiente:** la llave del comercio en el Secure Enclave del iPhone, el indexador de eventos y la multifirma del administrador.
 
 ## Riesgos y pendientes
 
@@ -62,7 +62,7 @@ Además de lo anterior, el flujo completo desde la app (registro, ventas, cierre
 
 ### Video
 
-Video de 59 s para el Challenge #4 de BAF («Make it happen»), hecho con capturas reales del recorrido completo: registro con código por correo, dos ventas ($12.000 en efectivo y $30.000 por Bre-B), cierre del día, sello en Stellar, enlace y verificación pública con el explorador. Se publicó en Instagram etiquetando a @thebafnetwork y se envió por el formulario del reto. Enlace del video: _pendiente de pegar_.
+Video de 59 s para el Challenge #4 de BAF («Make it happen»), hecho con capturas reales del recorrido completo: registro con código por correo, dos ventas ($12.000 en efectivo y $30.000 por Bre-B), cierre del día, sello en Stellar, enlace y verificación pública con el explorador. Se publicó en Instagram etiquetando a @thebafnetwork y se envió por el formulario del reto. Enlace del video: https://www.instagram.com/byricoth/reel/DeqIb-aJ5jq/
 
 ### Cómo verificar tú mismo
 

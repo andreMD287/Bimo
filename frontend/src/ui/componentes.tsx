@@ -19,6 +19,8 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { formatoCOP } from '../lib/dinero';
+import { TECLAS, teclear } from './teclado';
 import { borders, colors, radii, shadow, spacing, touch, typography } from './tokens';
 
 // ─── Pantalla ──────────────────────────────────────────────────────────────────
@@ -313,17 +315,12 @@ export function Campo({
 
 /** Teclado de monto en pesos enteros. `valor` son los dígitos ("20000"). */
 export function TecladoMonto({ valor, onChange }: { valor: string; onChange: (v: string) => void }) {
-  const teclas = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '000', '0', '⌫'];
-  const tocar = (t: string) => {
-    if (t === '⌫') onChange(valor.slice(0, -1));
-    else if ((valor + t).replace(/^0+/, '').length <= 10) onChange((valor + t).replace(/^0+/, ''));
-  };
   return (
     <View style={s.teclado}>
-      {teclas.map((t) => (
+      {TECLAS.map((t) => (
         <Pressable
           key={t}
-          onPress={() => tocar(t)}
+          onPress={() => onChange(teclear(valor, t))}
           onLongPress={t === '⌫' ? () => onChange('') : undefined}
           style={({ pressed }) => [s.tecla, t === '⌫' ? s.teclaBorrar : null, pressed ? s.teclaPresionada : null]}
           accessibilityRole="button"
@@ -517,6 +514,54 @@ export function EtiquetaSimulacion() {
   );
 }
 
+// ─── Monto ─────────────────────────────────────────────────────────────────────
+
+/**
+ * Un monto en pesos colombianos ("$ 20.000"). Recibe CENTAVOS ENTEROS (spec 01 §1);
+ * si llega un número con decimales, `formatoCOP` lo rechaza en vez de redondearlo.
+ */
+export function Monto({
+  centavos,
+  variante = 'cuerpoFuerte',
+  color: c,
+  tachado,
+}: {
+  centavos: number;
+  variante?: 'cuerpo' | 'cuerpoFuerte' | 'subtitulo' | 'monto' | 'montoGrande';
+  color?: string;
+  tachado?: boolean;
+}) {
+  return (
+    <Text style={[s[variante], s.numeros, c ? { color: c } : null, tachado ? s.tachado : null]}>{formatoCOP(centavos)}</Text>
+  );
+}
+
+// ─── Estado vacío ──────────────────────────────────────────────────────────────
+
+/** Lo que se ve cuando una lista no tiene nada todavía: ícono, qué pasa y qué hacer. */
+export function EstadoVacio({
+  icono = '🗒️',
+  titulo,
+  texto,
+  accion,
+}: {
+  icono?: string;
+  titulo: string;
+  texto?: string;
+  accion?: { titulo: string; onPress: () => void };
+}) {
+  return (
+    <View style={s.vacio} accessible={!accion} accessibilityLabel={!accion ? [titulo, texto].filter(Boolean).join('. ') : undefined}>
+      <View style={s.vacioIcono}>
+        <Text style={s.vacioIconoTexto}>{icono}</Text>
+      </View>
+      <Text style={[s.subtitulo, s.centrado]}>{titulo}</Text>
+      {texto ? <Text style={[s.nota, s.centrado]}>{texto}</Text> : null}
+      {accion ? <Boton titulo={accion.titulo} variante="suave" onPress={accion.onPress} /> : null}
+    </View>
+  );
+}
+
 export function EnConstruccion() {
   return <Texto variante="nota">En construcción</Texto>;
 }
@@ -546,6 +591,18 @@ const s = StyleSheet.create({
   monto: { ...typography.monto, color: colors.text, fontVariant: ['tabular-nums'] },
   montoGrande: { ...typography.montoGrande, color: colors.text, fontVariant: ['tabular-nums'] },
   centrado: { textAlign: 'center' },
+  numeros: { fontVariant: ['tabular-nums'] },
+  vacio: { alignItems: 'center', gap: spacing.s, paddingVertical: spacing.xl, paddingHorizontal: spacing.l },
+  vacioIcono: {
+    width: 64,
+    height: 64,
+    borderRadius: radii.pill,
+    backgroundColor: colors.surfaceAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xs,
+  },
+  vacioIconoTexto: { fontSize: 28 },
   tachado: { textDecorationLine: 'line-through', color: colors.textMuted },
 
   boton: {

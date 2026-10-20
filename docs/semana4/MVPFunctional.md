@@ -6,7 +6,7 @@
 2. **Que el código calcule lo que firma (impacto alto, esfuerzo alto).** La app valida la preimagen y calcula el resumen por su cuenta; nunca firma uno ya hecho. Costó trabajo, pero así la prueba QA-02 (Bimo no puede sellar por un comercio) es real y se comprueba en la red.
 3. **Las herramientas de Stellar cambian rápido (impacto medio).** El SDK y el CLI nuevos cambiaron tipos y credenciales. Se resolvió fijando versiones y dejando scripts que cualquiera puede repetir.
 
-**Se ajusta antes del cierre:** publicar `core` en Railway y la base en Supabase en la nube, para que el enlace público trabaje con datos reales. **Queda pendiente:** la llave del comercio en el Secure Enclave del iPhone, el indexador de eventos y la multifirma del administrador.
+**Ya hecho:** la base está en Supabase en la nube y `core` (API y worker en un solo proceso, modo `all`) corre en el equipo de André detrás de un túnel de Cloudflare, porque Railway y Render no ofrecían plan gratuito; el enlace público trabaja con datos reales solo mientras ese equipo esté encendido (ver `despliegue.md`). **Queda pendiente:** la llave del comercio en el Secure Enclave del iPhone, el indexador de eventos y la multifirma del administrador.
 
 ## Riesgos y pendientes
 
@@ -62,7 +62,7 @@ Además de lo anterior, el flujo completo desde la app (registro, ventas, cierre
 
 ### Video
 
-<!-- Escribe aquí: Lizeth -->
+Video de 59 s para el Challenge #4 de BAF («Make it happen»), hecho con capturas reales del recorrido completo: registro con código por correo, dos ventas ($12.000 en efectivo y $30.000 por Bre-B), cierre del día, sello en Stellar, enlace y verificación pública con el explorador. Se publicó en Instagram etiquetando a @thebafnetwork y se envió por el formulario del reto. Enlace del video: _pendiente de pegar_.
 
 ### Cómo verificar tú mismo
 
@@ -74,7 +74,7 @@ Además de lo anterior, el flujo completo desde la app (registro, ventas, cierre
    Recibirás un JSON con el resultado de la verificación por día y los totales. Si algún día no coincide, el JSON detallará qué versión o raíz falló.
 
 2. **Verificación en el navegador:**
-   - Abre `https://verificar.bimo.com/#t=<token_del_enlace>`.
+   - Abre el enlace que genera la app en «Compartir mi historial» (`https://bimo-frontend.vercel.app/verificar/…`).
    - La página leerá automáticamente el paquete y verificará cada sello contra Stellar RPC.
    - ✅ significa que todo coincide; ❌ significa alteración.
 
@@ -83,8 +83,6 @@ Además de lo anterior, el flujo completo desde la app (registro, ventas, cierre
 
 **André:** contratos `bimo-registry`, `bimo-p256-verifier` y `bimo-account` en testnet; migraciones de Supabase (verificadas con `supabase db reset`); `core` completo (comercios, sincronización, cierre, firma y sello, enlaces y verificación pública); paquete `shared` y `verifier` (adelanto); conexión de la app con datos reales; recorrido de punta a punta y evidencia; video del Challenge #4.
 
-<!-- Escribe aquí: Lizeth -->
 **Santiago:** paquete `shared` (formatos canónicos, Merkle, validaciones, ULID); pruebas de base de datos; lógica de verificación web (`verifier`) y CLI (`npm run verify`); documentación de desarrollo en `docs/dev-build.md`.
 **Lizeth (`ricoththth`):** sistema de diseño de la app (tokens Velto, componentes accesibles, teclado de montos en enteros y pruebas de QA-04 sin jerga); pantallas del dueño: onboarding, "Hoy" con los datos del spec 04 §9, registrar venta con fiado y nota (V-07, V-10), cierre del día, confirmar y sellar, compartir historial, clientes de fiado y correcciones (V-09); página del verificador (enlace al explorador y `noindex`); guion de la prueba de usabilidad y plan de validación con usuarios.
 
-<!-- Escribe aquí: Santiago -->

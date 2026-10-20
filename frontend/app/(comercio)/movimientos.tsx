@@ -8,7 +8,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { formatoCOP, useMovimientos, type Movimiento } from '../../src/hooks';
-import { Aviso, Boton, Campo, FilaLista, Insignia, Pantalla, Tarjeta, Texto, colors, spacing } from '../../src/ui';
+import { Aviso, Boton, Campo, EstadoVacio, FilaLista, Insignia, Pantalla, Tarjeta, Texto, colors, spacing } from '../../src/ui';
 
 const mayuscula = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
@@ -64,7 +64,7 @@ export default function Movimientos() {
       )}
 
       {movimientos.length === 0 ? (
-        <Aviso tono="info" titulo="Aún no hay movimientos hoy" />
+        <EstadoVacio icono="🛒" titulo="Aún no hay movimientos hoy" texto="Las ventas que registres aparecen aquí, de la más nueva a la más vieja." />
       ) : (
         <Tarjeta>
           {movimientos.map((m, i) => {
@@ -74,7 +74,7 @@ export default function Movimientos() {
               <View key={m.id}>
                 <FilaLista
                   icono={icono(m)}
-                  titulo={m.corregido ? `${m.tipo} · corregida` : m.tipo}
+                  titulo={m.corregido ? `${m.tipo} · anulada` : m.tipo}
                   detalle={detalle(m)}
                   derecha={formatoCOP(m.monto_minor)}
                   colorDerecha={m.monto_minor < 0 ? colors.dangerText : undefined}

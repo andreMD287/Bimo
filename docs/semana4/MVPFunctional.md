@@ -85,3 +85,6 @@ Además de lo anterior, el flujo completo desde la app (registro, ventas, cierre
 
 <!-- Escribe aquí: Lizeth -->
 **Santiago:** paquete `shared` (formatos canónicos, Merkle, validaciones, ULID); pruebas de base de datos; lógica de verificación web (`verifier`) y CLI (`npm run verify`); documentación de desarrollo en `docs/dev-build.md`.
+**Lizeth (`ricoththth`):** sistema de diseño de la app (tokens Velto, componentes accesibles, teclado de montos en enteros y pruebas de QA-04 sin jerga); pantallas del dueño: onboarding, "Hoy" con los datos del spec 04 §9, registrar venta con fiado y nota (V-07, V-10), cierre del día, confirmar y sellar, compartir historial, clientes de fiado y correcciones (V-09); página del verificador (enlace al explorador y `noindex`); guion de la prueba de usabilidad y plan de validación con usuarios.
+
+<!-- Escribe aquí: Santiago -->

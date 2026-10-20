@@ -1,9 +1,10 @@
 // Pantalla 3 — Hoy (dueña: Lizeth). Paso 4 del Blueprint; H1, H3, H6, H8. Cálculos: spec 04 §9.
+// Muestra cada dato de la tabla del spec 04 §9, el indicador de lo que falta por subir y los días sin cerrar.
 // Usa solo `src/hooks` y `src/ui`.
 
 import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
-import { formatoCOP, useComercio, useHoy, useSello } from '../../src/hooks';
+import { formatoCOP, useCierre, useComercio, useHoy, useSello } from '../../src/hooks';
 import {
   Aviso,
   Boton,
@@ -25,7 +26,10 @@ export default function Hoy() {
   const hoy = useHoy();
   const { comercio } = useComercio();
   const { pendientes } = useSello();
+  const { diasSinCerrar } = useCierre();
   const porConfirmar = pendientes.filter((p) => p.fecha !== hoy.fecha);
+  const porSubir =
+    hoy.porSubir === 0 ? '✓ Todo guardado' : `⏳ ${hoy.porSubir} ${hoy.porSubir === 1 ? 'movimiento' : 'movimientos'} por subir`;
 
   return (
     <Pantalla
@@ -37,8 +41,24 @@ export default function Hoy() {
         ) : null
       }
     >
-      <InsigniaEstadoDia estado={hoy.estadoDia} texto={hoy.textoEstadoDia} />
+      <View style={s.estado}>
+        <InsigniaEstadoDia estado={hoy.estadoDia} texto={hoy.textoEstadoDia} />
+        {/* Indicador discreto de lo que falta por subir (spec 04 §9); "Hoy" siempre sale de la base local */}
+        <Texto variante="nota">{porSubir}</Texto>
+      </View>
       {comercio.avisoCuenta ? <Aviso tono="info">{comercio.avisoCuenta}</Aviso> : null}
+
+      {diasSinCerrar.length > 0 ? (
+        <Aviso
+          tono="atencion"
+          titulo={diasSinCerrar.length === 1 ? `${mayuscula(diasSinCerrar[0]!.fechaTexto)} sigue abierto` : `${diasSinCerrar.length} días siguen abiertos`}
+        >
+          <Texto variante="nota">Ciérralos para poder sellarlos. Contar el efectivo de un día pasado es opcional.</Texto>
+          <View style={s.avisoAccion}>
+            <Boton titulo="Cerrar días pendientes" variante="suave" onPress={() => router.push('/cierre')} />
+          </View>
+        </Aviso>
+      ) : null}
 
       {porConfirmar.length > 0 ? (
         <Aviso tono="atencion" titulo={porConfirmar.length === 1 ? `${mayuscula(porConfirmar[0]!.fechaTexto)} sin sellar` : `${porConfirmar.length} días sin sellar`}>
@@ -79,13 +99,17 @@ export default function Hoy() {
       <View style={s.par}>
         <Tarjeta estilo={s.mitad}>
           <MontoGrande tamano="mediano" etiqueta="Disponible" monto={formatoCOP(hoy.disponible.total_minor)} />
-          <Texto variante="nota">
-            Caja {formatoCOP(hoy.disponible.caja_minor)}
-            {'\n'}Cuenta {formatoCOP(hoy.disponible.cuenta_minor)}
-          </Texto>
+          <FilaLista icono="💵" titulo="Efectivo que debería haber en caja" derecha={formatoCOP(hoy.disponible.caja_minor)} />
+          <FilaLista
+            icono="🏦"
+            titulo="En la cuenta"
+            detalle="Bre-B y consignaciones"
+            derecha={formatoCOP(hoy.disponible.cuenta_minor)}
+            ultima
+          />
         </Tarjeta>
         <Tarjeta estilo={s.mitad} variante="destacada">
-          <MontoGrande tamano="mediano" etiqueta="Por consignar" monto={formatoCOP(hoy.pendiente.total_minor)} />
+          <MontoGrande tamano="mediano" etiqueta="Pendiente de consignar" monto={formatoCOP(hoy.pendiente.total_minor)} />
           <Texto variante="nota">
             {hoy.pendiente.detalle[0] ? `Lo próximo llega el ${hoy.pendiente.detalle[0].fechaTexto}` : 'Nada pendiente'}
           </Texto>
@@ -109,10 +133,12 @@ export default function Hoy() {
         </Seccion>
       ) : null}
 
-      {hoy.teDeben.total_minor > 0 ? (
-        <Seccion titulo="Te deben">
-          <Tarjeta>
-            {hoy.teDeben.detalle.map((c, i) => (
+      <Seccion titulo="Te deben (fiado)" accion={{ titulo: 'Ver clientes', onPress: () => router.push('/clientes') }}>
+        <Tarjeta>
+          {hoy.teDeben.detalle.length === 0 ? (
+            <FilaLista icono="📒" titulo="Nadie te debe" derecha={formatoCOP(0)} ultima />
+          ) : (
+            hoy.teDeben.detalle.map((c, i) => (
               <FilaLista
                 key={c.customer_id}
                 icono="📒"
@@ -120,16 +146,16 @@ export default function Hoy() {
                 derecha={formatoCOP(c.monto_minor)}
                 ultima={i === hoy.teDeben.detalle.length - 1}
               />
-            ))}
-          </Tarjeta>
-        </Seccion>
-      ) : null}
+            ))
+          )}
+        </Tarjeta>
+      </Seccion>
 
-      <Seccion titulo="Comisiones">
+      <Seccion titulo="Comisiones y salidas">
         <Tarjeta>
           <FilaLista
             icono="🧾"
-            titulo="Cobradas hoy"
+            titulo="Comisiones de hoy"
             detalle="Lo que te descontaron en las consignaciones"
             derecha={formatoCOP(hoy.comisiones_minor)}
             colorDerecha={hoy.comisiones_minor > 0 ? colors.dangerText : undefined}
@@ -139,6 +165,12 @@ export default function Hoy() {
             titulo="Estimadas de tus ventas de hoy"
             detalle="Se descuentan cuando llegue la plata"
             derecha={formatoCOP(hoy.comisionEstimada_minor)}
+          />
+          <FilaLista
+            icono="💸"
+            titulo="Salidas de hoy"
+            detalle="Gastos y retiros"
+            derecha={formatoCOP(hoy.salidas_minor)}
             ultima
           />
         </Tarjeta>
@@ -160,6 +192,7 @@ export default function Hoy() {
 }
 
 const s = StyleSheet.create({
+  estado: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.m },
   par: { gap: spacing.m },
   mitad: {},
   avisoAccion: { marginTop: spacing.s, alignItems: 'flex-start' },

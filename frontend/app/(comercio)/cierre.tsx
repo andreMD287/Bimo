@@ -12,6 +12,7 @@ import {
   Aviso,
   Boton,
   Campo,
+  TecladoMonto,
   FilaLista,
   InsigniaEstadoDia,
   MontoGrande,
@@ -97,11 +98,12 @@ export default function Cierre() {
     >
       {cierre.diasSinCerrar.length > 0 ? (
         <Aviso tono="atencion" titulo="Quedaron días sin cerrar">
+          <Texto variante="nota">Para un día pasado, contar el efectivo es opcional: lo cierras con lo registrado.</Texto>
           <View style={s.lista}>
             {cierre.diasSinCerrar.map((d) => (
               <View key={d.fecha} style={s.filaDia}>
                 <Texto>{d.fechaTexto}</Texto>
-                <Boton titulo="Cerrar" variante="suave" onPress={() => cierre.cerrarDiaPasado(d.fecha)} />
+                <Boton titulo="Cerrar sin contar" variante="suave" onPress={() => cierre.cerrarDiaPasado(d.fecha)} />
               </View>
             ))}
           </View>
@@ -111,16 +113,19 @@ export default function Cierre() {
       <Seccion titulo="1. Cuenta el efectivo">
         <Tarjeta>
           <MontoGrande tamano="mediano" etiqueta="Debería haber en la caja" monto={formatoCOP(cierre.esperado.efectivo_minor)} />
-          <Campo
-            etiqueta="¿Cuánto contaste? (en pesos)"
-            value={exacto ? '' : efectivo}
-            placeholder={exacto ? 'Está exacto' : '0'}
-            onChangeText={(t) => {
+          <MontoGrande
+            tamano="mediano"
+            etiqueta="Contaste"
+            monto={exacto ? formatoCOP(cierre.esperado.efectivo_minor) : formatoCOP(pesosACentavos(efectivo))}
+            detalle={exacto ? 'Está exacto' : escribioEfectivo ? undefined : 'Escribe lo que hay en la caja'}
+          />
+          <TecladoMonto
+            valor={exacto ? '' : efectivo}
+            onChange={(v) => {
               setExacto(false);
-              setEfectivo(soloDigitos(t));
+              setEfectivo(v);
               setError(null);
             }}
-            keyboardType="number-pad"
           />
           <Boton
             titulo={exacto ? '✓ Está exacto' : 'Está exacto'}
@@ -146,6 +151,8 @@ export default function Cierre() {
           />
         </Tarjeta>
       </Seccion>
+
+      <Aviso tono="info">Si no tienes señal, igual puedes cerrar: tu cierre queda guardado y se enviará cuando vuelva la señal.</Aviso>
 
       {revision ? (
         <Seccion titulo="3. Resultado">

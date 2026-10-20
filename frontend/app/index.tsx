@@ -1,9 +1,14 @@
-// Pantalla 1 — Bienvenida y registro (dueño: Santiago). Paso 1 del Blueprint.
+// Pantalla 1 — Bienvenida y registro (dueña: Lizeth desde el Entregable 4; L-02). Paso 1 del Blueprint.
+// Correo → código → negocio listo; la cuenta se prepara sola y no bloquea vender (spec 07 §6).
+// Nombre del negocio de máximo 80 caracteres (spec 01 §4.1).
 
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useComercio } from '../src/hooks';
-import { Boton, Campo, Pantalla, Texto } from '../src/ui';
+import { Aviso, Boton, Campo, Pantalla, Texto } from '../src/ui';
+
+/** Spec 01 §4.1: `business_name` de máximo 80 caracteres. */
+const NOMBRE_MAX = 80;
 
 type Paso = 'datos' | 'codigo';
 
@@ -11,10 +16,10 @@ export default function Bienvenida() {
   const { comercio, enviarCodigo, verificarCodigo, registrar, simulacion } = useComercio();
   const [paso, setPaso] = useState<Paso>('datos');
   const [nombre, setNombre] = useState(comercio.business_name);
-  const [correo, setCorreo] = useState(comercio.correo ?? 'marta@ejemplo.co');
+  const [correo, setCorreo] = useState(comercio.correo ?? (simulacion ? 'marta@ejemplo.co' : ''));
   const [codigo, setCodigo] = useState('');
   const [enviando, setEnviando] = useState(false);
-  const [aviso, setAviso] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<{ tono: 'info' | 'error'; texto: string } | null>(null);
 
   const correoOk = correo.trim().includes('@') && correo.trim().includes('.');
   const nombreOk = nombre.trim().length > 0;
@@ -27,24 +32,27 @@ export default function Bienvenida() {
       await enviarCodigo(correo.trim());
     } catch {
       setEnviando(false);
-      setAviso('No pudimos enviar el código. Revisa tu conexión y el correo.');
+      setAviso({ tono: 'error', texto: 'No pudimos enviar el código. Revisa tu conexión y el correo.' });
       return;
     }
     setEnviando(false);
     setPaso('codigo');
-    setAviso(simulacion ? 'Te enviamos un código de 6 dígitos a tu correo. En esta demo sirve cualquiera.' : 'Te enviamos un código de 6 dígitos a tu correo.');
+    setAviso({
+      tono: 'info',
+      texto: simulacion ? 'Te enviamos un código de 6 dígitos a tu correo. En esta demo sirve cualquiera.' : 'Te enviamos un código de 6 dígitos a tu correo.',
+    });
   };
 
   const confirmar = async () => {
     if (!verificarCodigo(codigo.trim())) {
-      setAviso('Escribe un código de 6 dígitos.');
+      setAviso({ tono: 'error', texto: 'Escribe un código de 6 dígitos.' });
       return;
     }
     setEnviando(true);
     const r = await registrar(nombre.trim(), correo.trim());
     setEnviando(false);
     if (!r.ok) {
-      setAviso(r.error);
+      setAviso({ tono: 'error', texto: r.error });
       return;
     }
     router.push('/canales');
@@ -53,15 +61,18 @@ export default function Bienvenida() {
   return (
     <Pantalla titulo="Bienvenida a Bimo" simulacion={simulacion} centrado>
       <Texto>Tus ventas de todos los canales, en un solo lugar.</Texto>
+      <Texto variante="etiqueta">{paso === 'datos' ? 'PASO 1 DE 3 · TUS DATOS' : 'PASO 2 DE 3 · CÓDIGO'}</Texto>
 
       {paso === 'datos' ? (
         <>
           <Campo
             etiqueta="Nombre del negocio"
             value={nombre}
-            onChangeText={setNombre}
+            onChangeText={(n) => setNombre(n.slice(0, NOMBRE_MAX))}
+            maxLength={NOMBRE_MAX}
             placeholder="Ej. Tienda Doña Marta"
             autoCapitalize="words"
+            ayuda={`Así lo verá el banco cuando compartas tu historial · ${nombre.length}/${NOMBRE_MAX}`}
           />
           <Campo
             etiqueta="Correo"
@@ -110,7 +121,9 @@ export default function Bienvenida() {
         </>
       )}
 
-      {aviso ? <Texto variante="nota">{aviso}</Texto> : null}
+      {aviso ? <Aviso tono={aviso.tono}>{aviso.texto}</Aviso> : null}
+
+      {comercio.registrado && comercio.avisoCuenta ? <Aviso tono="info">{comercio.avisoCuenta}</Aviso> : null}
 
       {comercio.registrado ? (
         <Boton titulo="Ir a Hoy" variante="secundario" onPress={() => router.replace('/hoy')} />

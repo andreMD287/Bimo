@@ -133,7 +133,7 @@ export default function Hoy() {
         </Seccion>
       ) : null}
 
-      <Seccion titulo="Te deben (fiado)">
+      <Seccion titulo="Te deben (fiado)" accion={{ titulo: 'Ver clientes', onPress: () => router.push('/clientes') }}>
         <Tarjeta>
           {hoy.teDeben.detalle.length === 0 ? (
             <FilaLista icono="📒" titulo="Nadie te debe" derecha={formatoCOP(0)} ultima />

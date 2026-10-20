@@ -2,12 +2,14 @@
 // Usa solo `src/hooks` y `src/ui`. Va a todo el ancho (sin marco): la abre un analista en su computador.
 //
 // Totales y porcentaje SOLO con los días que coinciden (spec 05 §4.2). "Stellar" y "blockchain"
-// solo aparecen en "¿Cómo funciona?". La verificación es SIMULADA en esta demo.
+// solo aparecen en "¿Cómo funciona?" (y "Stellar" en el enlace al explorador y en la explicación del ❌).
+// La página lleva `noindex` (spec 05 §6). Con datos de ejemplo, la verificación es simulada.
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
+import Head from 'expo-router/head';
 import { useState, type ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { formatoCOP, useVerificacion } from '../../src/hooks';
 import {
   Boton,
@@ -22,6 +24,18 @@ import {
 } from '../../src/ui';
 
 const ANCHO_MAX = 1100;
+/** Explorador público de testnet (incremento 1). Cualquiera lo abre sin iniciar sesión. */
+const EXPLORADOR_TX = 'https://stellar.expert/explorer/testnet/tx/';
+
+/** La página no se indexa en buscadores (spec 05 §6). */
+function SinIndexar() {
+  return (
+    <Head>
+      <meta name="robots" content="noindex, nofollow" />
+      <title>Verificación de historial · Bimo</title>
+    </Head>
+  );
+}
 const mayuscula = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 const abreviar = (t: string) => (t.length > 12 ? `${t.slice(0, 6)}…${t.slice(-6)}` : t);
 
@@ -60,6 +74,7 @@ export default function Verificar() {
   if (v.estado !== 'listo' || !v.resumen || !v.periodo || !v.comercio) {
     return (
       <ScrollView style={s.pagina} contentContainerStyle={s.paginaContenido}>
+        <SinIndexar />
         <Contenedor estilo={hero}>
           <Text style={s.marca}>bimo</Text>
           <Text style={s.heroTitulo}>
@@ -93,6 +108,7 @@ export default function Verificar() {
 
   return (
     <ScrollView style={s.pagina} contentContainerStyle={s.paginaContenido}>
+      <SinIndexar />
       {/* ─── Hero ─── */}
       <Contenedor estilo={hero}>
         <View style={s.heroArriba}>
@@ -159,7 +175,23 @@ export default function Verificar() {
                     <View style={{ flex: 1, gap: spacing.xs }}>
                       <Text style={s.diaFecha}>{mayuscula(d.fechaTexto)}</Text>
                       <InsigniaResultado resultado={d.resultado} enmiendas={d.enmiendas} />
-                      {d.tx_hash ? <Text style={s.nota}>Comprobante del sello: {abreviar(d.tx_hash)}{v.simulacion ? ' (simulado)' : ''}</Text> : null}
+                      {no ? (
+                        <Text style={s.notaMal}>
+                          Los datos de este día no coinciden con lo que se guardó en Stellar. Sus ventas no se suman a los totales.
+                        </Text>
+                      ) : null}
+                      {d.tx_hash && v.simulacion ? <Text style={s.nota}>Comprobante del sello: {abreviar(d.tx_hash)} (simulado)</Text> : null}
+                      {d.tx_hash && !v.simulacion ? (
+                        <Pressable
+                          accessibilityRole="link"
+                          accessibilityLabel={`Ver el sello del ${d.fechaTexto} en el explorador de Stellar`}
+                          onPress={() => void Linking.openURL(EXPLORADOR_TX + d.tx_hash)}
+                          style={s.enlaceExplorador}
+                          hitSlop={8}
+                        >
+                          <Text style={s.enlaceExploradorTexto}>Ver en el explorador de Stellar ↗</Text>
+                        </Pressable>
+                      ) : null}
                     </View>
                     <View style={{ alignItems: 'flex-end', gap: spacing.xxs }}>
                       <Text style={[s.diaMonto, no ? s.tachado : d.resultado === 'sin_sellar' ? s.apagado : null]}>
@@ -326,6 +358,8 @@ const s = StyleSheet.create({
   notaMal: { ...typography.nota, fontWeight: '700', color: colors.dangerText },
   tachado: { textDecorationLine: 'line-through', color: colors.textMuted },
   apagado: { color: colors.textMuted },
+  enlaceExplorador: { minHeight: touch.minimo, justifyContent: 'center', alignSelf: 'flex-start' },
+  enlaceExploradorTexto: { ...typography.nota, fontWeight: '700', color: colors.primary, textDecorationLine: 'underline' },
 
   dia: { flexDirection: 'row', alignItems: 'center', gap: spacing.m, paddingVertical: spacing.m },
   diaBorde: { borderBottomWidth: 1, borderBottomColor: colors.border },

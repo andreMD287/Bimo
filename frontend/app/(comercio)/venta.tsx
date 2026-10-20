@@ -2,7 +2,8 @@
 // Usa solo `src/hooks` y `src/ui`.
 //
 // QA-04: una venta en efectivo en ≤ 3 toques. Efectivo viene elegido: monto → "Guardar venta".
-// "Más opciones" agrega dividir el pago (H7), anticipo (H8) y nota.
+// "Más opciones" agrega dividir el pago (H7), anticipo (H8) y nota. Si el pago es fiado o es un
+// anticipo, el cliente se pide ahí mismo y no deja guardar sin él (V-07). La nota llega hasta 140 (V-10).
 
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -22,6 +23,7 @@ import {
   Texto,
   spacing,
 } from '../../src/ui';
+import { NOTA_MAX, contadorNota, faltaCliente, recortarNota } from '../../src/ui/formularios';
 
 function detalleCanal(c: CanalConfig): string {
   if (c.channel === 'fiado') return 'Te pagan después';
@@ -62,7 +64,10 @@ export default function Venta() {
   if (parte2 > 0) pagos.push({ canal_id: canal2Id, monto_minor: parte2, customer_id: canal2?.channel === 'fiado' ? clienteId : null });
   const est = estimar(pagos);
 
-  const necesitaCliente = anticipo || canal?.channel === 'fiado' || canal2?.channel === 'fiado';
+  const channels = [canal?.channel, parte2 > 0 ? canal2?.channel : undefined].filter((c): c is NonNullable<typeof c> => !!c);
+  const necesitaCliente = anticipo || channels.includes('fiado') || canal2?.channel === 'fiado';
+  // V-07: no se deja guardar un fiado sin cliente
+  const faltaElCliente = faltaCliente({ channels, anticipo, clienteId });
   const totalAnticipoMinor = pesosACentavos(totalAnticipo);
 
   function reiniciar() {
@@ -81,7 +86,7 @@ export default function Venta() {
   }
 
   function guardar() {
-    if (necesitaCliente && !clienteId) return setError('Elige el cliente.');
+    if (faltaElCliente) return setError('Elige a quién le fías.');
     const r = registrar({
       pagos,
       nota: nota.trim() || undefined,
@@ -125,10 +130,11 @@ export default function Venta() {
       pie={
         <>
           {error ? <Aviso tono="error">{error}</Aviso> : null}
+          {!error && faltaElCliente && total > 0 ? <Texto variante="nota" centrado>Elige a quién le fías para poder guardar.</Texto> : null}
           <Boton
             titulo={total > 0 ? `Guardar venta · ${formatoCOP(total)}` : 'Guardar venta'}
             grande
-            deshabilitado={total === 0 || !canal}
+            deshabilitado={total === 0 || !canal || faltaElCliente}
             onPress={guardar}
           />
         </>
@@ -175,6 +181,30 @@ export default function Venta() {
             {est.comision_minor > 0 ? `Comisión estimada: ${formatoCOP(est.comision_minor)}` : 'Sin comisión'}
           </Texto>
         </Tarjeta>
+      ) : null}
+
+      {necesitaCliente ? (
+        <Seccion titulo={faltaElCliente ? "¿A quién le fías? (obligatorio)" : "Cliente"}>
+          <View style={s.chips}>
+            {clientes.map((c) => (
+              <ChipCanal key={c.id} nombre={c.display_name} seleccionado={c.id === clienteId} onPress={() => setClienteId(c.id)} />
+            ))}
+          </View>
+          <View style={s.fila}>
+            <View style={{ flex: 1 }}>
+              <Campo etiqueta="Cliente nuevo" value={nuevoCliente} onChangeText={setNuevoCliente} placeholder="Nombre" />
+            </View>
+            <Boton
+              titulo="Agregar"
+              variante="secundario"
+              deshabilitado={nuevoCliente.trim() === ''}
+              onPress={() => {
+                setClienteId(agregarCliente(nuevoCliente).id);
+                setNuevoCliente('');
+              }}
+            />
+          </View>
+        </Seccion>
       ) : null}
 
       <Boton
@@ -244,46 +274,17 @@ export default function Venta() {
             ) : null}
           </Seccion>
 
-          {necesitaCliente ? (
-            <Seccion titulo="Cliente">
-              <View style={s.chips}>
-                {clientes.map((c) => (
-                  <ChipCanal key={c.id} nombre={c.display_name} seleccionado={c.id === clienteId} onPress={() => setClienteId(c.id)} />
-                ))}
-              </View>
-              <View style={s.fila}>
-                <View style={{ flex: 1 }}>
-                  <Campo etiqueta="Cliente nuevo" value={nuevoCliente} onChangeText={setNuevoCliente} placeholder="Nombre" />
-                </View>
-                <Boton
-                  titulo="Agregar"
-                  variante="secundario"
-                  deshabilitado={nuevoCliente.trim() === ''}
-                  onPress={() => {
-                    setClienteId(agregarCliente(nuevoCliente).id);
-                    setNuevoCliente('');
-                  }}
-                />
-              </View>
-            </Seccion>
-          ) : null}
-
           <Campo
             etiqueta="Nota (opcional)"
             value={nota}
-            onChangeText={setNota}
-            maxLength={140}
+            onChangeText={(n) => setNota(recortarNota(n))}
+            maxLength={NOTA_MAX}
             placeholder="Ej.: torta de cumpleaños"
-            ayuda={`${nota.length}/140`}
+            ayuda={contadorNota(nota)}
           />
         </>
       ) : null}
 
-      {necesitaCliente && !masOpciones ? (
-        <Aviso tono="atencion" titulo="Falta el cliente">
-          Abre "Más opciones" y elige a quién le fías.
-        </Aviso>
-      ) : null}
     </Pantalla>
   );
 }

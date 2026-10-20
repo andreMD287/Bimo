@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { RpcSealReader, verifyPackage } from '../src';
+import { RpcSealReader, verifyPackage } from '../src/index';
 
 async function run() {
   const [,, paquetePath] = process.argv;

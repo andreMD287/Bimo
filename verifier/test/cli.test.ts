@@ -25,7 +25,7 @@ describe('verifier/cli/verify.mjs logic & verification', () => {
 
     const pkg: VerificationPackage = {
       format: 'bimo-verification-v1',
-      merchant: { merchant_id: entries[0].entry.merchant_id, business_name: 'Comercio Test', stellar_address: 'CBR6LETMYTXQOSWIJGX5QSAZK7VESX62MBGX3P2LBHE5C5BTPKFZR74M' },
+      merchant: { merchant_id: entries[0]!.entry.merchant_id, business_name: 'Comercio Test', stellar_address: 'CBR6LETMYTXQOSWIJGX5QSAZK7VESX62MBGX3P2LBHE5C5BTPKFZR74M' },
       network: { network_passphrase: 'Test SDF Network ; September 2015', rpc_url: 'https://rpc', registry_ids: ['CDRMZRCZZFICPDROENVBP6VFDPB2FTZARW2A4XV7NERRM6BPSD45GZYB'] },
       link: { date_from: '2026-10-06', date_to: '2026-10-06', expires_at: '2027-01-01T00:00:00.000Z' },
       days: [{ date: 20261006, status: 'sellado', entries, seals: [{ version: 1, tx_hash: 'abc', added_entry_ids: [] }] }]
@@ -41,7 +41,7 @@ describe('verifier/cli/verify.mjs logic & verification', () => {
     const res = await verifyPackage(pkg, { reader, trusted });
 
     expect(res.trusted).toBe(true);
-    expect(res.days[0].result).toBe('coincide');
+    expect(res.days[0]!.result).toBe('coincide');
   });
 
   it('detecta alteracion de un monto (da no coincide)', async () => {
@@ -51,11 +51,11 @@ describe('verifier/cli/verify.mjs logic & verification', () => {
     });
 
     // Alteramos un monto
-    entries[0].entry.lines[0].amount_minor = Number(entries[0].entry.lines[0].amount_minor) + 999;
+    entries[0]!.entry.lines[0].amount_minor = Number(entries[0]!.entry.lines[0].amount_minor) + 999;
 
     const pkg: VerificationPackage = {
       format: 'bimo-verification-v1',
-      merchant: { merchant_id: entries[0].entry.merchant_id, business_name: 'Comercio Test', stellar_address: 'CBR6LETMYTXQOSWIJGX5QSAZK7VESX62MBGX3P2LBHE5C5BTPKFZR74M' },
+      merchant: { merchant_id: entries[0]!.entry.merchant_id, business_name: 'Comercio Test', stellar_address: 'CBR6LETMYTXQOSWIJGX5QSAZK7VESX62MBGX3P2LBHE5C5BTPKFZR74M' },
       network: { network_passphrase: 'Test SDF Network ; September 2015', rpc_url: 'https://rpc', registry_ids: ['CDRMZRCZZFICPDROENVBP6VFDPB2LBHE5C5BTPKFZR74M'] },
       link: { date_from: '2026-10-06', date_to: '2026-10-06', expires_at: '2027-01-01T00:00:00.000Z' },
       days: [{ date: 20261006, status: 'sellado', entries, seals: [{ version: 1, tx_hash: 'abc', added_entry_ids: [] }] }]
@@ -67,6 +67,6 @@ describe('verifier/cli/verify.mjs logic & verification', () => {
     const res = await verifyPackage(pkg, { reader, trusted });
 
     expect(res.trusted).toBe(true);
-    expect(res.days[0].result).toBe('no_coincide');
+    expect(res.days[0]!.result).toBe('no_coincide');
   });
 });

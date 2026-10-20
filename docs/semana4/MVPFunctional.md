@@ -72,5 +72,6 @@ Además de lo anterior, el flujo completo desde la app (registro, ventas, cierre
 
 **André:** contratos `bimo-registry`, `bimo-p256-verifier` y `bimo-account` en testnet; migraciones de Supabase (verificadas con `supabase db reset`); `core` completo (comercios, sincronización, cierre, firma y sello, enlaces y verificación pública); paquete `shared` y `verifier` (adelanto); conexión de la app con datos reales; recorrido de punta a punta y evidencia; video del Challenge #4.
 
-<!-- Escribe aquí: Lizeth -->
+**Lizeth (`ricoththth`):** sistema de diseño de la app (tokens Velto, componentes accesibles, teclado de montos en enteros y pruebas de QA-04 sin jerga); pantallas del dueño: onboarding, "Hoy" con los datos del spec 04 §9, registrar venta con fiado y nota (V-07, V-10), cierre del día, confirmar y sellar, compartir historial, clientes de fiado y correcciones (V-09); página del verificador (enlace al explorador y `noindex`); guion de la prueba de usabilidad y plan de validación con usuarios.
+
 <!-- Escribe aquí: Santiago -->

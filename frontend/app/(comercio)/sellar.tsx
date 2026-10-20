@@ -17,6 +17,7 @@ import {
   Texto,
   colors,
   spacing,
+  EtiquetaSimulacion,
 } from '../../src/ui';
 
 const mayuscula = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
@@ -29,7 +30,7 @@ export default function Sellar() {
 
   if (sello.fase === 'nada') {
     return (
-      <Pantalla titulo="Confirmar y sellar" simulacion>
+      <Pantalla titulo="Confirmar y sellar" simulacion={sello.simulacion}>
         <Aviso tono="exito" titulo="Estás al día">
           No hay días por confirmar. Cuando cierres el día, lo confirmas aquí.
         </Aviso>
@@ -41,7 +42,7 @@ export default function Sellar() {
 
   if (sello.fase === 'confirmando' || sello.fase === 'guardando') {
     return (
-      <Pantalla titulo="Confirmar y sellar" simulacion>
+      <Pantalla titulo="Confirmar y sellar" simulacion={sello.simulacion}>
         <View style={s.centro}>
           <View style={s.circulo}>
             {sello.fase === 'confirmando' ? (
@@ -66,7 +67,7 @@ export default function Sellar() {
     return (
       <Pantalla
         titulo="Confirmar y sellar"
-        simulacion
+        simulacion={sello.simulacion}
         pie={
           <>
             <Boton titulo="Volver a Hoy" grande onPress={() => router.replace('/hoy')} />
@@ -96,16 +97,23 @@ export default function Sellar() {
       titulo="Confirmar y sellar"
       simulacion={sello.simulacion}
       pie={
-        <Boton
-          titulo="Confirmar con Face ID"
-          icono="🙂"
-          grande
-          ayuda="Confirma con tu cara y se sellan los días de la lista"
-          onPress={() => {
-            setConfirmado(sello.resumen);
-            void sello.confirmar();
-          }}
-        />
+        <>
+          <Boton
+            titulo="Confirmar con Face ID"
+            icono="🙂"
+            grande
+            ayuda="Confirma con tu cara y se sellan los días de la lista"
+            onPress={() => {
+              setConfirmado(sello.resumen);
+              void sello.confirmar();
+            }}
+          />
+          {/* Face ID real llega con el development build (incremento 2); en la web y en Expo Go es simulado */}
+          <View style={s.faceIdSimulado}>
+            <EtiquetaSimulacion />
+            <Texto variante="nota">En esta versión, Face ID se simula.</Texto>
+          </View>
+        </>
       }
     >
       <Tarjeta variante="oscura">
@@ -119,7 +127,8 @@ export default function Sellar() {
 
       {sello.error ? (
         <Aviso tono="error" titulo="No pudimos confirmar">
-          {sello.error}
+          <Texto variante="nota">{sello.error}</Texto>
+          <Texto variante="nota">Arriba está el resumen al día. Revísalo y confirma de nuevo.</Texto>
         </Aviso>
       ) : null}
 
@@ -161,5 +170,6 @@ const s = StyleSheet.create({
   },
   circuloOk: { backgroundColor: colors.success },
   dia: { gap: spacing.s },
+  faceIdSimulado: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.s },
   separador: { height: 1, backgroundColor: colors.border, marginTop: spacing.s },
 });
